@@ -1,0 +1,8 @@
+_Resharper*
+bin*
+obj*
+*.suo
+*.DS_STORE
+*.userprefs
+*.vscode
+*/Test Results/*
