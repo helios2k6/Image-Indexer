@@ -35,7 +35,6 @@ public sealed class ImageFingerPrint : Table {
     int o = builder.EndObject();
     return new Offset<ImageFingerPrint>(o);
   }
-  public static void FinishImageFingerPrintBuffer(FlatBufferBuilder builder, Offset<ImageFingerPrint> offset) { builder.Finish(offset.Value); }
 };
 
 

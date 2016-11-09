@@ -18,4 +18,9 @@ table ImageFingerPrint
     macroblocks:[Macroblock];
 }
 
-root_type ImageFingerPrint;
+table ImageFingerPrintDatabase
+{
+    fingerprints:[ImageFingerPrint];
+}
+
+root_type ImageFingerPrintDatabase;
