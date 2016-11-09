@@ -3,108 +3,39 @@
 namespace ImageIndexer
 {
 
-    using System;
-    using FlatBuffers;
+using System;
+using FlatBuffers;
 
-    public sealed class ImageFingerPrint : Table
-    {
-        public static ImageFingerPrint GetRootAsImageFingerPrint(ByteBuffer _bb)
-        {
-            return GetRootAsImageFingerPrint(_bb, new ImageFingerPrint());
-        }
+public sealed class ImageFingerPrint : Table {
+  public static ImageFingerPrint GetRootAsImageFingerPrint(ByteBuffer _bb) { return GetRootAsImageFingerPrint(_bb, new ImageFingerPrint()); }
+  public static ImageFingerPrint GetRootAsImageFingerPrint(ByteBuffer _bb, ImageFingerPrint obj) { return (obj.__init(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public ImageFingerPrint __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; return this; }
 
-        public static ImageFingerPrint GetRootAsImageFingerPrint(ByteBuffer _bb, ImageFingerPrint obj)
-        {
-            return (obj.__init(_bb.GetInt(_bb.Position) + _bb.Position, _bb));
-        }
+  public string FilePath { get { int o = __offset(4); return o != 0 ? __string(o + bb_pos) : null; } }
+  public ArraySegment<byte>? GetFilePathBytes() { return __vector_as_arraysegment(4); }
+  public Macroblock GetMacroblocks(int j) { return GetMacroblocks(new Macroblock(), j); }
+  public Macroblock GetMacroblocks(Macroblock obj, int j) { int o = __offset(6); return o != 0 ? obj.__init(__indirect(__vector(o) + j * 4), bb) : null; }
+  public int MacroblocksLength { get { int o = __offset(6); return o != 0 ? __vector_len(o) : 0; } }
 
-        public ImageFingerPrint __init(int _i, ByteBuffer _bb)
-        {
-            bb_pos = _i;
-            bb = _bb;
-            return this;
-        }
+  public static Offset<ImageFingerPrint> CreateImageFingerPrint(FlatBufferBuilder builder,
+      StringOffset filePathOffset = default(StringOffset),
+      VectorOffset macroblocksOffset = default(VectorOffset)) {
+    builder.StartObject(2);
+    ImageFingerPrint.AddMacroblocks(builder, macroblocksOffset);
+    ImageFingerPrint.AddFilePath(builder, filePathOffset);
+    return ImageFingerPrint.EndImageFingerPrint(builder);
+  }
 
-        public string FilePath
-        {
-            get
-            {
-                int o = __offset(4);
-                return o != 0 ? __string(o + bb_pos) : null;
-            }
-        }
+  public static void StartImageFingerPrint(FlatBufferBuilder builder) { builder.StartObject(2); }
+  public static void AddFilePath(FlatBufferBuilder builder, StringOffset filePathOffset) { builder.AddOffset(0, filePathOffset.Value, 0); }
+  public static void AddMacroblocks(FlatBufferBuilder builder, VectorOffset macroblocksOffset) { builder.AddOffset(1, macroblocksOffset.Value, 0); }
+  public static VectorOffset CreateMacroblocksVector(FlatBufferBuilder builder, Offset<Macroblock>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static void StartMacroblocksVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static Offset<ImageFingerPrint> EndImageFingerPrint(FlatBufferBuilder builder) {
+    int o = builder.EndObject();
+    return new Offset<ImageFingerPrint>(o);
+  }
+};
 
-        public ArraySegment<byte>? GetFilePathBytes() { return __vector_as_arraysegment(4); }
 
-        public Macroblock GetMacroblocks(int j)
-        {
-            return GetMacroblocks(new Macroblock(), j);
-        }
-
-        public Macroblock GetMacroblocks(Macroblock obj, int j)
-        {
-            int o = __offset(6);
-            return o != 0 ? obj.__init(__indirect(__vector(o) + j * 4), bb) : null;
-        }
-
-        public int MacroblocksLength
-        {
-            get
-            {
-                int o = __offset(6);
-                return o != 0 ? __vector_len(o) : 0;
-            }
-        }
-
-        public static Offset<ImageFingerPrint> CreateImageFingerPrint(FlatBufferBuilder builder,
-            StringOffset filePathOffset = default(StringOffset),
-            VectorOffset macroblocksOffset = default(VectorOffset))
-        {
-            builder.StartObject(2);
-            AddMacroblocks(builder, macroblocksOffset);
-            AddFilePath(builder, filePathOffset);
-            return EndImageFingerPrint(builder);
-        }
-
-        public static void StartImageFingerPrint(FlatBufferBuilder builder)
-        {
-            builder.StartObject(2);
-        }
-
-        public static void AddFilePath(FlatBufferBuilder builder, StringOffset filePathOffset)
-        {
-            builder.AddOffset(0, filePathOffset.Value, 0);
-        }
-
-        public static void AddMacroblocks(FlatBufferBuilder builder, VectorOffset macroblocksOffset)
-        {
-            builder.AddOffset(1, macroblocksOffset.Value, 0);
-        }
-
-        public static VectorOffset CreateMacroblocksVector(FlatBufferBuilder builder, Offset<Macroblock>[] data)
-        {
-            builder.StartVector(4, data.Length, 4);
-            for (int i = data.Length - 1; i >= 0; i--)
-            {
-                builder.AddOffset(data[i].Value);
-            }
-            return builder.EndVector();
-        }
-
-        public static void StartMacroblocksVector(FlatBufferBuilder builder, int numElems)
-        {
-            builder.StartVector(4, numElems, 4);
-        }
-
-        public static Offset<ImageFingerPrint> EndImageFingerPrint(FlatBufferBuilder builder)
-        {
-            int o = builder.EndObject();
-            return new Offset<ImageFingerPrint>(o);
-        }
-
-        public static void FinishImageFingerPrintBuffer(FlatBufferBuilder builder, Offset<ImageFingerPrint> offset)
-        {
-            builder.Finish(offset.Value);
-        }
-    };
 }
