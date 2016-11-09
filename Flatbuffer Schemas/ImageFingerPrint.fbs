@@ -1,0 +1,21 @@
+namespace ImageIndexer;
+
+struct Pixel
+{
+    red:int;
+    green:int;
+    blue:int;
+}
+
+table Macroblock
+{
+    pixels:[Pixel];
+}
+
+table ImageFingerPrint
+{
+    filePath:string;
+    macroblocks:[Macroblock];
+}
+
+root_type ImageFingerPrint;
