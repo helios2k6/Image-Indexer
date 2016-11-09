@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Flatbuffer Schemas\ImageIndexer\ImageFingerPrint.cs" />
+    <Compile Include="Flatbuffer Schemas\ImageIndexer\ImageFingerPrintDatabase.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\Macroblock.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\Pixel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
