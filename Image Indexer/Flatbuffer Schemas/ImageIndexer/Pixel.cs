@@ -3,24 +3,25 @@
 namespace ImageIndexer
 {
 
-using System;
-using FlatBuffers;
+    using FlatBuffers;
 
-public sealed class Pixel : Struct {
-  public Pixel __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; return this; }
+    internal sealed class Pixel : Struct
+    {
+        public Pixel __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; return this; }
 
-  public int Red { get { return bb.GetInt(bb_pos + 0); } }
-  public int Green { get { return bb.GetInt(bb_pos + 4); } }
-  public int Blue { get { return bb.GetInt(bb_pos + 8); } }
+        public int Red { get { return bb.GetInt(bb_pos + 0); } }
+        public int Green { get { return bb.GetInt(bb_pos + 4); } }
+        public int Blue { get { return bb.GetInt(bb_pos + 8); } }
 
-  public static Offset<Pixel> CreatePixel(FlatBufferBuilder builder, int Red, int Green, int Blue) {
-    builder.Prep(4, 12);
-    builder.PutInt(Blue);
-    builder.PutInt(Green);
-    builder.PutInt(Red);
-    return new Offset<Pixel>(builder.Offset);
-  }
-};
+        public static Offset<Pixel> CreatePixel(FlatBufferBuilder builder, int Red, int Green, int Blue)
+        {
+            builder.Prep(4, 12);
+            builder.PutInt(Blue);
+            builder.PutInt(Green);
+            builder.PutInt(Red);
+            return new Offset<Pixel>(builder.Offset);
+        }
+    };
 
 
 }

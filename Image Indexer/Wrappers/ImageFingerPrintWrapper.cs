@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  * Copyright (c) 2015 Andrew Johnson
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,19 @@
 
 namespace ImageIndexer
 {
-    public static class Indexer
+    /// <summary>
+    /// The image fingerprint of an image
+    /// </summary>
+    public sealed class ImageFingerPrintWrapper
     {
-        
+        /// <summary>
+        /// The path to the file that this fingerprint corresponds to
+        /// </summary>
+        public string FilePath { get; set; }
+
+        /// <summary>
+        /// The macroblocks of this fingerprint image
+        /// </summary>
+        public MacroblockWrapper[] Macroblocks { get; set; }
     }
 }

@@ -23,8 +23,15 @@ using System.Drawing;
 
 namespace ImageIndexer
 {
+    /// <summary>
+    /// Represents a transformation of an image
+    /// </summary>
     public interface ITransformation
     {
+        /// <summary>
+        /// Transform an image
+        /// </summary>
+        /// <returns>A new transformed image</returns>
         Image Transform();
     }
 }

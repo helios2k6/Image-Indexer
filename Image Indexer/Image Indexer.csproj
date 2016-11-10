@@ -44,6 +44,10 @@
       <HintPath>..\packages\DevZH.FlatBuffers.1.4.0\lib\net35\DevZH.FlatBuffers.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Functional.Maybe, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Functional.Maybe.1.1.1\lib\portable40-net40+win8\Functional.Maybe.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -55,16 +59,18 @@
     <Compile Include="Flatbuffer Schemas\ImageIndexer\Macroblock.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\Pixel.cs" />
     <Compile Include="IImageFrame.cs" />
-    <Compile Include="Transformations\BoxBlurExtensions.cs" />
+    <Compile Include="Indexing\ImageFingerPrintDatabaseLoader.cs" />
     <Compile Include="Transformations\FastAccBoxBlurGaussianBlurTransformation.cs" />
-    <Compile Include="Transformations\IBoxBlur.cs" />
     <Compile Include="Transformations\ITransformation.cs" />
+    <Compile Include="Wrappers\ImageFingerPrintDatabaseWrapper.cs" />
+    <Compile Include="Wrappers\ImageFingerPrintWrapper.cs" />
+    <Compile Include="Wrappers\MacroblockWrapper.cs" />
     <Compile Include="WritableLockBitImage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Flatbuffer Schemas\ImageFingerPrint.fbs" />
+    <None Include="Flatbuffer Schemas\ImageFingerPrintDatabase.fbs" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

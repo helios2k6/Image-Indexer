@@ -145,6 +145,12 @@ namespace ImageIndexer
             return clr;
         }
 
+        /// <summary>
+        /// Sets the pixel color
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="color"></param>
         public void SetPixel(int x, int y, Color color)
         {
             if (_locked)
@@ -191,13 +197,13 @@ namespace ImageIndexer
         /// </summary>
         public int Width
         {
-            get 
+            get
             {
                 if (_disposed)
                 {
                     throw new ObjectDisposedException("Object already disposed");
                 }
-                return _width; 
+                return _width;
             }
         }
 
@@ -211,11 +217,14 @@ namespace ImageIndexer
                 if (_disposed)
                 {
                     throw new ObjectDisposedException("Object already disposed");
-                } 
-                return _height; 
+                }
+                return _height;
             }
         }
 
+        /// <summary>
+        /// Lock this image
+        /// </summary>
         public void Lock()
         {
             if (_locked)
@@ -223,11 +232,14 @@ namespace ImageIndexer
                 return;
             }
             _locked = true;
-            //Marshal.Copy(_buffer, 0, _bitmapData.Scan0, _buffer.Length);
             WriteBufferDirectlyToMemory();
             _bitmap.UnlockBits(_bitmapData);
         }
 
+        /// <summary>
+        /// Get this WritableLockBitImage as an Image object
+        /// </summary>
+        /// <returns></returns>
         public Image GetImage()
         {
             if (_locked == false)
@@ -238,6 +250,9 @@ namespace ImageIndexer
             return _bitmap.Clone() as Image;
         }
 
+        /// <summary>
+        /// Dispose of this object
+        /// </summary>
         public void Dispose()
         {
             if (_disposed)

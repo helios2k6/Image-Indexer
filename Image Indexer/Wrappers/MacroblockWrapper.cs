@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  * Copyright (c) 2015 Andrew Johnson
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -19,12 +19,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using System.Drawing;
+
 namespace ImageIndexer
 {
     /// <summary>
-    /// A marker interface for extension methods
+    /// Represents a macroblock of pixels in a fingerprint
     /// </summary>
-    public interface IBoxBlur
+    public sealed class MacroblockWrapper
     {
+        /// <summary>
+        /// The pixels of this macroblock
+        /// </summary>
+        public Color[] Pixels { get; set; }
     }
 }

@@ -20,23 +20,40 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace ImageIndexer
 {
-    public sealed class FastAccBoxBlurGaussianBlurTransformation : ITransformation, IDisposable, IBoxBlur
+    /// <summary>
+    /// A fast gaussian blur transformation modeled as multiple box blurs
+    /// </summary>
+    public sealed class FastAccBoxBlurGaussianBlurTransformation : ITransformation, IDisposable
     {
+        #region private fields
         private bool _disposed;
 
         private readonly Image _sourceImage;
         private readonly int _radius;
+        #endregion
 
+        #region ctor
+        /// <summary>
+        /// Construct a new transformation
+        /// </summary>
+        /// <param name="sourceImage">The image to transform</param>
+        /// <param name="radius"></param>
         public FastAccBoxBlurGaussianBlurTransformation(Image sourceImage, int radius)
         {
             _sourceImage = sourceImage.Clone() as Image;
             _radius = radius;
         }
+        #endregion
 
+        #region public methods
+        /// <summary>
+        /// Dispose of this transformation
+        /// </summary>
         public void Dispose()
         {
             if (_disposed)
@@ -47,6 +64,10 @@ namespace ImageIndexer
             _sourceImage.Dispose();
         }
 
+        /// <summary>
+        /// Transform the provided image
+        /// </summary>
+        /// <returns></returns>
         public Image Transform()
         {
             using (var sourceLockbitImage = new WritableLockBitImage(_sourceImage))
@@ -54,7 +75,7 @@ namespace ImageIndexer
             {
                 // Get boxes
                 int index = 0;
-                foreach (int boxWidth in this.EnumerateBoxesForGauss(_radius, 3))
+                foreach (int boxWidth in EnumerateBoxesForGauss(_radius, 3))
                 {
                     if (index % 2 == 0)
                     {
@@ -71,11 +92,13 @@ namespace ImageIndexer
                 return outputLockbitImage.GetImage();
             }
         }
+        #endregion
 
+        #region private methods
         private void PerformSplitBoxBlurAcc(WritableLockBitImage sourceImage, WritableLockBitImage outputImage, int radius)
         {
             // Copy pixels from source to output
-            this.CopyPixels(sourceImage, outputImage);
+            CopyPixels(sourceImage, outputImage);
 
             // The switching of outputImage and souceImage is INTENTIONAL!
             PerformHorizontalBoxBlurAcc(outputImage, sourceImage, radius);
@@ -165,6 +188,41 @@ namespace ImageIndexer
             }
         }
 
+        /// <summary>
+        /// Calculates the boxes needed for a gaussian blur. Taken from: http://blog.ivank.net/fastest-gaussian-blur.html
+        /// Based off of: http://www.peterkovesi.com/papers/FastGaussianSmoothing.pdf 
+        /// </summary>
+        private static IEnumerable<int> EnumerateBoxesForGauss(int stdDeviation, int numBoxes)
+        {
+            double widthIdeal = Math.Sqrt((12 * stdDeviation * stdDeviation / numBoxes) + 1);  // Ideal averaging filter width 
+            int widthL = (int)Math.Floor(widthIdeal);
+
+            if (widthL % 2 == 0)
+            {
+                widthL--;
+            };
+
+            int widthU = widthL + 2;
+            double mIdeal = (12 * stdDeviation * stdDeviation - numBoxes * widthL * widthL - 4 * numBoxes * widthL - 3 * numBoxes)
+                / (-4 * widthL - 4);
+            int roundedIdealBoxLength = (int)Math.Round(mIdeal);
+            for (int index = 0; index < numBoxes; index++)
+            {
+                yield return index < roundedIdealBoxLength ? widthL : widthU;
+            }
+        }
+
+        private static void CopyPixels(WritableLockBitImage sourceImage, WritableLockBitImage destImage)
+        {
+            for (int row = 0; row < sourceImage.Height; row++)
+            {
+                for (int col = 0; col < sourceImage.Width; col++)
+                {
+                    destImage.SetPixel(col, row, sourceImage.GetPixel(col, row));
+                }
+            }
+        }
+
         private static void PerformTotalBoxBlurAcc(WritableLockBitImage sourceImage, WritableLockBitImage outputImage, int radius)
         {
             double iarr = 1 / ((double)radius + radius + 1);
@@ -239,8 +297,8 @@ namespace ImageIndexer
                         )
                     );
                 }
-
             }
         }
+        #endregion
     }
 }

@@ -22,14 +22,33 @@
 using FlatBuffers;
 using System.IO;
 using System;
+using System.Drawing;
 
 namespace ImageIndexer
 {
-    public static class ImageFingerPrintDatabaseLoader
+    /// <summary>
+    /// Loads the image fingerprinting database
+    /// </summary>
+    internal static class ImageFingerPrintDatabaseLoader
     {
+        #region private fields
         private static readonly int BufferSize = 4096; // 4 kibibytes
+        #endregion
 
-        public static ImageFingerPrintDatabase LoadDatabase(string path)
+        #region public methods
+        public static ImageFingerPrintDatabaseWrapper LoadDatabase(string path)
+        {
+            return Convert(LoadFlatBufferDatabase(path));
+        }
+        #endregion
+
+        #region private methods
+        /// <summary>
+        /// Load the database
+        /// </summary>
+        /// <param name="path">The path to the binary file</param>
+        /// <returns>A newly loaded database</returns>
+        private static ImageFingerPrintDatabase LoadFlatBufferDatabase(string path)
         {
             if (string.IsNullOrWhiteSpace(path) || File.Exists(path) == false)
             {
@@ -50,5 +69,51 @@ namespace ImageIndexer
                 return ImageFingerPrintDatabase.GetRootAsImageFingerPrintDatabase(byteBuffer);
             }
         }
+
+        private static ImageFingerPrintDatabaseWrapper Convert(ImageFingerPrintDatabase flatbuffer)
+        {
+            ImageFingerPrintWrapper[] fingerprints = new ImageFingerPrintWrapper[flatbuffer.FingerprintsLength];
+            for (int i = 0; i < flatbuffer.FingerprintsLength; i++)
+            {
+                fingerprints[i] = Convert(flatbuffer.GetFingerprints(i));
+            }
+
+            return new ImageFingerPrintDatabaseWrapper(fingerprints);
+        }
+
+        private static ImageFingerPrintWrapper Convert(ImageFingerPrint fingerPrint)
+        {
+            MacroblockWrapper[] macroblocks = new MacroblockWrapper[fingerPrint.MacroblocksLength];
+            for (int i = 0; i < fingerPrint.MacroblocksLength; i++)
+            {
+                macroblocks[i] = Convert(fingerPrint.GetMacroblocks(i));
+            }
+
+            return new ImageFingerPrintWrapper
+            {
+                FilePath = fingerPrint.FilePath,
+                Macroblocks = macroblocks,
+            };
+        }
+
+        private static MacroblockWrapper Convert(Macroblock macroblock)
+        {
+            Color[] pixels = new Color[macroblock.PixelsLength];
+            for (int i = 0; i < macroblock.PixelsLength; i++)
+            {
+                pixels[i] = Convert(macroblock.GetPixels(i));
+            }
+
+            return new MacroblockWrapper
+            {
+                Pixels = pixels,
+            };
+        }
+
+        private static Color Convert(Pixel pixel)
+        {
+            return Color.FromArgb(pixel.Red, pixel.Green, pixel.Blue);
+        }
+        #endregion
     }
 }

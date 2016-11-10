@@ -16,7 +16,7 @@ table ImageFingerPrint
 {
     filePath:string;
     macroblocks:[Macroblock];
-}adsfsfsdfs
+}
 
 table ImageFingerPrintDatabase
 {
