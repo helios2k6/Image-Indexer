@@ -54,25 +54,28 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Flatbuffer Schemas\ImageIndexer\ImageFingerPrint.cs" />
-    <Compile Include="Flatbuffer Schemas\ImageIndexer\ImageFingerPrintDatabase.cs" />
+    <Compile Include="Flatbuffer Schemas\ImageIndexer\FrameFingerPrint.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\Macroblock.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\Pixel.cs" />
-    <Compile Include="IImageFrame.cs" />
-    <Compile Include="Indexing\ImageFingerPrintDatabaseLoader.cs" />
+    <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrint.cs" />
+    <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrintDatabase.cs" />
+    <Compile Include="Graphics\IImageFrame.cs" />
+    <Compile Include="Serialization\DatabaseLoader.cs" />
     <Compile Include="Transformations\FastAccBoxBlurGaussianBlurTransformation.cs" />
     <Compile Include="Transformations\ITransformation.cs" />
-    <Compile Include="Wrappers\ImageFingerPrintDatabaseWrapper.cs" />
-    <Compile Include="Wrappers\ImageFingerPrintWrapper.cs" />
+    <Compile Include="Wrappers\VideoFingerPrintDatabaseWrapper.cs" />
+    <Compile Include="Wrappers\FrameFingerPrintWrapper.cs" />
     <Compile Include="Wrappers\MacroblockWrapper.cs" />
-    <Compile Include="WritableLockBitImage.cs" />
+    <Compile Include="Wrappers\VideoFingerPrintWrapper.cs" />
+    <Compile Include="Graphics\WritableLockBitImage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Flatbuffer Schemas\ImageFingerPrintDatabase.fbs" />
+    <None Include="Flatbuffer Schemas\VideoFingerPrintDatabase.fbs" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
