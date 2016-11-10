@@ -1,0 +1,34 @@
+namespace ImageIndexer;
+
+struct Pixel
+{
+    red:int;
+    green:int;
+    blue:int;
+}
+
+table Macroblock
+{
+    width:int;
+    height:int;
+    pixels:[Pixel];
+}
+
+table FrameFingerPrint
+{
+    frameNumber:int;
+    macroblocks:[Macroblock];
+}
+
+table VideoFingerPrint
+{
+    filePath:string;
+    frameFingerPrints:[FrameFingerPrint];
+}
+
+table VideoFingerPrintDatabase
+{
+    videoFingerPrints:[VideoFingerPrint];
+}
+
+root_type VideoFingerPrintDatabase;

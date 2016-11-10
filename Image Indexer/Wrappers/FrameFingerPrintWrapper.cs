@@ -24,15 +24,14 @@ namespace ImageIndexer
     /// <summary>
     /// The image fingerprint of an image
     /// </summary>
-    public sealed class ImageFingerPrintWrapper
+    public sealed class FrameFingerPrintWrapper
     {
         /// <summary>
-        /// The path to the file that this fingerprint corresponds to
+        /// The frame that this frame occurs at
         /// </summary>
-        public string FilePath { get; set; }
-
+        public int FrameNumber { get; set; }
         /// <summary>
-        /// The macroblocks of this fingerprint image
+        /// The macroblocks that comprise this fingerprint
         /// </summary>
         public MacroblockWrapper[] Macroblocks { get; set; }
     }

@@ -19,26 +19,20 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using System.Drawing;
-
 namespace ImageIndexer
 {
     /// <summary>
-    /// Represents a macroblock of pixels in a fingerprint
+    /// The fingerprints for a video
     /// </summary>
-    public sealed class MacroblockWrapper
+    public sealed class VideoFingerPrintWrapper
     {
         /// <summary>
-        /// The pixels of this macroblock
+        /// The file path to the video
         /// </summary>
-        public Color[] Pixels { get; set; }
+        public string FilePath { get; set; }
         /// <summary>
-        /// The width of this macroblock
+        /// The fingerprints for all of the frames of this video
         /// </summary>
-        public int Width { get; set; }
-        /// <summary>
-        /// The height of this macroblock
-        /// </summary>
-        public int Height { get; set; }
+        public FrameFingerPrintWrapper[] FingerPrints { get; set; }
     }
 }
