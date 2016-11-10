@@ -24,8 +24,10 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\ImageIndexer.XML</DocumentationFile>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
@@ -44,6 +46,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
@@ -51,6 +54,12 @@
     <Compile Include="Flatbuffer Schemas\ImageIndexer\ImageFingerPrintDatabase.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\Macroblock.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\Pixel.cs" />
+    <Compile Include="IImageFrame.cs" />
+    <Compile Include="Transformations\BoxBlurExtensions.cs" />
+    <Compile Include="Transformations\FastAccBoxBlurGaussianBlurTransformation.cs" />
+    <Compile Include="Transformations\IBoxBlur.cs" />
+    <Compile Include="Transformations\ITransformation.cs" />
+    <Compile Include="WritableLockBitImage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
