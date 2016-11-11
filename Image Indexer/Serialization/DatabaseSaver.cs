@@ -20,9 +20,14 @@
  */
 
 using FlatBuffers;
+using System.Drawing;
+using System.IO;
 
 namespace ImageIndexer
 {
+    /// <summary>
+    /// Saves the database
+    /// </summary>
     public static class DatabaseSaver
     {
         #region private fields
@@ -30,10 +35,113 @@ namespace ImageIndexer
         #endregion
 
         #region public methods
-        public static void Save(VideoFingerPrintDatabaseWrapper database)
+        /// <summary>
+        /// Save a fingerprint database to a file
+        /// </summary>
+        /// <param name="database">The database to save</param>
+        /// <param name="filePath">The file path to save it to</param>
+        public static void Save(VideoFingerPrintDatabaseWrapper database, string filePath)
         {
-            var bufferBuilder = new FlatBufferBuilder(DefaultBufferSize);
-            // 
+            byte[] rawDatabaseBytes = SaveDatabase(database);
+            using (BinaryWriter writer = new BinaryWriter(File.Open(filePath, FileMode.OpenOrCreate)))
+            {
+                writer.Write(rawDatabaseBytes);
+            }
+        }
+
+        /// <summary>
+        /// Save a fingerprint database to a stream
+        /// </summary>
+        /// <param name="database">The database to save</param>
+        /// <param name="outStream">The stream to write to</param>
+        public static void Save(VideoFingerPrintDatabaseWrapper database, Stream outStream)
+        {
+            byte[] rawDatabaseBytes = SaveDatabase(database);
+            outStream.Write(rawDatabaseBytes, 0, rawDatabaseBytes.Length);
+        }
+        #endregion
+
+        #region private methods
+        private static byte[] SaveDatabase(VideoFingerPrintDatabaseWrapper database)
+        {
+            var builder = new FlatBufferBuilder(DefaultBufferSize);
+
+            CreateVideoFingerPrintDatabase(database, builder);
+
+            return builder.DataBuffer.Data;
+        }
+
+        private static void CreateVideoFingerPrintDatabase(VideoFingerPrintDatabaseWrapper database, FlatBufferBuilder builder)
+        {
+            Offset<VideoFingerPrint>[] videoFingerPrintArray = CreateVideoFingerPrintArray(database, builder);
+
+            VectorOffset videoFingerPrintDatabaseVectorOffset = VideoFingerPrintDatabase.CreateVideoFingerPrintsVector(builder, videoFingerPrintArray);
+
+            Offset<VideoFingerPrintDatabase> databaseOffset = VideoFingerPrintDatabase.CreateVideoFingerPrintDatabase(builder, videoFingerPrintDatabaseVectorOffset);
+            VideoFingerPrintDatabase.FinishVideoFingerPrintDatabaseBuffer(builder, databaseOffset);
+        }
+
+        private static Offset<VideoFingerPrint>[] CreateVideoFingerPrintArray(VideoFingerPrintDatabaseWrapper database, FlatBufferBuilder builder)
+        {
+            int videoFingerPrintCounter = 0;
+            var videoFingerPrintArray = new Offset<VideoFingerPrint>[database.VideoFingerPrints.Length];
+            foreach (VideoFingerPrintWrapper videoFingerPrint in database.VideoFingerPrints)
+            {
+                Offset<FrameFingerPrint>[] frameFingerPrintArray = CreateFrameFingerPrintArray(builder, videoFingerPrint);
+
+                StringOffset videoFilePath = builder.CreateString(videoFingerPrint.FilePath);
+                VectorOffset frameFingerPrintVectorOffset = VideoFingerPrint.CreateFrameFingerPrintsVector(builder, frameFingerPrintArray);
+
+                VideoFingerPrint.StartVideoFingerPrint(builder);
+                VideoFingerPrint.AddFilePath(builder, videoFilePath);
+                VideoFingerPrint.AddFrameFingerPrints(builder, frameFingerPrintVectorOffset);
+
+                videoFingerPrintArray[videoFingerPrintCounter] = VideoFingerPrint.EndVideoFingerPrint(builder);
+                videoFingerPrintCounter++;
+            }
+
+            return videoFingerPrintArray;
+        }
+
+        private static Offset<FrameFingerPrint>[] CreateFrameFingerPrintArray(FlatBufferBuilder builder, VideoFingerPrintWrapper videoFingerPrint)
+        {
+            int frameFingerPrintCounter = 0;
+            var frameFingerPrintArray = new Offset<FrameFingerPrint>[videoFingerPrint.FingerPrints.Length];
+            foreach (FrameFingerPrintWrapper frameFingerPrint in videoFingerPrint.FingerPrints)
+            {
+                Offset<Macroblock>[] macroblockArray = CreateMacroblockArray(builder, frameFingerPrint);
+
+                VectorOffset macroblockVectorOffset = FrameFingerPrint.CreateMacroblocksVector(builder, macroblockArray);
+
+                FrameFingerPrint.StartFrameFingerPrint(builder);
+                FrameFingerPrint.AddFrameNumber(builder, frameFingerPrint.FrameNumber);
+                FrameFingerPrint.AddMacroblocks(builder, macroblockVectorOffset);
+
+                frameFingerPrintArray[frameFingerPrintCounter] = FrameFingerPrint.EndFrameFingerPrint(builder);
+                frameFingerPrintCounter++;
+            }
+
+            return frameFingerPrintArray;
+        }
+
+        private static Offset<Macroblock>[] CreateMacroblockArray(FlatBufferBuilder builder, FrameFingerPrintWrapper frameFingerPrint)
+        {
+            int macroblockCounter = 0;
+            var macroblockArray = new Offset<Macroblock>[frameFingerPrint.Macroblocks.Length];
+            foreach (MacroblockWrapper macroblock in frameFingerPrint.Macroblocks)
+            {
+                Macroblock.StartPixelsVector(builder, macroblock.Pixels.Length);
+                foreach (Color pixel in macroblock.Pixels)
+                {
+                    Pixel.CreatePixel(builder, pixel.R, pixel.G, pixel.B);
+                }
+                VectorOffset macroblockPixelOffset = builder.EndVector();
+
+                macroblockArray[macroblockCounter] = Macroblock.CreateMacroblock(builder, macroblock.Width, macroblock.Height, macroblockPixelOffset);
+                macroblockCounter++;
+            }
+
+            return macroblockArray;
         }
         #endregion
     }
