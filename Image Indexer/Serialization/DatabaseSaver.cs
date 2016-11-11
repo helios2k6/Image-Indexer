@@ -56,8 +56,9 @@ namespace ImageIndexer
         /// <param name="outStream">The stream to write to</param>
         public static void Save(VideoFingerPrintDatabaseWrapper database, Stream outStream)
         {
-            byte[] rawDatabaseBytes = SaveDatabase(database);
-            outStream.Write(rawDatabaseBytes, 0, rawDatabaseBytes.Length);
+            byte[] buffer = SaveDatabase(database);
+
+            outStream.Write(buffer, 0, buffer.Length);
         }
         #endregion
 
@@ -65,10 +66,9 @@ namespace ImageIndexer
         private static byte[] SaveDatabase(VideoFingerPrintDatabaseWrapper database)
         {
             var builder = new FlatBufferBuilder(DefaultBufferSize);
-
             CreateVideoFingerPrintDatabase(database, builder);
 
-            return builder.DataBuffer.Data;
+            return builder.SizedByteArray();
         }
 
         private static void CreateVideoFingerPrintDatabase(VideoFingerPrintDatabaseWrapper database, FlatBufferBuilder builder)

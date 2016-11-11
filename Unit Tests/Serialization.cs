@@ -1,0 +1,71 @@
+﻿/* 
+ * Copyright (c) 2015 Andrew Johnson
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * this software and associated documentation files (the "Software"), to deal in 
+ * the Software without restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+ * Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all 
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+using ImageIndexer;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Drawing;
+using System.IO;
+
+namespace UnitTests
+{
+    [TestClass]
+    public class Serialization
+    {
+        [TestMethod]
+        public void TestSerialization()
+        {
+            var pixel = Color.Aqua;
+
+            var macroblock = new MacroblockWrapper
+            {
+                Height = 10,
+                Width = 10,
+                Pixels = new[] { pixel },
+            };
+
+            var frameFingerPrint = new FrameFingerPrintWrapper
+            {
+                FrameNumber = 0,
+                Macroblocks = new[] { macroblock },
+            };
+
+            var videoFingerPrint = new VideoFingerPrintWrapper
+            {
+                FilePath = "test.mkv",
+                FingerPrints = new[] { frameFingerPrint },
+            };
+
+            var database = new VideoFingerPrintDatabaseWrapper
+            {
+                VideoFingerPrints = new[] { videoFingerPrint },
+            };
+
+            using (var memoryStream = new MemoryStream())
+            {
+                DatabaseSaver.Save(database, memoryStream);
+                byte[] savedDatabase = memoryStream.ToArray();
+                VideoFingerPrintDatabaseWrapper reloadedDatabase = DatabaseLoader.Load(savedDatabase);
+
+                Assert.AreEqual(database, reloadedDatabase);
+            }
+        }
+    }
+}

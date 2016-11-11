@@ -19,13 +19,17 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using System;
+using System.Linq;
+
 namespace ImageIndexer
 {
     /// <summary>
     /// The image fingerprint of an image
     /// </summary>
-    public sealed class FrameFingerPrintWrapper
+    public sealed class FrameFingerPrintWrapper : IEquatable<FrameFingerPrintWrapper>
     {
+        #region public properties
         /// <summary>
         /// The frame that this frame occurs at
         /// </summary>
@@ -34,5 +38,62 @@ namespace ImageIndexer
         /// The macroblocks that comprise this fingerprint
         /// </summary>
         public MacroblockWrapper[] Macroblocks { get; set; }
+        #endregion
+
+        #region public methods
+        /// <summary>
+        /// Compares this object with the given object
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(FrameFingerPrintWrapper other)
+        {
+            if (EqualsPreamble(other) == false)
+            {
+                return false;
+            }
+
+            return FrameNumber == other.FrameNumber &&
+                Enumerable.SequenceEqual(Macroblocks, other.Macroblocks);
+        }
+
+        /// <summary>
+        /// Compares this object with the given object
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (EqualsPreamble(obj) == false)
+            {
+                return false;
+            }
+
+            return Equals(obj as FrameFingerPrintWrapper);
+        }
+
+        /// <summary>
+        /// Gets the hashcode
+        /// </summary>
+        /// <returns>The hashcode</returns>
+        public override int GetHashCode()
+        {
+            int macroblocksHashCode = Macroblocks != null
+                ? Macroblocks.Aggregate(0, (acc, block) => acc + block.GetHashCode())
+                : 0;
+            return FrameNumber ^ macroblocksHashCode;
+        }
+        #endregion
+
+        #region private methods
+        private bool EqualsPreamble(object other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (GetType() != other.GetType()) return false;
+
+            return true;
+        }
+        #endregion
     }
 }

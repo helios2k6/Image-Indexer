@@ -43,6 +43,16 @@ namespace ImageIndexer
         {
             return Convert(LoadDatabase(path));
         }
+
+        /// <summary>
+        /// Load a FlatBuffer database of video fingerprints using raw bytes
+        /// </summary>
+        /// <param name="rawBytes">The raws bytes of the database</param>
+        /// <returns>A loaded database</returns>
+        public static VideoFingerPrintDatabaseWrapper Load(byte[] rawBytes)
+        {
+            return Convert(VideoFingerPrintDatabase.GetRootAsVideoFingerPrintDatabase(new ByteBuffer(rawBytes)));
+        }
         #endregion
 
         #region private methods

@@ -19,20 +19,83 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using System;
+using System.Linq;
+
 namespace ImageIndexer
 {
     /// <summary>
     /// The fingerprints for a video
     /// </summary>
-    public sealed class VideoFingerPrintWrapper
+    public sealed class VideoFingerPrintWrapper : IEquatable<VideoFingerPrintWrapper>
     {
+        #region public properties
         /// <summary>
         /// The file path to the video
         /// </summary>
         public string FilePath { get; set; }
+
         /// <summary>
         /// The fingerprints for all of the frames of this video
         /// </summary>
         public FrameFingerPrintWrapper[] FingerPrints { get; set; }
+        #endregion
+
+        #region public methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(VideoFingerPrintWrapper other)
+        {
+            if (EqualsPreamble(other) == false)
+            {
+                return false;
+            }
+
+            return string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
+                Enumerable.SequenceEqual(FingerPrints, other.FingerPrints);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (EqualsPreamble(obj) == false)
+            {
+                return false;
+            }
+
+            return Equals(obj as VideoFingerPrintWrapper);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            int fingerPrintHashCode = FingerPrints != null
+                ? FingerPrints.Aggregate(0, (acc, f) => acc + f.GetHashCode())
+                : 0;
+
+            return FilePath.GetHashCode() ^ fingerPrintHashCode;
+        }
+        #endregion
+
+        #region private methods
+        private bool EqualsPreamble(object other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (GetType() != other.GetType()) return false;
+
+            return true;
+        }
+        #endregion
     }
 }

@@ -19,18 +19,75 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using System;
+using System.Linq;
+
 namespace ImageIndexer
 {
     /// <summary>
     /// Represents the Image Finger Print database
     /// </summary>
-    public sealed class VideoFingerPrintDatabaseWrapper
+    public sealed class VideoFingerPrintDatabaseWrapper : IEquatable<VideoFingerPrintDatabaseWrapper>
     {
         #region public properties
         /// <summary>
         /// The fingerprints of all of the videos
         /// </summary>
         public VideoFingerPrintWrapper[] VideoFingerPrints { get; set; }
+        #endregion
+
+        #region public methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="other"></param>
+        /// <returns></returns>
+        public bool Equals(VideoFingerPrintDatabaseWrapper other)
+        {
+            if (EqualsPreamble(other) == false)
+            {
+                return false;
+            }
+
+            return Enumerable.SequenceEqual(VideoFingerPrints, other.VideoFingerPrints);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            if (EqualsPreamble(obj) == false)
+            {
+                return false;
+            }
+
+            return Equals(obj as VideoFingerPrintDatabaseWrapper);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            return VideoFingerPrints != null
+                ? VideoFingerPrints.Aggregate(0, (acc, f) => acc ^ f.GetHashCode())
+                : 0;
+        }
+        #endregion
+
+        #region private methods
+        private bool EqualsPreamble(object other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (GetType() != other.GetType()) return false;
+
+            return true;
+        }
         #endregion
     }
 }

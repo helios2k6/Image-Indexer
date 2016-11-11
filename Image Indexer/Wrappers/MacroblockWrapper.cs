@@ -19,15 +19,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using System;
 using System.Drawing;
+using System.Linq;
 
 namespace ImageIndexer
 {
     /// <summary>
     /// Represents a macroblock of pixels in a fingerprint
     /// </summary>
-    public sealed class MacroblockWrapper
+    public sealed class MacroblockWrapper : IEquatable<MacroblockWrapper>
     {
+        #region public properties
         /// <summary>
         /// The pixels of this macroblock
         /// </summary>
@@ -40,5 +43,86 @@ namespace ImageIndexer
         /// The height of this macroblock
         /// </summary>
         public int Height { get; set; }
+        #endregion
+
+        #region public methods
+        /// <summary>
+        /// Compare the equality of two macroblocks
+        /// </summary>
+        /// <param name="other">The other macroblock</param>
+        /// <returns>True if the two objects are equal. False otherwise</returns>
+        public bool Equals(MacroblockWrapper other)
+        {
+            if (EqualsPreamble(other) == false)
+            {
+                return false;
+            }
+
+            if (Width != other.Width || Height != other.Height)
+            {
+                return false;
+            }
+
+            if (Pixels.Length != other.Pixels.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < Pixels.Length; i++)
+            {
+                Color thisPixel = Pixels[i];
+                Color otherPixel = other.Pixels[i];
+
+                if (thisPixel.R != otherPixel.R || thisPixel.G != otherPixel.G || thisPixel.B != otherPixel.B)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Compare the equality of two objects
+        /// </summary>
+        /// <param name="obj">The other object to compare against this one</param>
+        /// <returns>True if the objects are equal. False otherwise</returns>
+        public override bool Equals(object obj)
+        {
+            if (EqualsPreamble(obj) == false)
+            {
+                return false;
+            }
+
+            return Equals(obj as MacroblockWrapper);
+        }
+
+        /// <summary>
+        /// Get the hashcode of this object
+        /// </summary>
+        /// <returns>The hashcode</returns>
+        public override int GetHashCode()
+        {
+            int pixelsHashCode = Pixels != null
+                ? Pixels.Aggregate(0, (acc, color) => acc + color.R + color.G + color.B)
+                : 0;
+            return Width ^
+                Height ^
+                pixelsHashCode;
+        }
+        #endregion
+
+        #region private methods
+        private bool EqualsPreamble(object other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            if (GetType() != other.GetType()) return false;
+
+            return true;
+        }
+        #endregion
+
+
     }
 }
