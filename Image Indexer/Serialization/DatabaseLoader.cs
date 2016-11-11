@@ -21,7 +21,10 @@
 
 using FlatBuffers;
 using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 
 namespace ImageIndexer.Serialization
 {
@@ -30,11 +33,16 @@ namespace ImageIndexer.Serialization
     /// </summary>
     public static class DatabaseLoader
     {
-        #region private fields
-        #endregion
+        private static readonly int DefaultBufferSize = 1024;
 
         #region public methods
-
+        /// <summary>
+        /// Load a FlatBuffer database of video fingerprints
+        /// </summary>
+        public static VideoFingerPrintDatabaseWrapper Load(string path)
+        {
+            return Convert(LoadDatabase(path));
+        }
         #endregion
 
         #region private methods
@@ -48,7 +56,7 @@ namespace ImageIndexer.Serialization
             using (var memoryStream = new MemoryStream())
             using (var reader = new BinaryReader(File.Open(path, FileMode.Open)))
             {
-                var buffer = new byte[1024];
+                var buffer = new byte[DefaultBufferSize];
                 int count = 0;
                 while ((count = reader.Read(buffer, 0, buffer.Length)) != 0)
                 {
@@ -57,6 +65,56 @@ namespace ImageIndexer.Serialization
 
                 return VideoFingerPrintDatabase.GetRootAsVideoFingerPrintDatabase(new ByteBuffer(memoryStream.ToArray()));
             }
+        }
+
+        private static VideoFingerPrintDatabaseWrapper Convert(VideoFingerPrintDatabase database)
+        {
+            IEnumerable<VideoFingerPrintWrapper> videoFingerPrints = from i in Enumerable.Range(0, database.VideoFingerPrintsLength)
+                                                                     select Convert(database.GetVideoFingerPrints(i));
+            return new VideoFingerPrintDatabaseWrapper
+            {
+                VideoFingerPrints = videoFingerPrints.ToArray(),
+            };
+        }
+
+        private static VideoFingerPrintWrapper Convert(VideoFingerPrint videoFingerPrint)
+        {
+
+            IEnumerable<FrameFingerPrintWrapper> frameFingerPrints = from i in Enumerable.Range(0, videoFingerPrint.FrameFingerPrintsLength)
+                                                                     select Convert(videoFingerPrint.GetFrameFingerPrints(i));
+            return new VideoFingerPrintWrapper
+            {
+                FilePath = videoFingerPrint.FilePath,
+                FingerPrints = frameFingerPrints.ToArray(),
+            };
+        }
+
+        private static FrameFingerPrintWrapper Convert(FrameFingerPrint frameFingerPrint)
+        {
+            IEnumerable<MacroblockWrapper> macroblocks = from i in Enumerable.Range(0, frameFingerPrint.MacroblocksLength)
+                                                         select Convert(frameFingerPrint.GetMacroblocks(i));
+            return new FrameFingerPrintWrapper
+            {
+                FrameNumber = frameFingerPrint.FrameNumber,
+                Macroblocks = macroblocks.ToArray(),
+            };
+        }
+
+        private static MacroblockWrapper Convert(Macroblock macroblock)
+        {
+            IEnumerable<Color> pixels = from i in Enumerable.Range(0, macroblock.PixelsLength)
+                                        select Convert(macroblock.GetPixels(i));
+            return new MacroblockWrapper
+            {
+                Pixels = pixels.ToArray(),
+                Width = macroblock.Width,
+                Height = macroblock.Height,
+            };
+        }
+
+        private static Color Convert(Pixel pixel)
+        {
+            return Color.FromArgb(pixel.Red, pixel.Green, pixel.Blue);
         }
         #endregion
     }
