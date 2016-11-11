@@ -26,7 +26,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 
-namespace ImageIndexer.Serialization
+namespace ImageIndexer
 {
     /// <summary>
     /// Loads the database from a file
