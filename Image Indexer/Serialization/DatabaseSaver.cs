@@ -116,6 +116,7 @@ namespace ImageIndexer
                 FrameFingerPrint.StartFrameFingerPrint(builder);
                 FrameFingerPrint.AddFrameNumber(builder, frameFingerPrint.FrameNumber);
                 FrameFingerPrint.AddMacroblocks(builder, macroblockVectorOffset);
+                FrameFingerPrint.AddPHash(builder, frameFingerPrint.PHashCode);
 
                 frameFingerPrintArray[frameFingerPrintCounter] = FrameFingerPrint.EndFrameFingerPrint(builder);
                 frameFingerPrintCounter++;
@@ -130,14 +131,12 @@ namespace ImageIndexer
             var macroblockArray = new Offset<Macroblock>[frameFingerPrint.Macroblocks.Length];
             foreach (MacroblockWrapper macroblock in frameFingerPrint.Macroblocks)
             {
-                Macroblock.StartPixelsVector(builder, macroblock.Pixels.Length);
-                foreach (Color pixel in macroblock.Pixels)
-                {
-                    Pixel.CreatePixel(builder, pixel.R, pixel.G, pixel.B);
-                }
-                VectorOffset macroblockPixelOffset = builder.EndVector();
-
-                macroblockArray[macroblockCounter] = Macroblock.CreateMacroblock(builder, macroblock.Width, macroblock.Height, macroblockPixelOffset);
+                macroblockArray[macroblockCounter] = Macroblock.CreateMacroblock(
+                    builder,
+                    macroblock.Width,
+                    macroblock.Height,
+                    Macroblock.CreateGreyscalePixelsVector(builder, macroblock.GreyScalePixels)
+                );
                 macroblockCounter++;
             }
 

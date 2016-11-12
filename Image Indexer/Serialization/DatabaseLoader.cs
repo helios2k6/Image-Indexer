@@ -107,24 +107,20 @@ namespace ImageIndexer
             {
                 FrameNumber = frameFingerPrint.FrameNumber,
                 Macroblocks = macroblocks.ToArray(),
+                PHashCode = frameFingerPrint.PHash,
             };
         }
 
         private static MacroblockWrapper Convert(Macroblock macroblock)
         {
-            IEnumerable<Color> pixels = from i in Enumerable.Range(0, macroblock.PixelsLength)
-                                        select Convert(macroblock.GetPixels(i));
+            IEnumerable<int> pixels = from i in Enumerable.Range(0, macroblock.GreyscalePixelsLength)
+                                      select macroblock.GetGreyscalePixels(i);
             return new MacroblockWrapper
             {
-                Pixels = pixels.ToArray(),
+                GreyScalePixels = pixels.ToArray(),
                 Width = macroblock.Width,
                 Height = macroblock.Height,
             };
-        }
-
-        private static Color Convert(Pixel pixel)
-        {
-            return Color.FromArgb(pixel.Red, pixel.Green, pixel.Blue);
         }
         #endregion
     }

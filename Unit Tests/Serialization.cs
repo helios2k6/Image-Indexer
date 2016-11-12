@@ -32,19 +32,18 @@ namespace UnitTests
         [TestMethod]
         public void TestSerialization()
         {
-            var pixel = Color.Aqua;
-
             var macroblock = new MacroblockWrapper
             {
                 Height = 10,
                 Width = 10,
-                Pixels = new[] { pixel },
+                GreyScalePixels = new[] { 0, 1, 0, 1 },
             };
 
             var frameFingerPrint = new FrameFingerPrintWrapper
             {
                 FrameNumber = 0,
                 Macroblocks = new[] { macroblock },
+                PHashCode = 0x1010,
             };
 
             var videoFingerPrint = new VideoFingerPrintWrapper

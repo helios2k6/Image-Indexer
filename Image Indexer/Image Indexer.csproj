@@ -56,12 +56,13 @@
   <ItemGroup>
     <Compile Include="Flatbuffer Schemas\ImageIndexer\FrameFingerPrint.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\Macroblock.cs" />
-    <Compile Include="Flatbuffer Schemas\ImageIndexer\Pixel.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrint.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrintDatabase.cs" />
     <Compile Include="Indexer\Indexer.cs" />
     <Compile Include="Serialization\DatabaseLoader.cs" />
     <Compile Include="Serialization\DatabaseSaver.cs" />
+    <Compile Include="Transformations\GreyScaleTransformation.cs" />
+    <Compile Include="Transformations\DCTGreyScaleTransformation.cs" />
     <Compile Include="Transformations\FastAccBoxBlurGaussianBlurTransformation.cs" />
     <Compile Include="Transformations\ITransformation.cs" />
     <Compile Include="Transformations\ResizeTransformation.cs" />

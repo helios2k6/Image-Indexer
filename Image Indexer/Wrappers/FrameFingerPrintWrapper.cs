@@ -34,10 +34,16 @@ namespace ImageIndexer
         /// The frame that this frame occurs at
         /// </summary>
         public int FrameNumber { get; set; }
+
         /// <summary>
         /// The macroblocks that comprise this fingerprint
         /// </summary>
         public MacroblockWrapper[] Macroblocks { get; set; }
+
+        /// <summary>
+        /// The pHash code of this frame
+        /// </summary>
+        public ulong PHashCode { get; set; }
         #endregion
 
         #region public methods
@@ -54,6 +60,7 @@ namespace ImageIndexer
             }
 
             return FrameNumber == other.FrameNumber &&
+                PHashCode == other.PHashCode &&
                 Enumerable.SequenceEqual(Macroblocks, other.Macroblocks);
         }
 
@@ -81,7 +88,7 @@ namespace ImageIndexer
             int macroblocksHashCode = Macroblocks != null
                 ? Macroblocks.Aggregate(0, (acc, block) => acc + block.GetHashCode())
                 : 0;
-            return FrameNumber ^ macroblocksHashCode;
+            return FrameNumber ^ macroblocksHashCode ^ PHashCode.GetHashCode();
         }
         #endregion
 

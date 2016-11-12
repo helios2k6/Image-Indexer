@@ -34,7 +34,7 @@ namespace ImageIndexer
         /// <summary>
         /// The pixels of this macroblock
         /// </summary>
-        public Color[] Pixels { get; set; }
+        public int[] GreyScalePixels { get; set; }
         /// <summary>
         /// The width of this macroblock
         /// </summary>
@@ -63,17 +63,14 @@ namespace ImageIndexer
                 return false;
             }
 
-            if (Pixels.Length != other.Pixels.Length)
+            if (GreyScalePixels.Length != other.GreyScalePixels.Length)
             {
                 return false;
             }
 
-            for (int i = 0; i < Pixels.Length; i++)
+            for (int i = 0; i < GreyScalePixels.Length; i++)
             {
-                Color thisPixel = Pixels[i];
-                Color otherPixel = other.Pixels[i];
-
-                if (thisPixel.R != otherPixel.R || thisPixel.G != otherPixel.G || thisPixel.B != otherPixel.B)
+                if (GreyScalePixels[i] != other.GreyScalePixels[i])
                 {
                     return false;
                 }
@@ -103,8 +100,8 @@ namespace ImageIndexer
         /// <returns>The hashcode</returns>
         public override int GetHashCode()
         {
-            int pixelsHashCode = Pixels != null
-                ? Pixels.Aggregate(0, (acc, color) => acc + color.R + color.G + color.B)
+            int pixelsHashCode = GreyScalePixels != null
+                ? GreyScalePixels.Aggregate(0, (acc, pixel) => acc + pixel)
                 : 0;
             return Width ^
                 Height ^
