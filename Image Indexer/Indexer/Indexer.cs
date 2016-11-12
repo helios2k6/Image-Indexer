@@ -35,13 +35,25 @@ namespace ImageIndexer
 
         #region public methods
         /// <summary>
-        /// 
+        /// Index a stream of frames
         /// </summary>
-        /// <param name="frames"></param>
-        /// <returns></returns>
-        public static VideoFingerPrintWrapper IndexVideo(IEnumerable<Image> frames)
+        /// <param name="frames">The frames to index</param>
+        /// <returns>An indexed video</returns>
+        public static VideoFingerPrintWrapper IndexVideo(IEnumerable<Image> frames, string filePath)
         {
-            return null;
+            int frameNumber = 0;
+            var frameFingerPrints = new List<FrameFingerPrintWrapper>();
+            foreach (Image frame in frames)
+            {
+                frameFingerPrints.Add(IndexFrame(frame, frameNumber));
+                frameNumber++;
+            }
+
+            return new VideoFingerPrintWrapper
+            {
+                FilePath = filePath,
+                FingerPrints = frameFingerPrints.ToArray(),
+            };
         }
         #endregion
 
