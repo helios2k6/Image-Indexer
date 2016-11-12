@@ -1,16 +1,9 @@
 namespace ImageIndexer;
 
-table Macroblock
-{
-    width:int;
-    height:int;
-    greyscalePixels:[int];
-}
-
 table FrameFingerPrint
 {
     frameNumber:int;
-    macroblocks:[Macroblock];
+    greyscalePixels:[int];
     pHash:ulong;
 }
 

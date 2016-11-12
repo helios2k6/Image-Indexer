@@ -36,9 +36,9 @@ namespace ImageIndexer
         public int FrameNumber { get; set; }
 
         /// <summary>
-        /// The macroblocks that comprise this fingerprint
+        /// The greyscale pixels that comprise this fingerprint
         /// </summary>
-        public MacroblockWrapper[] Macroblocks { get; set; }
+        public int[] GreyscalePixels { get; set; }
 
         /// <summary>
         /// The pHash code of this frame
@@ -61,7 +61,7 @@ namespace ImageIndexer
 
             return FrameNumber == other.FrameNumber &&
                 PHashCode == other.PHashCode &&
-                Enumerable.SequenceEqual(Macroblocks, other.Macroblocks);
+                Enumerable.SequenceEqual(GreyscalePixels, other.GreyscalePixels);
         }
 
         /// <summary>
@@ -85,8 +85,8 @@ namespace ImageIndexer
         /// <returns>The hashcode</returns>
         public override int GetHashCode()
         {
-            int macroblocksHashCode = Macroblocks != null
-                ? Macroblocks.Aggregate(0, (acc, block) => acc + block.GetHashCode())
+            int macroblocksHashCode = GreyscalePixels != null
+                ? GreyscalePixels.Aggregate(0, (acc, pixel) => acc + pixel)
                 : 0;
             return FrameNumber ^ macroblocksHashCode ^ PHashCode.GetHashCode();
         }

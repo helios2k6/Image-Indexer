@@ -21,7 +21,6 @@
 
 using ImageIndexer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Drawing;
 using System.IO;
 
 namespace UnitTests
@@ -32,17 +31,10 @@ namespace UnitTests
         [TestMethod]
         public void TestSerialization()
         {
-            var macroblock = new MacroblockWrapper
-            {
-                Height = 10,
-                Width = 10,
-                GreyScalePixels = new[] { 0, 1, 0, 1 },
-            };
-
             var frameFingerPrint = new FrameFingerPrintWrapper
             {
                 FrameNumber = 0,
-                Macroblocks = new[] { macroblock },
+                GreyscalePixels = new[] { 0, 1, 0, 1 },
                 PHashCode = 0x1010,
             };
 

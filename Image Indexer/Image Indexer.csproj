@@ -55,7 +55,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Flatbuffer Schemas\ImageIndexer\FrameFingerPrint.cs" />
-    <Compile Include="Flatbuffer Schemas\ImageIndexer\Macroblock.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrint.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrintDatabase.cs" />
     <Compile Include="Indexer\Indexer.cs" />
@@ -68,7 +67,6 @@
     <Compile Include="Transformations\ResizeTransformation.cs" />
     <Compile Include="Wrappers\VideoFingerPrintDatabaseWrapper.cs" />
     <Compile Include="Wrappers\FrameFingerPrintWrapper.cs" />
-    <Compile Include="Wrappers\MacroblockWrapper.cs" />
     <Compile Include="Wrappers\VideoFingerPrintWrapper.cs" />
     <Compile Include="Graphics\WritableLockBitImage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

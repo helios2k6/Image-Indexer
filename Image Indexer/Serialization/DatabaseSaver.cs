@@ -20,7 +20,6 @@
  */
 
 using FlatBuffers;
-using System.Drawing;
 using System.IO;
 
 namespace ImageIndexer
@@ -31,7 +30,7 @@ namespace ImageIndexer
     public static class DatabaseSaver
     {
         #region private fields
-        private static readonly int DefaultBufferSize = 1024;
+        private static readonly int DefaultBufferSize = 4096;
         #endregion
 
         #region public methods
@@ -87,6 +86,7 @@ namespace ImageIndexer
             var videoFingerPrintArray = new Offset<VideoFingerPrint>[database.VideoFingerPrints.Length];
             foreach (VideoFingerPrintWrapper videoFingerPrint in database.VideoFingerPrints)
             {
+                // NOTE: Do not reorder these statements
                 Offset<FrameFingerPrint>[] frameFingerPrintArray = CreateFrameFingerPrintArray(builder, videoFingerPrint);
 
                 StringOffset videoFilePath = builder.CreateString(videoFingerPrint.FilePath);
@@ -109,13 +109,12 @@ namespace ImageIndexer
             var frameFingerPrintArray = new Offset<FrameFingerPrint>[videoFingerPrint.FingerPrints.Length];
             foreach (FrameFingerPrintWrapper frameFingerPrint in videoFingerPrint.FingerPrints)
             {
-                Offset<Macroblock>[] macroblockArray = CreateMacroblockArray(builder, frameFingerPrint);
-
-                VectorOffset macroblockVectorOffset = FrameFingerPrint.CreateMacroblocksVector(builder, macroblockArray);
+                // NOTE: Do not move this below the call of "StartFrameaFingerPrint()"
+                VectorOffset greyscalePixelArray = FrameFingerPrint.CreateGreyscalePixelsVector(builder, frameFingerPrint.GreyscalePixels);
 
                 FrameFingerPrint.StartFrameFingerPrint(builder);
                 FrameFingerPrint.AddFrameNumber(builder, frameFingerPrint.FrameNumber);
-                FrameFingerPrint.AddMacroblocks(builder, macroblockVectorOffset);
+                FrameFingerPrint.AddGreyscalePixels(builder, greyscalePixelArray);
                 FrameFingerPrint.AddPHash(builder, frameFingerPrint.PHashCode);
 
                 frameFingerPrintArray[frameFingerPrintCounter] = FrameFingerPrint.EndFrameFingerPrint(builder);
@@ -123,24 +122,6 @@ namespace ImageIndexer
             }
 
             return frameFingerPrintArray;
-        }
-
-        private static Offset<Macroblock>[] CreateMacroblockArray(FlatBufferBuilder builder, FrameFingerPrintWrapper frameFingerPrint)
-        {
-            int macroblockCounter = 0;
-            var macroblockArray = new Offset<Macroblock>[frameFingerPrint.Macroblocks.Length];
-            foreach (MacroblockWrapper macroblock in frameFingerPrint.Macroblocks)
-            {
-                macroblockArray[macroblockCounter] = Macroblock.CreateMacroblock(
-                    builder,
-                    macroblock.Width,
-                    macroblock.Height,
-                    Macroblock.CreateGreyscalePixelsVector(builder, macroblock.GreyScalePixels)
-                );
-                macroblockCounter++;
-            }
-
-            return macroblockArray;
         }
         #endregion
     }

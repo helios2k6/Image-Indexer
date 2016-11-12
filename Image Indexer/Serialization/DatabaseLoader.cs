@@ -101,25 +101,14 @@ namespace ImageIndexer
 
         private static FrameFingerPrintWrapper Convert(FrameFingerPrint frameFingerPrint)
         {
-            IEnumerable<MacroblockWrapper> macroblocks = from i in Enumerable.Range(0, frameFingerPrint.MacroblocksLength)
-                                                         select Convert(frameFingerPrint.GetMacroblocks(i));
+            IEnumerable<int> macroblocks = from i in Enumerable.Range(0, frameFingerPrint.GreyscalePixelsLength)
+                                           select frameFingerPrint.GetGreyscalePixels(i);
+
             return new FrameFingerPrintWrapper
             {
                 FrameNumber = frameFingerPrint.FrameNumber,
-                Macroblocks = macroblocks.ToArray(),
+                GreyscalePixels = macroblocks.ToArray(),
                 PHashCode = frameFingerPrint.PHash,
-            };
-        }
-
-        private static MacroblockWrapper Convert(Macroblock macroblock)
-        {
-            IEnumerable<int> pixels = from i in Enumerable.Range(0, macroblock.GreyscalePixelsLength)
-                                      select macroblock.GetGreyscalePixels(i);
-            return new MacroblockWrapper
-            {
-                GreyScalePixels = pixels.ToArray(),
-                Width = macroblock.Width,
-                Height = macroblock.Height,
             };
         }
         #endregion

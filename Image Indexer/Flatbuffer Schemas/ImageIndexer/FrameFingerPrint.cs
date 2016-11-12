@@ -3,6 +3,7 @@
 namespace ImageIndexer
 {
 
+    using System;
     using FlatBuffers;
 
     internal sealed class FrameFingerPrint : Table
@@ -12,28 +13,28 @@ namespace ImageIndexer
         public FrameFingerPrint __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; return this; }
 
         public int FrameNumber { get { int o = __offset(4); return o != 0 ? bb.GetInt(o + bb_pos) : (int)0; } }
-        public Macroblock GetMacroblocks(int j) { return GetMacroblocks(new Macroblock(), j); }
-        public Macroblock GetMacroblocks(Macroblock obj, int j) { int o = __offset(6); return o != 0 ? obj.__init(__indirect(__vector(o) + j * 4), bb) : null; }
-        public int MacroblocksLength { get { int o = __offset(6); return o != 0 ? __vector_len(o) : 0; } }
+        public int GetGreyscalePixels(int j) { int o = __offset(6); return o != 0 ? bb.GetInt(__vector(o) + j * 4) : (int)0; }
+        public int GreyscalePixelsLength { get { int o = __offset(6); return o != 0 ? __vector_len(o) : 0; } }
+        public ArraySegment<byte>? GetGreyscalePixelsBytes() { return __vector_as_arraysegment(6); }
         public ulong PHash { get { int o = __offset(8); return o != 0 ? bb.GetUlong(o + bb_pos) : (ulong)0; } }
 
         public static Offset<FrameFingerPrint> CreateFrameFingerPrint(FlatBufferBuilder builder,
             int frameNumber = 0,
-            VectorOffset macroblocksOffset = default(VectorOffset),
+            VectorOffset greyscalePixelsOffset = default(VectorOffset),
             ulong pHash = 0)
         {
             builder.StartObject(3);
             FrameFingerPrint.AddPHash(builder, pHash);
-            FrameFingerPrint.AddMacroblocks(builder, macroblocksOffset);
+            FrameFingerPrint.AddGreyscalePixels(builder, greyscalePixelsOffset);
             FrameFingerPrint.AddFrameNumber(builder, frameNumber);
             return FrameFingerPrint.EndFrameFingerPrint(builder);
         }
 
         public static void StartFrameFingerPrint(FlatBufferBuilder builder) { builder.StartObject(3); }
         public static void AddFrameNumber(FlatBufferBuilder builder, int frameNumber) { builder.AddInt(0, frameNumber, 0); }
-        public static void AddMacroblocks(FlatBufferBuilder builder, VectorOffset macroblocksOffset) { builder.AddOffset(1, macroblocksOffset.Value, 0); }
-        public static VectorOffset CreateMacroblocksVector(FlatBufferBuilder builder, Offset<Macroblock>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-        public static void StartMacroblocksVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+        public static void AddGreyscalePixels(FlatBufferBuilder builder, VectorOffset greyscalePixelsOffset) { builder.AddOffset(1, greyscalePixelsOffset.Value, 0); }
+        public static VectorOffset CreateGreyscalePixelsVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
+        public static void StartGreyscalePixelsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
         public static void AddPHash(FlatBufferBuilder builder, ulong pHash) { builder.AddUlong(2, pHash, 0); }
         public static Offset<FrameFingerPrint> EndFrameFingerPrint(FlatBufferBuilder builder)
         {

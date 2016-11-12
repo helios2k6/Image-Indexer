@@ -24,15 +24,21 @@ using System.Drawing;
 
 namespace ImageIndexer
 {
+    /// <summary>
+    /// Indexes a video
+    /// </summary>
     public static class Indexer
     {
         #region private fields
-        private static readonly int MacroblockLength = 4;
         private static readonly int FingerPrintWidth = 32;
-        private static readonly int BlurRadius = 15;
         #endregion
 
         #region public methods
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
         public static VideoFingerPrintWrapper IndexVideo(IEnumerable<Image> frames)
         {
             return null;
@@ -40,17 +46,20 @@ namespace ImageIndexer
         #endregion
 
         #region private methods
-        private static FrameFingerPrintWrapper IndexFrame(Image frame)
+        private static FrameFingerPrintWrapper IndexFrame(Image frame, int frameNumber)
         {
             using (Image resizedImage = ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth))
-            using (Image blackAndWhiteImage = GreyScaleTransformation.Transform(resizedImage))
-            using (Image dctImage = DCTGreyScaleTransformation.Transform(blackAndWhiteImage))
+            using (Image greyscalePixels = GreyScaleTransformation.Transform(resizedImage))
+            using (Image dctImage = DCTGreyScaleTransformation.Transform(greyscalePixels))
             {
                 double averageGreyScaleValue = CalculateAverageOfDCT(dctImage);
-                ulong hashcode = ConstructHashCode(dctImage, averageGreyScaleValue);
+                return new FrameFingerPrintWrapper
+                {
+                    FrameNumber = frameNumber,
+                    GreyscalePixels = GetGreyScalePixels(greyscalePixels),
+                    PHashCode = ConstructHashCode(dctImage, averageGreyScaleValue),
+                };
             }
-
-            return null;
         }
 
         private static double CalculateAverageOfDCT(Image dctImage)
@@ -67,7 +76,6 @@ namespace ImageIndexer
                         {
                             continue;
                         }
-
                         runningSum += lockbitImage.GetPixel(x, y).R;
                     }
                 }
@@ -96,6 +104,22 @@ namespace ImageIndexer
                 return currentHashValue;
             }
 
+        }
+
+        private static int[] GetGreyScalePixels(Image greyScaleImage)
+        {
+            using (var lockbitImage = new WritableLockBitImage(greyScaleImage))
+            {
+                int[] greyscaleImage = new int[lockbitImage.Width * lockbitImage.Height];
+                for (int y = 0; y < lockbitImage.Height; y++)
+                {
+                    for (int x = 0; x < lockbitImage.Width; x++)
+                    {
+                        greyscaleImage[(y * lockbitImage.Width) + x] = lockbitImage.GetPixel(x, y).R;
+                    }
+                }
+                return greyscaleImage;
+            }
         }
         #endregion
     }
