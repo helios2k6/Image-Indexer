@@ -63,60 +63,53 @@ namespace ImageIndexer
         {
             using (Image resizedImage = ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth))
             using (Image greyscalePixels = GreyScaleTransformation.Transform(resizedImage))
-            using (Image dctImage = DCTGreyScaleTransformation.Transform(greyscalePixels))
             {
-                double averageGreyScaleValue = CalculateAverageOfDCT(dctImage);
+                double[,] dctMatrix = DCTGreyScaleCalculator.Calculate(greyscalePixels);
+                double averageGreyScaleValue = CalculateAverageOfDCT(dctMatrix);
                 return new FrameFingerPrintWrapper
                 {
                     FrameNumber = frameNumber,
                     GreyscalePixels = GetGreyScalePixels(greyscalePixels),
-                    PHashCode = ConstructHashCode(dctImage, averageGreyScaleValue),
+                    PHashCode = ConstructHashCode(dctMatrix, averageGreyScaleValue),
                 };
             }
         }
 
-        private static double CalculateAverageOfDCT(Image dctImage)
+        private static double CalculateAverageOfDCT(double[,] dctMatrix)
         {
-            using (var lockbitImage = new WritableLockBitImage(dctImage))
+            double runningSum = 0.0;
+            for (int y = 0; y < 8; y++)
             {
-                int runningSum = 0;
-                for (int y = 0; y < 8; y++)
+                for (int x = 0; x < 8; x++)
                 {
-                    for (int x = 0; x < 8; x++)
+                    // Ignore the DC coefficient
+                    if (x == 0 && y == 0)
                     {
-                        // Ignore the DC coefficient
-                        if (x == 0 && y == 0)
-                        {
-                            continue;
-                        }
-                        runningSum += lockbitImage.GetPixel(x, y).R;
+                        continue;
                     }
+                    runningSum += dctMatrix[y, x];
                 }
-
-                return runningSum / 63.0;
             }
+
+            return runningSum / 63.0;
         }
 
-        private static ulong ConstructHashCode(Image dctImage, double averageGreyScaleValue)
+        private static ulong ConstructHashCode(double[,] dctMatrix, double averageGreyScaleValue)
         {
-            using (var lockbitImage = new WritableLockBitImage(dctImage))
+            ulong currentHashValue = 0;
+            for (int y = 0; y < 8; y++)
             {
-                ulong currentHashValue = 0;
-                for (int y = 0; y < 8; y++)
+                for (int x = 0; x < 8; x++)
                 {
-                    for (int x = 0; x < 8; x++)
+                    if (dctMatrix[y, x] < averageGreyScaleValue)
                     {
-                        if (lockbitImage.GetPixel(x, y).R < averageGreyScaleValue)
-                        {
-                            ulong shiftedBit = ((ulong)1) << (x * y);
-                            currentHashValue = currentHashValue | shiftedBit;
-                        }
+                        ulong shiftedBit = ((ulong)1) << (x * y);
+                        currentHashValue = currentHashValue | shiftedBit;
                     }
                 }
-
-                return currentHashValue;
             }
 
+            return currentHashValue;
         }
 
         private static int[] GetGreyScalePixels(Image greyScaleImage)

@@ -24,15 +24,16 @@ using System.Drawing;
 
 namespace ImageIndexer
 {
-    internal sealed class DCTGreyScaleTransformation : ITransformation, IDisposable
+    internal sealed class DCTGreyScaleCalculator : IDisposable
     {
         #region private fields
         private bool _disposed;
         private readonly Image _sourceImage;
+        private readonly int _length;
         #endregion
 
         #region public properties
-        public DCTGreyScaleTransformation(Image sourceImage)
+        public DCTGreyScaleCalculator(Image sourceImage)
         {
             if (sourceImage.Width != sourceImage.Height)
             {
@@ -40,6 +41,7 @@ namespace ImageIndexer
             }
             _disposed = false;
             _sourceImage = sourceImage.Clone() as Image;
+            _length = _sourceImage.Width;
         }
         #endregion
 
@@ -47,54 +49,47 @@ namespace ImageIndexer
         #endregion
 
         #region public methods
-        public static Image Transform(Image sourceImage)
+        public static double[,] Calculate(Image sourceImage)
         {
-            using (var transform = new DCTGreyScaleTransformation(sourceImage))
+            using (var calculator = new DCTGreyScaleCalculator(sourceImage))
             {
-                return transform.Transform();
+                return calculator.Calculate();
             }
         }
 
-        public Image Transform()
+        public double[,] Calculate()
         {
-            int width = _sourceImage.Width;
-            int height = _sourceImage.Height;
             using (var sourceLockbitImage = new WritableLockBitImage(_sourceImage))
-            using (var outputLockbitImage = new WritableLockBitImage(width, height))
             {
-                for (int yOutputIndex = 0; yOutputIndex < height; yOutputIndex++)
+                double[,] outputDCTMatrix = new double[_length, _length];
+                for (int yOutputIndex = 0; yOutputIndex < _length; yOutputIndex++)
                 {
-                    for (int xOutputIndex = 0; xOutputIndex < width; xOutputIndex++)
+                    for (int xOutputIndex = 0; xOutputIndex < _length; xOutputIndex++)
                     {
-                        outputLockbitImage.SetPixel(xOutputIndex, yOutputIndex, Color.FromArgb(0, 0, 0));
-                        for (int yInputIndex = 0; yInputIndex < height; yInputIndex++)
+                        double runningDctSum = 0.0;
+                        for (int yInputIndex = 0; yInputIndex < _length; yInputIndex++)
                         {
-                            for (int xInputIndex = 0; xInputIndex < height; xInputIndex++)
+                            for (int xInputIndex = 0; xInputIndex < _length; xInputIndex++)
                             {
-                                Color currentOutputPixel = outputLockbitImage.GetPixel(xOutputIndex, yOutputIndex);
-                                Color currentInputPixel = sourceLockbitImage.GetPixel(xInputIndex, yInputIndex);
-
                                 // Only need to deal with the red channel because we're working with a greyscale image. 
-                                int pixelOutput = (int)Math.Round(
-                                    currentInputPixel.R * CalculateDCTCoeff(currentInputPixel.R, width, height, xInputIndex, yInputIndex, xOutputIndex, yOutputIndex)
-                                );
-
-                                outputLockbitImage.SetPixel(
-                                    xOutputIndex,
-                                    yOutputIndex,
-                                    Color.FromArgb(
-                                        currentOutputPixel.R + pixelOutput,
-                                        0,
-                                        0
-                                    )
-                                );
+                                runningDctSum += sourceLockbitImage.GetPixel(xInputIndex, yInputIndex).R *
+                                    CalculateDCTCoeff(
+                                        sourceLockbitImage.GetPixel(xInputIndex, yInputIndex).R,
+                                        _length,
+                                        xInputIndex,
+                                        yInputIndex,
+                                        xOutputIndex,
+                                        yOutputIndex
+                                    );
                             }
                         }
+
+                        double normalizationCoeff = GetNormalizationCoefficient(xOutputIndex, yOutputIndex, _length);
+                        outputDCTMatrix[yOutputIndex, xOutputIndex] = runningDctSum * normalizationCoeff;
                     }
                 }
 
-                outputLockbitImage.Lock();
-                return outputLockbitImage.GetImage();
+                return outputDCTMatrix;
             }
         }
 
@@ -111,18 +106,34 @@ namespace ImageIndexer
         #endregion
 
         #region private methods
+        private static double GetNormalizationCoefficient(
+            int xOutputIndex,
+            int yOutputIndex,
+            int length
+        )
+        {
+            double alphaX = xOutputIndex == 0
+                ? 1.0 / Math.Sqrt(length)
+                : Math.Sqrt(2.0 / length);
+
+            double alphaY = yOutputIndex == 0
+                ? 1.0 / Math.Sqrt(length)
+                : Math.Sqrt(2.0 / length);
+
+            return alphaX * alphaY;
+        }
+
         private static double CalculateDCTCoeff(
             int inputValue,
-            int width,
-            int height,
+            int length,
             int xInputIndex,
             int yInputIndex,
             int xOutputIndex,
             int yOutputIndex
         )
         {
-            return Math.Cos((Math.PI / height) * (yInputIndex + 0.5) * yOutputIndex) *
-                Math.Cos((Math.PI / width) * (xInputIndex + 0.5) * xOutputIndex);
+            return Math.Cos((Math.PI / length) * (yInputIndex + 0.5) * yOutputIndex) *
+                Math.Cos((Math.PI / length) * (xInputIndex + 0.5) * xOutputIndex);
         }
         #endregion
     }
