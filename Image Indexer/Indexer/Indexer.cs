@@ -35,40 +35,66 @@ namespace ImageIndexer
         #region public methods
         public static VideoFingerPrintWrapper IndexVideo(IEnumerable<Image> frames)
         {
-
+            return null;
         }
         #endregion
 
         #region private methods
         private static FrameFingerPrintWrapper IndexFrame(Image frame)
         {
-            // Blur image and then resize the image
-            using (var blurTransformation = new FastAccBoxBlurGaussianBlurTransformation(frame, BlurRadius))
-            using (Image blurredImage = blurTransformation.Transform())
-            using (var resizeTransformation = new ResizeTransformation(blurredImage, FingerPrintWidth, (frame.Height * FingerPrintWidth) / frame.Width))
-            using (Image resizedImage = resizeTransformation.Transform())
+            using (Image resizedImage = ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth))
+            using (Image blackAndWhiteImage = GreyScaleTransformation.Transform(resizedImage))
+            using (Image dctImage = DCTGreyScaleTransformation.Transform(blackAndWhiteImage))
             {
-                return new FrameFingerPrintWrapper
-                {
+                double averageGreyScaleValue = CalculateAverageOfDCT(dctImage);
+                ulong hashcode = ConstructHashCode(dctImage, averageGreyScaleValue);
+            }
 
-                };
+            return null;
+        }
+
+        private static double CalculateAverageOfDCT(Image dctImage)
+        {
+            using (var lockbitImage = new WritableLockBitImage(dctImage))
+            {
+                int runningSum = 0;
+                for (int y = 0; y < 8; y++)
+                {
+                    for (int x = 0; x < 8; x++)
+                    {
+                        // Ignore the DC coefficient
+                        if (x == 0 && y == 0)
+                        {
+                            continue;
+                        }
+
+                        runningSum += lockbitImage.GetPixel(x, y).R;
+                    }
+                }
+
+                return runningSum / 63.0;
             }
         }
 
-        private static MacroblockWrapper CreateMacroblocks(Image image)
+        private static ulong ConstructHashCode(Image dctImage, double averageGreyScaleValue)
         {
-            Color[] macroblock = new Color[image.Width * image.Height];
-            using (var lockbitImage = new WritableLockBitImage(image))
+            using (var lockbitImage = new WritableLockBitImage(dctImage))
             {
-                for (int y = 0; y < lockbitImage.Height; y++)
+                ulong currentHashValue = 0;
+                for (int y = 0; y < 8; y++)
                 {
-                    for (int x = 0; x < lockbitImage.Width; x++)
+                    for (int x = 0; x < 8; x++)
                     {
-                        macroblock[(y * lockbitImage.Width) + x] = lockbitImage.GetPixel(x, y);
+                        if (lockbitImage.GetPixel(x, y).R < averageGreyScaleValue)
+                        {
+                            ulong shiftedBit = ((ulong)1) << (x * y);
+                            currentHashValue = currentHashValue | shiftedBit;
+                        }
                     }
                 }
-            }
 
+                return currentHashValue;
+            }
 
         }
         #endregion

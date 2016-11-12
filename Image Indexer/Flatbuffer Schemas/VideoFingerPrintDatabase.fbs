@@ -1,23 +1,17 @@
 namespace ImageIndexer;
 
-struct Pixel
-{
-    red:int;
-    green:int;
-    blue:int;
-}
-
 table Macroblock
 {
     width:int;
     height:int;
-    pixels:[Pixel];
+    greyscalePixels:[int];
 }
 
 table FrameFingerPrint
 {
     frameNumber:int;
     macroblocks:[Macroblock];
+    pHash:ulong;
 }
 
 table VideoFingerPrint

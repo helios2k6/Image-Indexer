@@ -29,7 +29,7 @@ namespace ImageIndexer
     /// <summary>
     /// A resizing transformation
     /// </summary>
-    public sealed class ResizeTransformation : ITransformation, IDisposable
+    internal sealed class ResizeTransformation : ITransformation, IDisposable
     {
         private bool _disposed;
         private readonly Image _sourceImage;
@@ -83,6 +83,21 @@ namespace ImageIndexer
             }
 
             return destImage;
+        }
+
+        /// <summary>
+        /// Factory version of this transformation
+        /// </summary>
+        /// <param name="sourceImage"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        public static Image Transform(Image sourceImage, int width, int height)
+        {
+            using (var transformation = new ResizeTransformation(sourceImage, width, height))
+            {
+                return transformation.Transform();
+            }
         }
 
         /// <summary>
