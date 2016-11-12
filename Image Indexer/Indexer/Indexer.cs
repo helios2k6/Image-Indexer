@@ -38,6 +38,7 @@ namespace ImageIndexer
         /// Index a stream of frames
         /// </summary>
         /// <param name="frames">The frames to index</param>
+        /// <param name="filePath">The path to the file that you are indexing</param>
         /// <returns>An indexed video</returns>
         public static VideoFingerPrintWrapper IndexVideo(IEnumerable<Image> frames, string filePath)
         {
