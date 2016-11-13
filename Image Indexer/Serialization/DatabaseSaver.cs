@@ -109,12 +109,8 @@ namespace ImageIndexer
             var frameFingerPrintArray = new Offset<FrameFingerPrint>[videoFingerPrint.FingerPrints.Length];
             foreach (FrameFingerPrintWrapper frameFingerPrint in videoFingerPrint.FingerPrints)
             {
-                // NOTE: Do not move this below the call of "StartFrameaFingerPrint()"
-                VectorOffset greyscalePixelArray = FrameFingerPrint.CreateGreyscalePixelsVector(builder, frameFingerPrint.GreyscalePixels);
-
                 FrameFingerPrint.StartFrameFingerPrint(builder);
                 FrameFingerPrint.AddFrameNumber(builder, frameFingerPrint.FrameNumber);
-                FrameFingerPrint.AddGreyscalePixels(builder, greyscalePixelArray);
                 FrameFingerPrint.AddPHash(builder, frameFingerPrint.PHashCode);
 
                 frameFingerPrintArray[frameFingerPrintCounter] = FrameFingerPrint.EndFrameFingerPrint(builder);

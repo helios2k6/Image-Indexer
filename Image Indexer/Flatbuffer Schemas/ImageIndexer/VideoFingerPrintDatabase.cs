@@ -3,7 +3,6 @@
 namespace ImageIndexer
 {
 
-    using System;
     using FlatBuffers;
 
     internal sealed class VideoFingerPrintDatabase : Table

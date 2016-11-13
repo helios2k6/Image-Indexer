@@ -70,6 +70,9 @@
   <ItemGroup>
     <EmbeddedResource Include="TestData\TEST_PHOTO_1.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TestData\TEST_PHOTO_3.png" />
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

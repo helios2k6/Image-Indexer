@@ -34,7 +34,6 @@ namespace UnitTests
             var frameFingerPrint = new FrameFingerPrintWrapper
             {
                 FrameNumber = 0,
-                GreyscalePixels = new[] { 0, 1, 0, 1 },
                 PHashCode = 0x1010,
             };
 

@@ -57,6 +57,7 @@
     <Compile Include="Flatbuffer Schemas\ImageIndexer\FrameFingerPrint.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrint.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrintDatabase.cs" />
+    <Compile Include="Indexer\DistanceCalculator.cs" />
     <Compile Include="Indexer\Indexer.cs" />
     <Compile Include="Serialization\DatabaseLoader.cs" />
     <Compile Include="Serialization\DatabaseSaver.cs" />

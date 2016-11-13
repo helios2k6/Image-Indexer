@@ -19,9 +19,34 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-namespace ImageIndexer.Indexer
+namespace ImageIndexer
 {
-    public sealed class HammingDistanceCalculator
+    /// <summary>
+    /// Calculates the 
+    /// </summary>
+    public static class DistanceCalculator
     {
+        /// <summary>
+        /// Calculates the distance between two image fingerprints
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static int CalculateDistance(FrameFingerPrintWrapper a, FrameFingerPrintWrapper b)
+        {
+            int numBits = 0;
+            for (int i = 0; i < 64; i++)
+            {
+                ulong aBit = a.PHashCode & ((ulong)1) << i;
+                ulong bBit = b.PHashCode & ((ulong)1) << i;
+
+                if (aBit != bBit)
+                {
+                    numBits++;
+                }
+            }
+
+            return numBits;
+        }
     }
 }

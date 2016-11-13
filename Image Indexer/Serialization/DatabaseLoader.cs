@@ -22,7 +22,6 @@
 using FlatBuffers;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 
@@ -101,13 +100,9 @@ namespace ImageIndexer
 
         private static FrameFingerPrintWrapper Convert(FrameFingerPrint frameFingerPrint)
         {
-            IEnumerable<int> macroblocks = from i in Enumerable.Range(0, frameFingerPrint.GreyscalePixelsLength)
-                                           select frameFingerPrint.GetGreyscalePixels(i);
-
             return new FrameFingerPrintWrapper
             {
                 FrameNumber = frameFingerPrint.FrameNumber,
-                GreyscalePixels = macroblocks.ToArray(),
                 PHashCode = frameFingerPrint.PHash,
             };
         }

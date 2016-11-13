@@ -3,7 +3,6 @@ namespace ImageIndexer;
 table FrameFingerPrint
 {
     frameNumber:int;
-    greyscalePixels:[int];
     pHash:ulong;
 }
 

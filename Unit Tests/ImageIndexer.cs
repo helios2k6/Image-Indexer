@@ -35,6 +35,7 @@ namespace UnitTests
     {
         private static readonly string TestPhoto1 = "UnitTests.TestData.TEST_PHOTO_1.png";
         private static readonly string TestPhoto2 = "UnitTests.TestData.TEST_PHOTO_2.png";
+        private static readonly string TestPhoto3 = "UnitTests.TestData.TEST_PHOTO_3.png";
 
         [TestMethod]
         public void SamePhotoTest()
@@ -56,17 +57,26 @@ namespace UnitTests
             {
                 VideoFingerPrintWrapper fingerprint1 = Indexer.IndexVideo(new[] { testImage1 }, string.Empty);
                 VideoFingerPrintWrapper fingerPrint2 = Indexer.IndexVideo(new[] { testImage2 }, string.Empty);
-            }
-        }
 
-        [TestMethod]
-        public void SameSeriesDifferentAnglePhotoTest()
-        {
+                int distance = DistanceCalculator.CalculateDistance(fingerprint1.FingerPrints[0], fingerPrint2.FingerPrints[0]);
+
+                Assert.AreEqual(2, distance);
+            }
         }
 
         [TestMethod]
         public void TotallyDifferentPhotosTest()
         {
+            using (Image testImage1 = GetTestImage(TestPhoto1))
+            using (Image testImage2 = GetTestImage(TestPhoto3))
+            {
+                VideoFingerPrintWrapper fingerprint1 = Indexer.IndexVideo(new[] { testImage1 }, string.Empty);
+                VideoFingerPrintWrapper fingerPrint2 = Indexer.IndexVideo(new[] { testImage2 }, string.Empty);
+
+                int distance = DistanceCalculator.CalculateDistance(fingerprint1.FingerPrints[0], fingerPrint2.FingerPrints[0]);
+
+                Assert.AreEqual(7, distance);
+            }
         }
 
         private static Image GetTestImage(string path)

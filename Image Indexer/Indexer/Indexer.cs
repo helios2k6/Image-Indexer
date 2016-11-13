@@ -69,7 +69,6 @@ namespace ImageIndexer
                 return new FrameFingerPrintWrapper
                 {
                     FrameNumber = frameNumber,
-                    GreyscalePixels = GetGreyScalePixels(greyscalePixels),
                     PHashCode = ConstructHashCode(dctMatrix, averageGreyScaleValue),
                 };
             }
@@ -110,22 +109,6 @@ namespace ImageIndexer
             }
 
             return currentHashValue;
-        }
-
-        private static int[] GetGreyScalePixels(Image greyScaleImage)
-        {
-            using (var lockbitImage = new WritableLockBitImage(greyScaleImage))
-            {
-                int[] greyscaleImage = new int[lockbitImage.Width * lockbitImage.Height];
-                for (int y = 0; y < lockbitImage.Height; y++)
-                {
-                    for (int x = 0; x < lockbitImage.Width; x++)
-                    {
-                        greyscaleImage[(y * lockbitImage.Width) + x] = lockbitImage.GetPixel(x, y).R;
-                    }
-                }
-                return greyscaleImage;
-            }
         }
         #endregion
     }
