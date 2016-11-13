@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Image Indexer", "Image Inde
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unit Tests", "Unit Tests\Unit Tests.csproj", "{7FE6F325-927A-445F-B80E-208F78614456}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Video Indexer", "Video Indexer\Video Indexer.csproj", "{3F9B585C-0730-447C-8D23-37765CC47243}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{7FE6F325-927A-445F-B80E-208F78614456}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FE6F325-927A-445F-B80E-208F78614456}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FE6F325-927A-445F-B80E-208F78614456}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F9B585C-0730-447C-8D23-37765CC47243}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F9B585C-0730-447C-8D23-37765CC47243}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F9B585C-0730-447C-8D23-37765CC47243}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F9B585C-0730-447C-8D23-37765CC47243}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
