@@ -25,7 +25,9 @@ namespace VideoIndexer
     {
         public static void Main(string[] args)
         {
-
+            // Test
+            var filePath = @"D:/Docking/test.mkv";
+            var result = Video.VideoIndexer.IndexVideo(filePath);
         }
     }
 }

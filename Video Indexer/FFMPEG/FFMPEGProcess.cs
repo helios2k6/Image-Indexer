@@ -107,6 +107,15 @@ namespace VideoIndexer
         {
             return string.Format("{0}_{1}_{2}", timespan.Hours, timespan.Minutes, timespan.Seconds);
         }
+
+        /// <summary>
+        /// Get the output file path of the raw video output of this process
+        /// </summary>
+        /// <returns>A string with the full path to the output file</returns>
+        public string GetOutputFilePath()
+        {
+            return Path.GetFullPath(GetOutputArgument());
+        }
         #endregion
 
         #region private methods

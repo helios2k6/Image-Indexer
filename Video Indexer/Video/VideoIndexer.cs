@@ -23,50 +23,69 @@ using Functional.Maybe;
 using ImageIndexer;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using VideoIndexer.Media;
 using VideoIndexer.Y4M;
 
 namespace VideoIndexer.Video
 {
-    internal static class Indexer
+    internal static class VideoIndexer
     {
         #region private static fields
         private static readonly TimeSpan PlaybackDuration = TimeSpan.FromSeconds(180);
         #endregion
 
         #region public methods
-        public static IEnumerable<VideoFingerPrintWrapper> IndexVideo(string videoFile)
+        /// <summary>
+        /// Index a video file by continuously dumping Y4M raw video and indexing it
+        /// </summary>
+        /// <param name="videoFile"></param>
+        /// <returns></returns>
+        public static VideoFingerPrintWrapper IndexVideo(string videoFile)
         {
             MediaInfo info = new MediaInfoProcess(videoFile).Execute();
-            IndexEntries(videoFile, info);
+            return new VideoFingerPrintWrapper
+            {
+                FilePath = videoFile,
+                FingerPrints = IndexEntries(videoFile, info).ToArray(),
+            };
         }
         #endregion
 
         #region private methods
-        private static void IndexEntries(string videoFile, MediaInfo info)
+        private static IEnumerable<FrameFingerPrintWrapper> IndexEntries(string videoFile, MediaInfo info)
         {
+            var fingerPrints = new List<FrameFingerPrintWrapper>();
             TimeSpan totalDuration = info.GetDuration();
+            Ratio framerate = info.GetFramerate();
+            Ratio quarterFramerate = new Ratio(framerate.Numerator, framerate.Denominator * 4);
+            int frameIndex = 0;
             for (var startTime = TimeSpan.FromSeconds(0); startTime < totalDuration; startTime += PlaybackDuration)
             {
-                IndexEntriesAtIndex(videoFile, startTime, info.GetFramerate(), totalDuration);
+                int numFramesToOutput = CalculateFramesToOutputFromFramerate(startTime, quarterFramerate, totalDuration);
+                fingerPrints.AddRange(IndexVideoSegment(videoFile, startTime, framerate, numFramesToOutput, frameIndex));
+                frameIndex += numFramesToOutput;
             }
+
+            return fingerPrints;
         }
 
-        private static void IndexEntriesAtIndex(
+        private static IEnumerable<FrameFingerPrintWrapper> IndexVideoSegment(
             string videoFile,
             TimeSpan startTime,
             Ratio framerate,
-            TimeSpan totalDuration
+            int numFramesToOutput,
+            int currentFrameIndex
         )
         {
             string outputDirectory = Path.GetRandomFileName();
-            Ratio quarterFramerate = new Ratio(framerate.Numerator, framerate.Denominator * 4);
             var ffmpegProcessSettings = new FFMPEGProcessSettings(
                 videoFile,
                 outputDirectory,
                 startTime,
-                CalculateFramesToOutputFromFramerate(startTime, quarterFramerate, totalDuration),
+                numFramesToOutput,
                 framerate,
                 FFMPEGOutputFormat.Y4M
             );
@@ -79,45 +98,69 @@ namespace VideoIndexer.Video
             using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings))
             {
                 ffmpegProcess.Execute();
-                IEnumerable<FrameFingerPrintWrapper> fingerPrints = IndexFilesInDirectory(videoFile, outputDirectory, startTime, quarterFramerate);
+                IEnumerable<FrameFingerPrintWrapper> fingerPrints = IndexFilesInDirectory(
+                    videoFile,
+                    ffmpegProcess.GetOutputFilePath(),
+                    currentFrameIndex
+                );
                 try
                 {
                     Directory.Delete(outputDirectory, true);
                 }
                 catch (Exception e)
                 {
-                    Console.Error.WriteLine(string.Format("Could not clean up images: {0}", e.Message));
+                    Console.Error.WriteLine(string.Format("Could not clean up output folder: {0}", e.Message));
                 }
+                return fingerPrints;
             }
         }
 
-        private static IEnumerable<FrameFingerPrintWrapper> IndexFilesInDirectory(string originalFileName, string directory, TimeSpan startTime, Ratio frameRate)
+        private static IEnumerable<FrameFingerPrintWrapper> IndexFilesInDirectory(
+            string originalFileName,
+            string pathToOutputFile,
+            int currentFrameIndex
+        )
         {
-            foreach (string file in Directory.EnumerateFiles(directory, "*.y4m"))
+            using (var parser = new VideoFileParser(pathToOutputFile))
             {
-                using (var parser = new VideoFileParser(file))
+                Maybe<VideoFile> videoFileMaybe = parser.TryParseVideoFile();
+                if (videoFileMaybe.IsNothing())
                 {
-                    Maybe<VideoFile> videoFileMaybe = parser.TryParseVideoFile();
-                    if (videoFileMaybe.IsNothing())
-                    {
-                        return;
-                    }
-
-                    VideoFile videoFile = videoFileMaybe.Value;
-                    int frameNumber = 0;
-                    foreach (VideoFrame frame in videoFile.Frames)
-                    {
-                        // TODO: call fingerprinter
-
-                        frameNumber++;
-                    }
+                    return Enumerable.Empty<FrameFingerPrintWrapper>();
                 }
+
+                var fingerPrints = new List<FrameFingerPrintWrapper>();
+                VideoFile videoFile = videoFileMaybe.Value;
+                foreach (IImageFrame currentFrame in videoFile.Frames)
+                {
+                    using (Image convertedImage = ConvertToImage(currentFrame))
+                    {
+                        FrameFingerPrintWrapper fingerPrint = ImageIndexer.Indexer.IndexFrame(convertedImage, currentFrameIndex);
+                        fingerPrints.Add(fingerPrint);
+                    }
+
+                    currentFrameIndex++;
+                }
+
+                return fingerPrints;
             }
         }
 
-        private static TimeSpan CalculateEndTime(TimeSpan startTime, Ratio frameRate, long frameNumber)
+        private static Image ConvertToImage(IImageFrame frame)
         {
-            return startTime + TimeSpan.FromSeconds((frameRate.Denominator / (double)frameRate.Numerator) * frameNumber);
+            using (var writableLockbitImage = new WritableLockBitImage(frame.Width, frame.Height))
+            {
+                for (int y = 0; y < frame.Height; y++)
+                {
+                    for (int x = 0; x < frame.Width; x++)
+                    {
+                        writableLockbitImage.SetPixel(x, y, frame.GetPixel(x, y));
+                    }
+                }
+
+                writableLockbitImage.Lock();
+                return writableLockbitImage.GetImage();
+            }
         }
 
         private static int CalculateFramesToOutputFromFramerate(TimeSpan index, Ratio framerate, TimeSpan totalDuration)

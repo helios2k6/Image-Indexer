@@ -30,7 +30,7 @@ namespace ImageIndexer
     /// <summary>
     /// An Image object that allows you to read from it form multiple threads
     /// </summary>
-    internal sealed class WritableLockBitImage : IDisposable
+    public sealed class WritableLockBitImage : IDisposable
     {
         private bool _disposed;
         private bool _locked;

@@ -56,10 +56,24 @@ namespace ImageIndexer
                 FingerPrints = frameFingerPrints.ToArray(),
             };
         }
-        #endregion
 
-        #region private methods
-        private static FrameFingerPrintWrapper IndexFrame(Image frame, int frameNumber)
+        /// <summary>
+        /// Convienence method for indexing just the frames 
+        /// </summary>
+        /// <param name="frames">The frames to index</param>
+        /// <returns>An IEnumerable of fingerprints</returns>
+        public static IEnumerable<FrameFingerPrintWrapper> IndexFrames(IEnumerable<Image> frames)
+        {
+            return IndexVideo(frames, string.Empty).FingerPrints;
+        }
+
+        /// <summary>
+        /// Convienece method for indexing just 1 frame
+        /// </summary>
+        /// <param name="frame">The frame to index</param>
+        /// <param name="frameNumber">The frame number of this frame</param>
+        /// <returns>An indexed frame</returns>
+        public static FrameFingerPrintWrapper IndexFrame(Image frame, int frameNumber)
         {
             using (Image resizedImage = ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth))
             using (Image greyscalePixels = GreyScaleTransformation.Transform(resizedImage))
@@ -73,7 +87,9 @@ namespace ImageIndexer
                 };
             }
         }
+        #endregion
 
+        #region private methods
         private static double CalculateAverageOfDCT(double[,] dctMatrix)
         {
             double runningSum = 0.0;
