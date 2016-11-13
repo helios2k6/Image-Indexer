@@ -19,60 +19,51 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using Functional.Maybe;
 using System;
-using System.Collections.Generic;
+using System.Linq;
+using YAXLib;
 
-namespace VideoIndexer.Y4M
+namespace VideoIndexer.Media
 {
     /// <summary>
-    /// Represents a header for the frame and not the file
+    /// Represents the File child node
     /// </summary>
-    internal sealed class FrameHeader : Header, IEquatable<FrameHeader>
+    [Serializable]
+    [YAXSerializeAs("File")]
+    internal sealed class FileXMLNode : IEquatable<FileXMLNode>
     {
         #region ctor
-        /// <summary>
-        /// Construct a new FrameHeader
-        /// </summary>
-        /// <param name="width">The width of the frame</param>
-        /// <param name="height">The height of the frame</param>
-        /// <param name="framerate">The framerate of the video</param>
-        /// <param name="pixelAspectRatio">The pixel aspect ratio</param>
-        /// <param name="colorSpace">The colorspace</param>
-        /// <param name="interlacing">The frame interlacing parameter</param>
-        /// <param name="comments">Any comments sent with this frame</param>
-        public FrameHeader(
-            int width,
-            int height,
-            Ratio framerate,
-            Maybe<Ratio> pixelAspectRatio,
-            Maybe<ColorSpace> colorSpace,
-            Maybe<Interlacing> interlacing,
-            IEnumerable<string> comments
-        ) : base(width, height, framerate, pixelAspectRatio, colorSpace, interlacing, comments)
+        public FileXMLNode()
         {
+            Tracks = new Track[0];
         }
         #endregion
 
+        #region public properties
+        [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+        [YAXCollection(YAXCollectionSerializationTypes.RecursiveWithNoContainingElement, EachElementName = "track")]
+        public Track[] Tracks { get; set; }
+        #endregion
+
         #region public methods
-        public bool Equals(FrameHeader other)
+        public bool Equals(FileXMLNode other)
         {
             if (EqualsPreamble(other) == false)
             {
                 return false;
             }
 
-            return base.Equals(other);
+            return Enumerable.SequenceEqual(Tracks, other.Tracks);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object other)
         {
-            return Equals(obj as FrameHeader);
+            return Equals(other as FileXMLNode);
         }
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return Tracks.Aggregate(0, (acc, t) => acc ^ t.GetHashCode());
         }
         #endregion
 

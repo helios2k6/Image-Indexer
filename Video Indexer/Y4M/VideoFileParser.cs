@@ -30,14 +30,14 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// Parses a video file from a bitstream
     /// </summary>
-    public sealed class VideoFileParser : IDisposable
+    internal sealed class VideoFileParser : IDisposable
     {
         #region private fields
         private readonly string _videoFilePath;
         private readonly Stream _fileStream;
 
         private bool _hasRun;
-        private bool _disposedValue; 
+        private bool _disposedValue;
         #endregion
 
         #region ctor

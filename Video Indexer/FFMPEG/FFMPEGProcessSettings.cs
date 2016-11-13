@@ -26,7 +26,7 @@ namespace VideoIndexer
     /// <summary>
     /// Specifies the settings to use for running the FFMPEG Process
     /// </summary>
-    public sealed class FFMPEGProcessSettings : IEquatable<FFMPEGProcessSettings>
+    internal sealed class FFMPEGProcessSettings : IEquatable<FFMPEGProcessSettings>
     {
         #region public properties
         /// <summary>

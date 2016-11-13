@@ -27,7 +27,7 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// Represents the interlacing method of the Y4M video
     /// </summary>
-    public sealed class Interlacing : IEquatable<Interlacing>
+    internal sealed class Interlacing : IEquatable<Interlacing>
     {
         #region public fields
         /// <summary>

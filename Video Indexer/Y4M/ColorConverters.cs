@@ -30,7 +30,7 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// A utility class for converting colors from different color planes
     /// </summary>
-    public static class ColorConverters
+    internal static class ColorConverters
     {
         #region private classes
         private sealed class YCrCbFrame

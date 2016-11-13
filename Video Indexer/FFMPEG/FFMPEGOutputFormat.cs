@@ -24,7 +24,7 @@ namespace VideoIndexer
     /// <summary>
     /// Represents the different formats that the FFMPEG process can output
     /// </summary>
-    public enum FFMPEGOutputFormat
+    internal enum FFMPEGOutputFormat
     {
         /// <summary>
         /// Specifies the PNG image format

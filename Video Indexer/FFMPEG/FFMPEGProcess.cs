@@ -28,7 +28,7 @@ namespace VideoIndexer
     /// <summary>
     /// Represents the FFMPEG Process
     /// </summary>
-    public sealed class FFMPEGProcess : IDisposable
+    internal sealed class FFMPEGProcess : IDisposable
     {
         #region private fields
         private static readonly string FFMPEG_PROC_NAME = "ffmpeg";

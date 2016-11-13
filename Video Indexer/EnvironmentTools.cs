@@ -26,7 +26,7 @@ namespace VideoIndexer
     /// <summary>
     /// This class deduces the process file name given the environment
     /// </summary>
-    public static class EnvironmentTools
+    internal static class EnvironmentTools
     {
         /// <summary>
         /// Deduce the process file name given the root process name

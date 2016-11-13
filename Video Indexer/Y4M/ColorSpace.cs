@@ -28,7 +28,7 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// Represents the different colorspaces that the video is encoded in
     /// </summary>
-    public sealed class ColorSpace : IEquatable<ColorSpace>
+    internal sealed class ColorSpace : IEquatable<ColorSpace>
     {
         #region private fields
         private static IEnumerable<ColorSpace> ColorSpaces

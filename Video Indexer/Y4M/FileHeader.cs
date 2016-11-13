@@ -28,7 +28,7 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// Represents a Y4M file level header
     /// </summary>
-    public sealed class FileHeader : Header, IEquatable<FileHeader>
+    internal sealed class FileHeader : Header, IEquatable<FileHeader>
     {
         #region ctor
         public FileHeader(

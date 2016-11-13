@@ -26,7 +26,7 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// Represents a Y4M Video File
     /// </summary>
-    public sealed class VideoFile
+    internal sealed class VideoFile
     {
         #region public properties
         /// <summary>

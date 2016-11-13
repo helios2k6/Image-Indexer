@@ -26,7 +26,7 @@ namespace VideoIndexer
     /// <summary>
     /// An object that reprsents an image frame
     /// </summary>
-    public interface IImageFrame
+    internal interface IImageFrame
     {
         /// <summary>
         /// The width of the image

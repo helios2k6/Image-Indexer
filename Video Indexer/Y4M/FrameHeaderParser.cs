@@ -28,7 +28,7 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// Parses the frame header
     /// </summary>
-    public sealed class FrameHeaderParser : HeaderParser
+    internal sealed class FrameHeaderParser : HeaderParser
     {
         #region private fields
         private readonly Header _fileLevelHeader;

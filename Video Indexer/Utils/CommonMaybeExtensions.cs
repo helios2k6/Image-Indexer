@@ -27,7 +27,7 @@ namespace VideoIndexer.Utils
     /// <summary>
     /// Common Maybe extensions
     /// </summary>
-    public static class CommonMaybeExtensions
+    internal static class CommonMaybeExtensions
     {
         /// <summary>
         /// Invokes an action on the wrapped reference, if it exists, and returns the same reference

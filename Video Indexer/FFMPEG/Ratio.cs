@@ -27,7 +27,7 @@ namespace VideoIndexer
     /// <summary>
     /// Represents the frames per second of a media file as a rational number
     /// </summary>
-    public sealed class Ratio : IEquatable<Ratio>, IComparable<Ratio>
+    internal sealed class Ratio : IEquatable<Ratio>, IComparable<Ratio>
     {
         #region public static fields
         /// <summary>

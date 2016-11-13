@@ -25,7 +25,7 @@ using System.Linq;
 
 namespace VideoIndexer.Utils
 {
-    public static class CommonLinqExtensions
+    internal static class CommonLinqExtensions
     {
         /// <summary>
         /// Append an item to the end of an existing IEnumerable{T}

@@ -31,7 +31,7 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// Base class for all header parsers; specifically the header and frame parsers
     /// </summary>
-    public abstract class HeaderParser
+    internal abstract class HeaderParser
     {
         #region private fields
         private const byte ParameterSeparator = 0x20; // The ASCII code for space (" ") 

@@ -28,7 +28,7 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// A parser used to parse the file-level header parameters
     /// </summary>
-    public sealed class FileHeaderParser : HeaderParser
+    internal sealed class FileHeaderParser : HeaderParser
     {
         #region private static fields
         private static Lazy<FileHeaderParser> SingletonInstance = new Lazy<FileHeaderParser>(() => new FileHeaderParser());

@@ -30,7 +30,7 @@ namespace VideoIndexer.Y4M
     /// Represents the Y4M file header and includes all of the information that is 
     /// associated with the Y4M file
     /// </summary>
-    public abstract class Header : IEquatable<Header>
+    internal abstract class Header : IEquatable<Header>
     {
         #region public properties
         /// <summary>

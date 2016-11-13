@@ -28,7 +28,7 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// Parses the frame from a bitstream
     /// </summary>
-    public sealed class VideoFrameParser
+    internal sealed class VideoFrameParser
     {
         #region private fields
         private readonly Header _header;

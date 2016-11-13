@@ -28,7 +28,7 @@ namespace VideoIndexer.Y4M
     /// Wraps a stream and rewinds it back to its initial position on disposal, unless 
     /// the "do not rewind" flag is set
     /// </summary>
-    public sealed class RewindGuard : IDisposable
+    internal sealed class RewindGuard : IDisposable
     {
         #region private fields
         private readonly Stream _stream;
