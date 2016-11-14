@@ -106,7 +106,6 @@ namespace ImageIndexer
                             byte pixelValue = _sourceMatrix[yInputIndex, xInputIndex];
                             runningDctSum += pixelValue *
                                 CalculateDCTCoeff(
-                                    pixelValue,
                                     _length,
                                     xInputIndex,
                                     yInputIndex,
@@ -149,6 +148,9 @@ namespace ImageIndexer
             int length
         )
         {
+            if (true) {
+                return 1.0;
+            }
             double alphaX = xOutputIndex == 0
                 ? 1.0 / Math.Sqrt(length)
                 : Math.Sqrt(2.0 / length);
@@ -161,7 +163,6 @@ namespace ImageIndexer
         }
 
         private static double CalculateDCTCoeff(
-            int inputValue,
             int length,
             int xInputIndex,
             int yInputIndex,
@@ -169,8 +170,8 @@ namespace ImageIndexer
             int yOutputIndex
         )
         {
-            return Math.Cos((Math.PI / length) * (yInputIndex + 0.5) * yOutputIndex) *
-                Math.Cos((Math.PI / length) * (xInputIndex + 0.5) * xOutputIndex);
+            return Math.Cos((Math.PI * (2 * yInputIndex + 1) * yOutputIndex) / (2 * length)) *
+                Math.Cos((Math.PI * (2 * xInputIndex + 1) * xOutputIndex) / (2 * length));
         }
         #endregion
     }
