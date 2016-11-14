@@ -116,7 +116,6 @@ namespace ImageIndexer
 
             // Get start index of the specified pixel
             int offset = ((y * Width) + x) * cCount;
-
             if (offset > _buffer.Length - cCount)
             {
                 throw new IndexOutOfRangeException();
@@ -130,14 +129,14 @@ namespace ImageIndexer
                 byte a = _buffer[offset + 3]; // a
                 clr = Color.FromArgb(a, r, g, b);
             }
-            if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
+            else if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
             {
                 byte b = _buffer[offset];
                 byte g = _buffer[offset + 1];
                 byte r = _buffer[offset + 2];
                 clr = Color.FromArgb(r, g, b);
             }
-            if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
+            else if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
             {
                 byte c = _buffer[offset];
                 clr = Color.FromArgb(c, c, c);
@@ -180,13 +179,13 @@ namespace ImageIndexer
                 _buffer[offset + 2] = color.R;
                 _buffer[offset + 3] = color.A; // a
             }
-            if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
+            else if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
             {
                 _buffer[offset] = color.B;
                 _buffer[offset + 1] = color.G;
                 _buffer[offset + 2] = color.R;
             }
-            if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
+            else if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
             {
                 _buffer[offset] = color.B;
             }
@@ -292,13 +291,13 @@ namespace ImageIndexer
                             currentLine[x + 2] = bufferColor.R;
                             currentLine[x + 3] = bufferColor.A;
                         }
-                        if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
+                        else if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
                         {
                             currentLine[x] = bufferColor.B;
                             currentLine[x + 1] = bufferColor.G;
                             currentLine[x + 2] = bufferColor.R;
                         }
-                        if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
+                        else if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
                         {
                             currentLine[x] = bufferColor.B;
                         }

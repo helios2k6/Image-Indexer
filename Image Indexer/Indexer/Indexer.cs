@@ -78,7 +78,7 @@ namespace ImageIndexer
             using (Image resizedImage = ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth))
             using (Image greyscalePixels = GreyScaleTransformation.Transform(resizedImage))
             {
-                double[,] dctMatrix = DCTGreyScaleCalculator.Calculate(greyscalePixels);
+                double[,] dctMatrix = DCTCalculator.Calculate(greyscalePixels);
                 double averageGreyScaleValue = CalculateAverageOfDCT(dctMatrix);
                 return new FrameFingerPrintWrapper
                 {

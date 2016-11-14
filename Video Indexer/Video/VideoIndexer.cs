@@ -135,7 +135,7 @@ namespace VideoIndexer.Video
                 {
                     using (Image convertedImage = ConvertToImage(currentFrame))
                     {
-                        FrameFingerPrintWrapper fingerPrint = ImageIndexer.Indexer.IndexFrame(convertedImage, currentFrameIndex);
+                        FrameFingerPrintWrapper fingerPrint = Indexer.IndexFrame(convertedImage, currentFrameIndex);
                         fingerPrints.Add(fingerPrint);
                     }
 

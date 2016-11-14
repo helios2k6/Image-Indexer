@@ -114,7 +114,7 @@ namespace VideoIndexer
         /// <returns>A string with the full path to the output file</returns>
         public string GetOutputFilePath()
         {
-            return Path.GetFullPath(GetOutputArgument());
+            return Path.GetFullPath(Path.Combine(_settings.OutputDirectory, GetOutputArgument()));
         }
         #endregion
 
@@ -129,7 +129,7 @@ namespace VideoIndexer
                 GetOutputVideoCodecArgument(),
                 _settings.Framerate.Numerator,
                 _settings.Framerate.Denominator,
-                Path.Combine(_settings.OutputDirectory, GetOutputArgument())
+                GetOutputFilePath()
             );
         }
 

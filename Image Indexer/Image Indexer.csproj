@@ -48,6 +48,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Flatbuffer Schemas\ImageIndexer\FrameFingerPrint.cs" />
@@ -57,9 +58,9 @@
     <Compile Include="Indexer\Indexer.cs" />
     <Compile Include="Serialization\DatabaseLoader.cs" />
     <Compile Include="Serialization\DatabaseSaver.cs" />
+    <Compile Include="Transformations\FastDCTCalculator.cs" />
     <Compile Include="Transformations\GreyScaleTransformation.cs" />
-    <Compile Include="Transformations\DCTGreyScaleCalculator.cs" />
-    <Compile Include="Transformations\FastAccBoxBlurGaussianBlurTransformation.cs" />
+    <Compile Include="Transformations\DCTCalculator.cs" />
     <Compile Include="Transformations\ITransformation.cs" />
     <Compile Include="Transformations\ResizeTransformation.cs" />
     <Compile Include="Wrappers\VideoFingerPrintDatabaseWrapper.cs" />

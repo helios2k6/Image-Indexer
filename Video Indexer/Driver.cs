@@ -19,6 +19,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using ImageIndexer;
+
 namespace VideoIndexer
 {
     internal static class Driver
@@ -28,6 +30,11 @@ namespace VideoIndexer
             // Test
             var filePath = @"D:/Docking/test.mkv";
             var result = Video.VideoIndexer.IndexVideo(filePath);
+            var db = new VideoFingerPrintDatabaseWrapper
+            {
+                VideoFingerPrints = new[] { result },
+            };
+            DatabaseSaver.Save(db, @"fingerprints.bin");
         }
     }
 }
