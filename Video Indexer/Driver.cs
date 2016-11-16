@@ -37,7 +37,7 @@ namespace VideoIndexer
             };
             DatabaseSaver.Save(db, @"fingerprints.bin");
             */
-            var input = new byte[,] { { 1, 1 }, {0, 0} };
+            var input = new byte[,] { { 1, 1 }, { 0, 0 } };
             var output1 = FastDCTCalculator.Calculate(input);
             var output2 = DCTCalculator.Calculate(input);
         }

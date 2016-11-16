@@ -148,9 +148,6 @@ namespace ImageIndexer
             int length
         )
         {
-            if (true) {
-                return 1.0;
-            }
             double alphaX = xOutputIndex == 0
                 ? 1.0 / Math.Sqrt(length)
                 : Math.Sqrt(2.0 / length);
