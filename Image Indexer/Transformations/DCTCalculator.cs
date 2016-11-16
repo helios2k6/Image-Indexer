@@ -92,6 +92,13 @@ namespace ImageIndexer
         /// <returns>A matrix with the DCT coefficients</returns>
         public double[,] Calculate()
         {
+            return CalculateImpl();
+        }
+        #endregion
+
+        #region private methods
+        private double[,] CalculateImpl()
+        {
             double[,] outputDCTMatrix = new double[_length, _length];
             for (int yOutputIndex = 0; yOutputIndex < _length; yOutputIndex++)
             {
@@ -102,7 +109,6 @@ namespace ImageIndexer
                     {
                         for (int xInputIndex = 0; xInputIndex < _length; xInputIndex++)
                         {
-                            // Only need to deal with the red channel because we're working with a greyscale image.
                             byte pixelValue = _sourceMatrix[yInputIndex, xInputIndex];
                             runningDctSum += pixelValue *
                                 CalculateDCTCoeff(
@@ -122,9 +128,7 @@ namespace ImageIndexer
 
             return outputDCTMatrix;
         }
-        #endregion
 
-        #region private methods
         private static byte[,] CopyImageToMatrix(Image image)
         {
             byte[,] sourceMatrix = new byte[image.Width, image.Height];
