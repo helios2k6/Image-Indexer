@@ -145,7 +145,7 @@ namespace VideoIndexer.Media
                                               select new Ratio(numerator.Value, denominator.Value);
 
             Maybe<Ratio> fpsFromDirectParse = from framerateText in rawTrackTextMaybe
-                                              let indexOfFpsMarker = framerateText.IndexOf("fps")
+                                              let indexOfFpsMarker = framerateText.IndexOf("fps", StringComparison.OrdinalIgnoreCase)
                                               where indexOfFpsMarker != -1
                                               let fpsAsDecimal = framerateText.Substring(0, indexOfFpsMarker - 2)
                                               let fpsAsDouble = NumericUtils.TryParseDouble(fpsAsDecimal)

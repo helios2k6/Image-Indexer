@@ -19,11 +19,14 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#define PARALLEL_444_TO_RGB
+
 using Functional.Maybe;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace VideoIndexer.Y4M
 {
@@ -161,6 +164,17 @@ namespace VideoIndexer.Y4M
             YCrCbFrame inFrame
         )
         {
+#if PARALLEL_444_TO_RGB
+            return TryConvertYCbCr444ToRGBParallel(inFrame);
+#else
+            return TryConvertYCbCr444ToRGBSerial(inFrame);
+#endif
+        }
+
+        private static Maybe<Color[][]> TryConvertYCbCr444ToRGBSerial(
+            YCrCbFrame inFrame
+        )
+        {
             try
             {
                 Color[][] frame = new Color[inFrame.Height][];
@@ -182,6 +196,38 @@ namespace VideoIndexer.Y4M
                 }
 
                 return frame.ToMaybe();
+            }
+            catch (Exception)
+            {
+            }
+
+            return Maybe<Color[][]>.Nothing;
+        }
+
+        private static Maybe<Color[][]> TryConvertYCbCr444ToRGBParallel(
+            YCrCbFrame inFrame
+        )
+        {
+            try
+            {
+                Color[][] frame = new Color[inFrame.Height][];
+                Parallel.For(0, inFrame.Height, row => {
+                    frame[row] = new Color[inFrame.Width];
+                    for (int col = 0; col < inFrame.Width; col++)
+                    {
+                        byte currentLuma = inFrame.Luma[row][col];
+                        byte currentCb = inFrame.Cb[row][col];
+                        byte currentCr = inFrame.Cr[row][col];
+                        frame[row][col] = ConvertYUVToRGB(currentLuma, currentCb, currentCr);
+                    }
+                });
+
+                if (frame.Length != inFrame.Height || frame[0].Length != inFrame.Width)
+                {
+                    return Maybe<Color[][]>.Nothing;
+                }
+
+                return frame.ToMaybe(); 
             }
             catch (Exception)
             {

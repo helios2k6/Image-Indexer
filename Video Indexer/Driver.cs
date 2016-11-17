@@ -28,18 +28,13 @@ namespace VideoIndexer
         public static void Main(string[] args)
         {
             // Test
-            /*
-            var filePath = @"D:/Docking/test.mkv";
+            var filePath = @"/Volumes/Hirmfaxi/test/test.mov";
             var result = Video.VideoIndexer.IndexVideo(filePath);
             var db = new VideoFingerPrintDatabaseWrapper
             {
                 VideoFingerPrints = new[] { result },
             };
             DatabaseSaver.Save(db, @"fingerprints.bin");
-            */
-            var input = new byte[,] { { 1, 1 }, { 0, 0 } };
-            var output1 = FastDCTCalculator.Calculate(input);
-            var output2 = DCTCalculator.Calculate(input);
         }
     }
 }

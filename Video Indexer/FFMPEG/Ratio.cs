@@ -132,7 +132,13 @@ namespace VideoIndexer
                 int numerator = -1, denominator = -1;
                 if (int.TryParse(splitsOnColon[0], out numerator) && int.TryParse(splitsOnColon[1], out denominator))
                 {
-                    return new Ratio(numerator, denominator).ToMaybe();
+                    try
+                    {
+                        return new Ratio(numerator, denominator).ToMaybe();
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
             }
 
