@@ -19,6 +19,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using ImageIndexer;
 using System.Drawing;
 
 namespace VideoIndexer.Y4M
@@ -35,9 +36,9 @@ namespace VideoIndexer.Y4M
         public Header Header { get; }
 
         /// <summary>
-        /// The color pixels of the frame
+        /// The frame itself
         /// </summary>
-        public Color[][] Frame { get; }
+        public WritableLockBitImage LockBitImage { get; }
 
         /// <summary>
         /// The width of the frame
@@ -62,10 +63,10 @@ namespace VideoIndexer.Y4M
         /// </summary>
         /// <param name="header">The frame header</param>
         /// <param name="frame">The actual color matrix</param>
-        public VideoFrame(Header header, Color[][] frame)
+        public VideoFrame(Header header, WritableLockBitImage frame)
         {
             Header = header;
-            Frame = frame;
+            LockBitImage = frame;
         }
         #endregion
 
@@ -73,7 +74,7 @@ namespace VideoIndexer.Y4M
         public Color GetPixel(int x, int y)
         {
             // y == row, x == col
-            return Frame[y][x];
+            return LockBitImage.GetPixel(x, y);
         }
         #endregion
     }

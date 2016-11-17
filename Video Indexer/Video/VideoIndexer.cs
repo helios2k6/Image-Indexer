@@ -22,10 +22,11 @@
 using Functional.Maybe;
 using ImageIndexer;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using VideoIndexer.Media;
 using VideoIndexer.Y4M;
 
@@ -129,38 +130,54 @@ namespace VideoIndexer.Video
                     return Enumerable.Empty<FrameFingerPrintWrapper>();
                 }
 
-                var fingerPrints = new List<FrameFingerPrintWrapper>();
-                VideoFile videoFile = videoFileMaybe.Value;
-                foreach (IImageFrame currentFrame in videoFile.Frames)
-                {
-                    using (Image convertedImage = ConvertToImage(currentFrame))
-                    {
-                        FrameFingerPrintWrapper fingerPrint = Indexer.IndexFrame(convertedImage, currentFrameIndex);
-                        fingerPrints.Add(fingerPrint);
-                    }
-
-                    currentFrameIndex++;
-                }
-
-                return fingerPrints;
+#if USE_PARALLEL
+                return IndexFilesParallel(currentFrameIndex, videoFileMaybe);
+#else
+                return IndexFilesSerial(currentFrameIndex, videoFileMaybe);
+#endif
             }
         }
 
-        private static Image ConvertToImage(IImageFrame frame)
+        private static IEnumerable<FrameFingerPrintWrapper> IndexFilesSerial(int currentFrameIndex, Maybe<VideoFile> videoFileMaybe)
         {
-            using (var writableLockbitImage = new WritableLockBitImage(frame.Width, frame.Height))
+            var fingerPrints = new List<FrameFingerPrintWrapper>();
+            VideoFile videoFile = videoFileMaybe.Value;
+            foreach (VideoFrame currentFrame in videoFile.Frames)
             {
-                for (int y = 0; y < frame.Height; y++)
-                {
-                    for (int x = 0; x < frame.Width; x++)
-                    {
-                        writableLockbitImage.SetPixel(x, y, frame.GetPixel(x, y));
-                    }
-                }
+                FrameFingerPrintWrapper fingerPrint = Indexer.IndexFrame(currentFrame.LockBitImage.GetImage(), currentFrameIndex);
+                fingerPrints.Add(fingerPrint);
 
-                writableLockbitImage.Lock();
-                return writableLockbitImage.GetImage();
+                currentFrameIndex++;
             }
+
+            return fingerPrints;
+        }
+
+        private static IEnumerable<FrameFingerPrintWrapper> IndexFilesParallel(int currentFrameIndex, Maybe<VideoFile> videoFileMaybe)
+        {
+            VideoFile videoFile = videoFileMaybe.Value;
+            VideoIndexThreadPool threadPool = new VideoIndexThreadPool();
+
+            // Decode frames and send them to a threadpool
+            Task producingTask = Task.Factory.StartNew(() =>
+            {
+                int localFrameIndex = currentFrameIndex;
+                foreach (VideoFrame currentFrame in videoFile.Frames)
+                {
+                    threadPool.SubmitVideoFrame(currentFrame, localFrameIndex);
+                    localFrameIndex++;
+                }
+            });
+
+            Task continuedTask = producingTask.ContinueWith(t =>
+            {
+                threadPool.Shutdown();
+                threadPool.Wait();
+            });
+
+            continuedTask.Wait();
+
+            return threadPool.GetFingerPrints();
         }
 
         private static int CalculateFramesToOutputFromFramerate(TimeSpan index, Ratio framerate, TimeSpan totalDuration)

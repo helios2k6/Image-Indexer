@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;USE_PARALLEL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -29,7 +29,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;USE_PARALLEL</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -74,6 +74,7 @@
     <Compile Include="Utils\CommonMaybeExtensions.cs" />
     <Compile Include="Utils\NumericalUtils.cs" />
     <Compile Include="Video\VideoIndexer.cs" />
+    <Compile Include="Video\VideoIndexThreadPool.cs" />
     <Compile Include="Y4M\ColorConverters.cs" />
     <Compile Include="Y4M\ColorSpace.cs" />
     <Compile Include="Y4M\FileHeader.cs" />

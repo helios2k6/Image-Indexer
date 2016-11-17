@@ -83,6 +83,15 @@ namespace VideoIndexer.Y4M
 
             return Maybe<VideoFile>.Nothing;
         }
+
+        public void Dispose()
+        {
+            if (!_disposedValue)
+            {
+                _fileStream.Dispose();
+                _disposedValue = true;
+            }
+        }
         #endregion
 
         #region private methods
@@ -98,17 +107,6 @@ namespace VideoIndexer.Y4M
                 }
             } while (parsedVideoFrame.IsSomething());
         }
-
-        #region IDisposable Support
-        public void Dispose()
-        {
-            if (!_disposedValue)
-            {
-                _fileStream.Dispose();
-                _disposedValue = true;
-            }
-        }
-        #endregion
         #endregion
     }
 }

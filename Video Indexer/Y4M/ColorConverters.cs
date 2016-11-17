@@ -19,9 +19,8 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#define PARALLEL_444_TO_RGB
-
 using Functional.Maybe;
+using ImageIndexer;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -67,7 +66,7 @@ namespace VideoIndexer.Y4M
         /// shifted a half-pixel down).
         /// https://msdn.microsoft.com/en-us/library/windows/desktop/dd206750(v=vs.85).aspx
         /// </remarks>
-        public static Maybe<Color[][]> TryConvertFrameToRGB(
+        public static Maybe<WritableLockBitImage> TryConvertFrameToRGB(
             ColorSpace sourceColorspace,
             byte[][] luma,
             byte[][] blueDifferential,
@@ -103,7 +102,7 @@ namespace VideoIndexer.Y4M
                        select TryConvertYCbCr444ToRGB(horizontalUpconvert);
             }
 
-            return Maybe<Color[][]>.Nothing;
+            return Maybe<WritableLockBitImage>.Nothing;
         }
         #endregion
         #region private methods
@@ -160,80 +159,39 @@ namespace VideoIndexer.Y4M
             return outFrames.ToMaybe();
         }
 
-        private static Maybe<Color[][]> TryConvertYCbCr444ToRGB(
+        private static Maybe<WritableLockBitImage> TryConvertYCbCr444ToRGB(
             YCrCbFrame inFrame
         )
         {
-#if PARALLEL_444_TO_RGB
             return TryConvertYCbCr444ToRGBParallel(inFrame);
-#else
-            return TryConvertYCbCr444ToRGBSerial(inFrame);
-#endif
         }
 
-        private static Maybe<Color[][]> TryConvertYCbCr444ToRGBSerial(
+        private static Maybe<WritableLockBitImage> TryConvertYCbCr444ToRGBParallel(
             YCrCbFrame inFrame
         )
         {
+            WritableLockBitImage frame = new WritableLockBitImage(inFrame.Width, inFrame.Height);
             try
             {
-                Color[][] frame = new Color[inFrame.Height][];
-                for (int row = 0; row < inFrame.Height; row++)
+                Parallel.For(0, inFrame.Height, row =>
                 {
-                    frame[row] = new Color[inFrame.Width];
                     for (int col = 0; col < inFrame.Width; col++)
                     {
                         byte currentLuma = inFrame.Luma[row][col];
                         byte currentCb = inFrame.Cb[row][col];
                         byte currentCr = inFrame.Cr[row][col];
-                        frame[row][col] = ConvertYUVToRGB(currentLuma, currentCb, currentCr);
+                        frame.SetPixel(col, row, ConvertYUVToRGB(currentLuma, currentCb, currentCr));
                     }
-                }
-
-                if (frame.Length != inFrame.Height || frame[0].Length != inFrame.Width)
-                {
-                    return Maybe<Color[][]>.Nothing;
-                }
-
+                });
+                frame.Lock();
                 return frame.ToMaybe();
             }
             catch (Exception)
             {
             }
 
-            return Maybe<Color[][]>.Nothing;
-        }
-
-        private static Maybe<Color[][]> TryConvertYCbCr444ToRGBParallel(
-            YCrCbFrame inFrame
-        )
-        {
-            try
-            {
-                Color[][] frame = new Color[inFrame.Height][];
-                Parallel.For(0, inFrame.Height, row => {
-                    frame[row] = new Color[inFrame.Width];
-                    for (int col = 0; col < inFrame.Width; col++)
-                    {
-                        byte currentLuma = inFrame.Luma[row][col];
-                        byte currentCb = inFrame.Cb[row][col];
-                        byte currentCr = inFrame.Cr[row][col];
-                        frame[row][col] = ConvertYUVToRGB(currentLuma, currentCb, currentCr);
-                    }
-                });
-
-                if (frame.Length != inFrame.Height || frame[0].Length != inFrame.Width)
-                {
-                    return Maybe<Color[][]>.Nothing;
-                }
-
-                return frame.ToMaybe(); 
-            }
-            catch (Exception)
-            {
-            }
-
-            return Maybe<Color[][]>.Nothing;
+            frame.Dispose();
+            return Maybe<WritableLockBitImage>.Nothing;
         }
 
         private static Color ConvertYUVToRGB(byte luma, byte blueDifferential, byte redDifferential)

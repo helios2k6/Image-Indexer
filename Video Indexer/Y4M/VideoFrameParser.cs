@@ -71,7 +71,7 @@ namespace VideoIndexer.Y4M
                                                from redDiff in TryReadChromaPlane(rawStream)
                                                from frameHeader in frameHeaderMaybe
                                                from colorSpace in frameHeader.ColorSpace
-                                               from colorMatrix in ColorConverters.TryConvertFrameToRGB(
+                                               from frame in ColorConverters.TryConvertFrameToRGB(
                                                    colorSpace,
                                                    lumaPlane,
                                                    blueDiff,
@@ -79,7 +79,7 @@ namespace VideoIndexer.Y4M
                                                    _header.Width,
                                                    _header.Height
                                                )
-                                               select new VideoFrame(frameHeader, colorMatrix);
+                                               select new VideoFrame(frameHeader, frame);
 
                 videoFrame.Apply(_ =>
                 {

@@ -116,13 +116,13 @@ namespace ImageIndexer
             // Get rows first
             for (int row = 0; row < input.Length; row++)
             {
-                output[row] = CalculateDFT(input[row]);
+                output[row] = CalculateDFTSharp(input[row]);
             }
 
             // Get cols next
             for (int col = 0; col < input[0].Length; col++)
             {
-                Complex[] columnDFT = CalculateDFT(GetColumn(output, col).ToArray());
+                Complex[] columnDFT = CalculateDFTSharp(GetColumn(output, col).ToArray());
                 SetColumn(columnDFT, output, col);
             }
 
@@ -181,30 +181,11 @@ namespace ImageIndexer
             return ySequence;
         }
 
-        private static Complex[] CalculateDFT(Complex[] input)
+        private static Complex[] CalculateDFTSharp(Complex[] input)
         {
-            int N = input.Length;
-            Complex[] output = new Complex[input.Length];
-            if (input.Length == 1)
-            {
-                output[0] = input[0];
-            }
-            else
-            {
-                Complex[] evenPoints = input.Where((c, i) => i % 2 == 0).ToArray();
-                Complex[] oddPoints = input.Where((c, i) => i % 2 == 1).ToArray();
-
-                Complex[] evenDft = CalculateDFT(evenPoints);
-                Complex[] oddDft = CalculateDFT(oddPoints);
-
-                for (int k = 0; k < N / 2; k++)
-                {
-                    output[k] = (evenDft[k] + WFunctionCached(N, k) * oddDft[k]);
-                    output[k + N / 2] = (evenDft[k] - WFunctionCached(N, k) * oddDft[k]);
-                }
-            }
-
-            return output;
+            var complexDoubleDFT = new SharpFFTPACK.ComplexDoubleFFT(input.Length);
+            complexDoubleDFT.ft(input);
+            return input;
         }
 
         private static Complex[][] NormalizeDFT(Complex[][] input)

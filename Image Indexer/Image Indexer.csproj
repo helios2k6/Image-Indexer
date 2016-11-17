@@ -58,9 +58,16 @@
     <Compile Include="Indexer\Indexer.cs" />
     <Compile Include="Serialization\DatabaseLoader.cs" />
     <Compile Include="Serialization\DatabaseSaver.cs" />
+    <Compile Include="SharpFFT\ComplexDoubleFFT.cs" />
+    <Compile Include="SharpFFT\ComplexDoubleFFT_Mixed.cs" />
+    <Compile Include="SharpFFT\RealDoubleFFT.cs" />
+    <Compile Include="SharpFFT\RealDoubleFFT_Even.cs" />
+    <Compile Include="SharpFFT\RealDoubleFFT_Even_Odd.cs" />
+    <Compile Include="SharpFFT\RealDoubleFFT_Mixed.cs" />
+    <Compile Include="SharpFFT\RealDoubleFFT_Odd.cs" />
+    <Compile Include="SharpFFT\RealDoubleFFT_Odd_Odd.cs" />
     <Compile Include="Transformations\FastDCTCalculator.cs" />
     <Compile Include="Transformations\GreyScaleTransformation.cs" />
-    <Compile Include="Transformations\DCTCalculator.cs" />
     <Compile Include="Transformations\ITransformation.cs" />
     <Compile Include="Transformations\ResizeTransformation.cs" />
     <Compile Include="Wrappers\VideoFingerPrintDatabaseWrapper.cs" />

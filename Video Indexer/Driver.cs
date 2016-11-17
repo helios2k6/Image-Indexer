@@ -27,8 +27,12 @@ namespace VideoIndexer
     {
         public static void Main(string[] args)
         {
+            var k = new byte[,] { { 1, 1 }, { 0, 0 } };
+            var m = FastDCTCalculator.Calculate(k);
+
+
             // Test
-            var filePath = @"/Volumes/Hirmfaxi/test/test.mov";
+            var filePath = @"D:\test\test.mkv";
             var result = Video.VideoIndexer.IndexVideo(filePath);
             var db = new VideoFingerPrintDatabaseWrapper
             {
