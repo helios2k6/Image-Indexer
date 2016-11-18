@@ -75,13 +75,12 @@ namespace VideoIndexer.Y4M
             }
 
             // Second read the frames
-            IEnumerable<VideoFrame> frames = EnumerateVideoFrames(fileHeader.Value, _fileStream);
-            if (frames.Any())
-            {
-                return new VideoFile(fileHeader.Value, frames).ToMaybe();
-            }
-
-            return Maybe<VideoFile>.Nothing;
+            return new VideoFile(
+                fileHeader.Value,
+                EnumerateVideoFrames(fileHeader.Value, _fileStream),
+                CalculateByteOffsets(fileHeader.Value, _fileStream.Position, _fileStream.Length),
+                _videoFilePath
+            ).ToMaybe();
         }
 
         public void Dispose()
@@ -95,12 +94,42 @@ namespace VideoIndexer.Y4M
         #endregion
 
         #region private methods
+        private IEnumerable<long> CalculateByteOffsets(Header fileHeader, long indexOfFirstFrame, long sizeOfFile)
+        {
+            Maybe<ColorSpace> colorSpaceMaybe = fileHeader.ColorSpace;
+            if (colorSpaceMaybe.IsNothing())
+            {
+                yield break;
+            }
+
+            ColorSpace colorSpace = colorSpaceMaybe.Value;
+            if (colorSpace.Equals(ColorSpace.FourFourFour))
+            {
+                long frameSize = (fileHeader.Height * fileHeader.Width * 3) +
+                    FrameHeaderParser.HeaderMagicTagLength + 1; // The last byte is the 0x0A frame ending byte
+                for (long index = indexOfFirstFrame; index < sizeOfFile; index += frameSize)
+                {
+                    yield return index;
+                }
+            }
+            else if (colorSpace.Equals(ColorSpace.FourTwoZero) || colorSpace.Equals(ColorSpace.FourTwoZeroMpeg2))
+            {
+                long frameSize = (fileHeader.Height * fileHeader.Width + (1 / 2 * (fileHeader.Height * fileHeader.Width))) +
+                    FrameHeaderParser.HeaderMagicTagLength + 1; // The last byte is the 0x0A frame ending byte
+                for (long index = indexOfFirstFrame; index < sizeOfFile; index += frameSize)
+                {
+                    yield return index;
+                }
+            }
+        }
+
         private IEnumerable<VideoFrame> EnumerateVideoFrames(Header fileHeader, Stream stream)
         {
             Maybe<VideoFrame> parsedVideoFrame = Maybe<VideoFrame>.Nothing;
+            VideoFrameParser parser = new VideoFrameParser(fileHeader);
             do
             {
-                parsedVideoFrame = new VideoFrameParser(fileHeader).TryParseVideoFrame(stream);
+                parsedVideoFrame = parser.TryParseVideoFrame(stream);
                 if (parsedVideoFrame.IsSomething())
                 {
                     yield return parsedVideoFrame.Value;

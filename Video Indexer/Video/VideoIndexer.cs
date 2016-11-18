@@ -28,6 +28,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using VideoIndexer.Media;
+using VideoIndexer.Utils;
 using VideoIndexer.Y4M;
 
 namespace VideoIndexer.Video
@@ -130,27 +131,8 @@ namespace VideoIndexer.Video
                     return Enumerable.Empty<FrameFingerPrintWrapper>();
                 }
 
-#if USE_PARALLEL
                 return IndexFilesParallel(currentFrameIndex, videoFileMaybe);
-#else
-                return IndexFilesSerial(currentFrameIndex, videoFileMaybe);
-#endif
             }
-        }
-
-        private static IEnumerable<FrameFingerPrintWrapper> IndexFilesSerial(int currentFrameIndex, Maybe<VideoFile> videoFileMaybe)
-        {
-            var fingerPrints = new List<FrameFingerPrintWrapper>();
-            VideoFile videoFile = videoFileMaybe.Value;
-            foreach (VideoFrame currentFrame in videoFile.Frames)
-            {
-                FrameFingerPrintWrapper fingerPrint = Indexer.IndexFrame(currentFrame.LockBitImage.GetImage(), currentFrameIndex);
-                fingerPrints.Add(fingerPrint);
-
-                currentFrameIndex++;
-            }
-
-            return fingerPrints;
         }
 
         private static IEnumerable<FrameFingerPrintWrapper> IndexFilesParallel(int currentFrameIndex, Maybe<VideoFile> videoFileMaybe)
@@ -161,12 +143,19 @@ namespace VideoIndexer.Video
             // Decode frames and send them to a threadpool
             Task producingTask = Task.Factory.StartNew(() =>
             {
-                int localFrameIndex = currentFrameIndex;
-                foreach (VideoFrame currentFrame in videoFile.Frames)
+                var parser = new VideoFrameParser(videoFile.Header);
+                Parallel.ForEach(videoFile.FrameOffsets, (offset, _, localFrameIndex) =>
                 {
-                    threadPool.SubmitVideoFrame(currentFrame, localFrameIndex);
-                    localFrameIndex++;
-                }
+                    using (var fileStream = new FileStream(videoFile.FilePath, FileMode.Open, FileAccess.Read))
+                    {
+                        fileStream.Position = offset;
+                        Maybe<VideoFrame> videoFrame = parser.TryParseVideoFrame(fileStream);
+                        videoFrame.Apply(frame =>
+                        {
+                            threadPool.SubmitVideoFrame(frame, (int)(localFrameIndex + currentFrameIndex));
+                        });
+                    }
+                });
             });
 
             Task continuedTask = producingTask.ContinueWith(t =>

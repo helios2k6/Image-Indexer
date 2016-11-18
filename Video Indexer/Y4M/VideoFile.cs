@@ -38,6 +38,16 @@ namespace VideoIndexer.Y4M
         /// The video frames
         /// </summary>
         public IEnumerable<VideoFrame> Frames { get; }
+
+        /// <summary>
+        /// The byte offsets that designate the beginning of each frame
+        /// </summary>
+        public IEnumerable<long> FrameOffsets { get; }
+
+        /// <summary>
+        /// The path to the original video file
+        /// </summary>
+        public string FilePath { get; }
         #endregion
 
         #region ctor
@@ -46,10 +56,14 @@ namespace VideoIndexer.Y4M
         /// </summary>
         /// <param name="header">The file level header</param>
         /// <param name="frames">The video frames</param>
-        public VideoFile(Header header, IEnumerable<VideoFrame> frames)
+        /// <param name="filePath">The path to the original video file</param>
+        /// <param name="frameOffsets">The byte offsets for each frame</param>
+        public VideoFile(Header header, IEnumerable<VideoFrame> frames, IEnumerable<long> frameOffsets, string filePath)
         {
             Header = header;
             Frames = frames;
+            FrameOffsets = frameOffsets;
+            FilePath = filePath;
         }
         #endregion
     }

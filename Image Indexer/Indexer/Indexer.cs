@@ -40,11 +40,11 @@ namespace ImageIndexer
         /// <param name="frames">The frames to index</param>
         /// <param name="filePath">The path to the file that you are indexing</param>
         /// <returns>An indexed video</returns>
-        public static VideoFingerPrintWrapper IndexVideo(IEnumerable<Image> frames, string filePath)
+        public static VideoFingerPrintWrapper IndexVideo(IEnumerable<WritableLockBitImage> frames, string filePath)
         {
             int frameNumber = 0;
             var frameFingerPrints = new List<FrameFingerPrintWrapper>();
-            foreach (Image frame in frames)
+            foreach (WritableLockBitImage frame in frames)
             {
                 frameFingerPrints.Add(IndexFrame(frame, frameNumber));
                 frameNumber++;
@@ -62,7 +62,7 @@ namespace ImageIndexer
         /// </summary>
         /// <param name="frames">The frames to index</param>
         /// <returns>An IEnumerable of fingerprints</returns>
-        public static IEnumerable<FrameFingerPrintWrapper> IndexFrames(IEnumerable<Image> frames)
+        public static IEnumerable<FrameFingerPrintWrapper> IndexFrames(IEnumerable<WritableLockBitImage> frames)
         {
             return IndexVideo(frames, string.Empty).FingerPrints;
         }
@@ -73,7 +73,7 @@ namespace ImageIndexer
         /// <param name="frame">The frame to index</param>
         /// <param name="frameNumber">The frame number of this frame</param>
         /// <returns>An indexed frame</returns>
-        public static FrameFingerPrintWrapper IndexFrame(Image frame, int frameNumber)
+        public static FrameFingerPrintWrapper IndexFrame(WritableLockBitImage frame, int frameNumber)
         {
             using (Image resizedImage = ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth))
             using (Image greyscalePixels = GreyScaleTransformation.Transform(resizedImage))

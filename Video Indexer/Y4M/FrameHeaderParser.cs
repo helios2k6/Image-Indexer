@@ -32,6 +32,8 @@ namespace VideoIndexer.Y4M
     {
         #region private fields
         private readonly Header _fileLevelHeader;
+
+        private static readonly string HeaderMagicTagInternal = "FRAME";
         #endregion
 
         #region ctor
@@ -46,10 +48,17 @@ namespace VideoIndexer.Y4M
         }
         #endregion
 
+        #region public methods
+        public static int HeaderMagicTagLength
+        {
+            get { return HeaderMagicTagInternal.Length; }
+        }
+        #endregion
+
         #region protected methods
         protected override string HeaderMagicTag
         {
-            get { return "FRAME"; }
+            get { return HeaderMagicTagInternal; }
         }
 
         protected override Maybe<Header> TryConstructHeader(

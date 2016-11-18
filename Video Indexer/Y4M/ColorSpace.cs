@@ -50,28 +50,26 @@ namespace VideoIndexer.Y4M
             }
         }
         #endregion
+
         #region public fields
         /// <summary>
         /// 4:2:0 with biaxially-displaced chroma planes
         /// </summary>
         /// <remarks>
         /// 420jpeg chroma samples are sited like:
-        /// Y-------Y-------Y-------Y-------
+        /// Y-------Y-------Y-------Y
         /// |       |       |       |
         /// |   BR  |       |   BR  |
         /// |       |       |       |
-        /// Y-------Y-------Y-------Y-------
+        /// Y-------Y-------Y-------Y
         /// |       |       |       |
         /// |       |       |       |
         /// |       |       |       |
-        /// Y-------Y-------Y-------Y-------
+        /// Y-------Y-------Y-------Y
         /// |       |       |       |
         /// |   BR  |       |   BR  |
         /// |       |       |       |
-        /// Y-------Y-------Y-------Y-------
-        /// |       |       |       |
-        /// |       |       |       |
-        /// |       |       |       |
+        /// Y-------Y-------Y-------Y
         /// </remarks>
         public static readonly ColorSpace FourTwoZeroJpeg = new ColorSpace("4:2:0 with biaxially-displaced chroma planes", 0, "420jpeg", 8);
         /// <summary>
@@ -79,22 +77,19 @@ namespace VideoIndexer.Y4M
         /// </summary>
         /// <remarks>
         /// 420paldv chroma samples are sited like:
-        /// YR------Y-------YR------Y-------
+        /// YR------Y-------YR------Y
         /// |       |       |       |
         /// |       |       |       |
         /// |       |       |       |
-        /// YB------Y-------YB------Y-------
+        /// YB------Y-------YB------Y
         /// |       |       |       |
         /// |       |       |       |
         /// |       |       |       |
-        /// YR------Y-------YR------Y-------
+        /// YR------Y-------YR------Y
         /// |       |       |       |
         /// |       |       |       |
         /// |       |       |       |
-        /// YB------Y-------YB------Y-------
-        /// |       |       |       |
-        /// |       |       |       |
-        /// |       |       |       |
+        /// YB------Y-------YB------Y
         /// </remarks>
         public static readonly ColorSpace FourTwoZeroPaldv = new ColorSpace("4:2:0 with vertically-displaced chroma places", 1, "420paldv", 8);
         /// <summary>
@@ -102,22 +97,19 @@ namespace VideoIndexer.Y4M
         /// </summary>
         /// <remarks>
         /// 420mpeg2 chroma samples are sited like:
-        /// Y-------Y-------Y-------Y-------
+        /// Y-------Y-------Y-------Y
         /// |       |       |       |
         /// BR      |       BR      |
         /// |       |       |       |
-        /// Y-------Y-------Y-------Y-------
+        /// Y-------Y-------Y-------Y
         /// |       |       |       |
         /// |       |       |       |
         /// |       |       |       |
-        /// Y-------Y-------Y-------Y-------
+        /// Y-------Y-------Y-------Y
         /// |       |       |       |
         /// BR      |       BR      |
         /// |       |       |       |
-        /// Y-------Y-------Y-------Y-------
-        /// |       |       |       |
-        /// |       |       |       |
-        /// |       |       |       |
+        /// Y-------Y-------Y-------Y
         /// </remarks>
         public static readonly ColorSpace FourTwoZeroMpeg2 = new ColorSpace("4:2:0 with vertically-displaced chroma places", 1, "420mpeg2", 8);
         /// <summary>
@@ -126,22 +118,19 @@ namespace VideoIndexer.Y4M
         /// </summary>
         /// <remarks>
         /// I *THINK* the straight 420 chroma samples are sited like:
-        /// YBR-----Y------YBR------Y-------
+        /// YBR-----Y------YBR------Y
         /// |       |       |       |
         /// |       |       |       |
         /// |       |       |       |
-        /// Y-------Y-------Y-------Y-------
+        /// Y-------Y-------Y-------Y
         /// |       |       |       |
         /// |       |       |       |
         /// |       |       |       |
-        /// YBR-----Y------YBR------Y-------
+        /// YBR-----Y------YBR------Y
         /// |       |       |       |
         /// |       |       |       |
         /// |       |       |       |
-        /// Y-------Y-------Y-------Y-------
-        /// |       |       |       |
-        /// |       |       |       |
-        /// |       |       |       |
+        /// Y-------Y-------Y-------Y
         /// </remarks>
         public static readonly ColorSpace FourTwoZero = new ColorSpace("4:2:0 with coincident chroma planes", 2, "420", 8);
         /// <summary>
