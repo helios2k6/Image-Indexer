@@ -27,7 +27,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using VideoIndexer.Media;
-using VideoIndexer.Utils;
 using VideoIndexer.Y4M;
 
 namespace VideoIndexer.Video

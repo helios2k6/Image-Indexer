@@ -36,6 +36,16 @@ namespace ImageIndexer
         public VideoFingerPrintWrapper[] VideoFingerPrints { get; set; }
         #endregion
 
+        #region ctor
+        /// <summary>
+        /// Construct a default VideoFingerPrintDatabaseWrapper
+        /// </summary>
+        public VideoFingerPrintDatabaseWrapper()
+        {
+            VideoFingerPrints = new VideoFingerPrintWrapper[0];
+        }
+        #endregion
+
         #region public methods
         /// <summary>
         /// 

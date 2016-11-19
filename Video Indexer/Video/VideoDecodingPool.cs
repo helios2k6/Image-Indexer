@@ -51,7 +51,7 @@ namespace VideoIndexer.Video
 
                 workerTasks[i] = Task.Factory.StartNew(() =>
                 {
-                    RunDecoderThread(videoFile.FilePath, videoFile.Header, slicedArray, sink, firstElementIndex);
+                    RunDecoderThread(videoFile.FilePath, videoFile.Header, slicedArray, sink, currentFrameIndex + firstElementIndex);
                 });
             }
 
