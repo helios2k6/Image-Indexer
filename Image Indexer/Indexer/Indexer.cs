@@ -75,6 +75,7 @@ namespace ImageIndexer
         /// <returns>An indexed frame</returns>
         public static FrameFingerPrintWrapper IndexFrame(WritableLockBitImage frame, int frameNumber)
         {
+            // TODO: Fix this
             using (Image resizedImage = ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth))
             using (Image greyscalePixels = GreyScaleTransformation.Transform(resizedImage))
             {
