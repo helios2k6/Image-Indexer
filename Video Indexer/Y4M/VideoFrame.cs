@@ -27,7 +27,7 @@ namespace VideoIndexer.Y4M
     /// <summary>
     /// Represents a single frame of video
     /// </summary>
-    internal sealed class VideoFrame : IImageFrame
+    internal sealed class VideoFrame
     {
         #region public properties
         /// <summary>

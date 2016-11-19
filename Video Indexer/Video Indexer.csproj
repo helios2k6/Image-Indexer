@@ -67,7 +67,6 @@
     <Compile Include="Flatbuffer Schemas\ImageIndexer\FrameFingerPrint.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrint.cs" />
     <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrintDatabase.cs" />
-    <Compile Include="IImageFrame.cs" />
     <Compile Include="Media\FileXMLNode.cs" />
     <Compile Include="Media\MediaInfo.cs" />
     <Compile Include="Media\MediaInfoProcess.cs" />
