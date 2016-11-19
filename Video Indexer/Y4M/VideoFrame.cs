@@ -69,13 +69,5 @@ namespace VideoIndexer.Y4M
             LockBitImage = frame;
         }
         #endregion
-
-        #region public function
-        public Color GetPixel(int x, int y)
-        {
-            // y == row, x == col
-            return LockBitImage.GetPixel(x, y);
-        }
-        #endregion
     }
 }
