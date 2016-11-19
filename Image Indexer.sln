@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Image Indexer", "Image Indexer\Image Indexer.csproj", "{3A3A5EA5-81A3-404C-AA78-8AE8AE8CA813}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Frame Index Library", "Image Indexer\Frame Index Library.csproj", "{3A3A5EA5-81A3-404C-AA78-8AE8AE8CA813}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unit Tests", "Unit Tests\Unit Tests.csproj", "{7FE6F325-927A-445F-B80E-208F78614456}"
 EndProject

@@ -22,7 +22,7 @@
 using System;
 using System.Drawing;
 
-namespace ImageIndexer
+namespace FrameIndexLibrary
 {
     /// <summary>
     /// A transformation that turns an image into a grey scale

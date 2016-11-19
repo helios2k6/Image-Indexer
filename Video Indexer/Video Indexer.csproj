@@ -104,9 +104,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Image Indexer\Image Indexer.csproj">
+    <ProjectReference Include="..\Image Indexer\Frame Index Library.csproj">
       <Project>{3a3a5ea5-81a3-404c-aa78-8ae8ae8ca813}</Project>
-      <Name>Image Indexer</Name>
+      <Name>Frame Index Library</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

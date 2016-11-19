@@ -20,7 +20,7 @@
  */
 
 using Functional.Maybe;
-using ImageIndexer;
+using FrameIndexLibrary;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

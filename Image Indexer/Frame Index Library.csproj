@@ -7,8 +7,8 @@
     <ProjectGuid>{3A3A5EA5-81A3-404C-AA78-8AE8AE8CA813}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ImageIndexer</RootNamespace>
-    <AssemblyName>ImageIndexer</AssemblyName>
+    <RootNamespace>FrameIndexLibrary</RootNamespace>
+    <AssemblyName>FrameIndexLibrary</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -23,7 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\ImageIndexer.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\FrameIndexLibrary.xml</DocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-namespace ImageIndexer
+namespace FrameIndexLibrary
 {
     /// <summary>
     /// A fast DCT calculator 

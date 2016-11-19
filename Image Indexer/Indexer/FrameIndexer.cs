@@ -21,7 +21,7 @@
 
 using System.Drawing;
 
-namespace ImageIndexer
+namespace FrameIndexLibrary
 {
     /// <summary>
     /// Indexes a video

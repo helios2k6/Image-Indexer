@@ -25,7 +25,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace ImageIndexer
+namespace FrameIndexLibrary
 {
     /// <summary>
     /// An Image object that allows you to read from it form multiple threads
