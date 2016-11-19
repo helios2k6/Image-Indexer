@@ -22,73 +22,40 @@
 using System;
 using System.Linq;
 
-namespace VideoIndexer.Wrappers
+namespace PhotoCollectionIndexer.Wrappers
 {
-    /// <summary>
-    /// The image fingerprint of an image
-    /// </summary>
-    public sealed class FrameFingerPrintWrapper : IEquatable<FrameFingerPrintWrapper>
+    public sealed class PhotoFingerPrintDatabaseWrapper : IEquatable<PhotoFingerPrintDatabaseWrapper>
     {
         #region public properties
-        /// <summary>
-        /// The frame that this frame occurs at
-        /// </summary>
-        public int FrameNumber { get; set; }
+        public PhotoFingerPrintWrapper[] PhotoFingerPrints { get; set; }
+        #endregion
 
-        /// <summary>
-        /// The pHash code of this frame
-        /// </summary>
-        public ulong PHashCode { get; set; }
+        #region ctor
+        public PhotoFingerPrintDatabaseWrapper()
+        {
+            PhotoFingerPrints = new PhotoFingerPrintWrapper[0];
+        }
         #endregion
 
         #region public methods
-        /// <summary>
-        /// Compares this object with the given object
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public bool Equals(FrameFingerPrintWrapper other)
+        public bool Equals(PhotoFingerPrintDatabaseWrapper other)
         {
             if (EqualsPreamble(other) == false)
             {
                 return false;
             }
 
-            return FrameNumber == other.FrameNumber &&
-                PHashCode == other.PHashCode;
+            return Enumerable.SequenceEqual(PhotoFingerPrints, other.PhotoFingerPrints);
         }
 
-        /// <summary>
-        /// Compares this object with the given object
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
         public override bool Equals(object obj)
         {
-            if (EqualsPreamble(obj) == false)
-            {
-                return false;
-            }
-
-            return Equals(obj as FrameFingerPrintWrapper);
+            return Equals(obj as PhotoFingerPrintDatabaseWrapper);
         }
 
-        /// <summary>
-        /// Gets the hashcode
-        /// </summary>
-        /// <returns>The hashcode</returns>
         public override int GetHashCode()
         {
-            return FrameNumber ^ PHashCode.GetHashCode();
-        }
-
-        /// <summary>
-        /// Get the string representation of this fingerprint
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return string.Format("{0} | {1}", FrameNumber, PHashCode);
+            return PhotoFingerPrints.Aggregate(0, (acc, photo) => photo.GetHashCode() ^ acc);
         }
         #endregion
 

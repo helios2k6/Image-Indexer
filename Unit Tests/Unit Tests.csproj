@@ -8,7 +8,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>UnitTests</RootNamespace>
     <AssemblyName>UnitTests</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -26,6 +26,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,6 +35,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -55,13 +57,18 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ImageIndexer.cs" />
-    <Compile Include="Serialization.cs" />
+    <Compile Include="PhotoIndexerSerializationTests.cs" />
+    <Compile Include="VideoIndexerSerializationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Frame Index Library\Frame Index Library.csproj">
       <Project>{3a3a5ea5-81a3-404c-aa78-8ae8ae8ca813}</Project>
       <Name>Frame Index Library</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Photo Collection Indexer\Photo Collection Indexer.csproj">
+      <Project>{279fc3d2-d799-43b0-891a-b15910959470}</Project>
+      <Name>Photo Collection Indexer</Name>
     </ProjectReference>
     <ProjectReference Include="..\Video Indexer\Video Indexer.csproj">
       <Project>{3f9b585c-0730-447c-8d23-37765cc47243}</Project>

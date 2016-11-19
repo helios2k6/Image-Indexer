@@ -20,18 +20,18 @@
  */
 
 using FrameIndexLibrary;
+using PhotoCollectionIndexer.Serialization;
+using PhotoCollectionIndexer.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using VideoIndexer.Serialization;
-using VideoIndexer.Wrappers;
 
-namespace VideoIndexer
+namespace PhotoCollectionIndexer
 {
-    internal static class Driver
+    public static class Driver
     {
         enum Mode
         {
@@ -70,37 +70,6 @@ namespace VideoIndexer
         #endregion
 
         #region private methods
-        private static void ExecuteIndex(string[] args)
-        {
-            string videoFile = GetVideoPath(args);
-            string databaseFile = GetDatabasePath(args);
-
-            if (string.IsNullOrWhiteSpace(videoFile) || string.IsNullOrWhiteSpace(databaseFile))
-            {
-                PrintHelp("Video path or database path not provided");
-                return;
-            }
-
-            if (File.Exists(videoFile) == false)
-            {
-                PrintHelp("Video file does not exist");
-                return;
-            }
-
-            VideoFingerPrintDatabaseWrapper database = File.Exists(databaseFile)
-                ? DatabaseLoader.Load(databaseFile)
-                : new VideoFingerPrintDatabaseWrapper();
-
-            VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoFile);
-
-            var fingerPrintList = new List<VideoFingerPrintWrapper>();
-            fingerPrintList.AddRange(database.VideoFingerPrints);
-            fingerPrintList.Add(videoFingerPrint);
-
-            database.VideoFingerPrints = fingerPrintList.ToArray();
-            DatabaseSaver.Save(database, databaseFile);
-        }
-
         private static void ExecuteSearch(string[] args)
         {
             string photoFile = GetPhotoPath(args);
@@ -126,51 +95,51 @@ namespace VideoIndexer
 
             using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false))
             {
-                lockbitImage.Lock();
-                ulong providedPhotoHash = FrameIndexer.IndexFrame(lockbitImage);
-                VideoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(databaseFile);
-                Dictionary<int, HashSet<Tuple<string, int>>> distanceToFingerprints = new Dictionary<int, HashSet<Tuple<string, int>>>();
-                foreach (var video in database.VideoFingerPrints)
+
+            }
+        }
+
+        private static void ExecuteIndex(string[] args)
+        {
+            string photoFile = GetPhotoPath(args);
+            string databaseFile = GetDatabasePath(args);
+
+            if (string.IsNullOrWhiteSpace(photoFile) || string.IsNullOrWhiteSpace(databaseFile))
+            {
+                PrintHelp("Video path or database path not provided");
+                return;
+            }
+
+            if (File.Exists(photoFile) == false)
+            {
+                PrintHelp("Video file does not exist");
+                return;
+            }
+
+            PhotoFingerPrintDatabaseWrapper database = File.Exists(databaseFile)
+                ? DatabaseLoader.Load(databaseFile)
+                : new PhotoFingerPrintDatabaseWrapper();
+
+            using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false))
+            {
+                PhotoFingerPrintWrapper fingerPrint = new PhotoFingerPrintWrapper
                 {
-                    foreach (var fingerPrint in video.FingerPrints)
-                    {
-                        int distance = DistanceCalculator.CalculateHammingDistance(providedPhotoHash, fingerPrint.PHashCode);
+                    FilePath = photoFile,
+                    PHash = FrameIndexer.IndexFrame(lockbitImage),
+                };
 
-                        HashSet<Tuple<string, int>> bucket;
-                        if (distanceToFingerprints.TryGetValue(distance, out bucket) == false)
-                        {
-                            bucket = new HashSet<Tuple<string, int>>();
-                            distanceToFingerprints.Add(distance, bucket);
-                        }
+                var fingerPrintList = new List<PhotoFingerPrintWrapper>();
+                fingerPrintList.AddRange(database.PhotoFingerPrints);
+                fingerPrintList.Add(fingerPrint);
 
-                        bucket.Add(Tuple.Create(video.FilePath, fingerPrint.FrameNumber));
-                    }
-                }
-
-                var filteredDistances = from distanceToBucket in distanceToFingerprints
-                                        where distanceToBucket.Key <= 4
-                                        orderby distanceToBucket.Key
-                                        select distanceToBucket;
-
-                foreach (KeyValuePair<int, HashSet<Tuple<string, int>>> kvp in filteredDistances)
-                {
-                    int distance = kvp.Key;
-                    foreach (Tuple<string, int> entry in kvp.Value)
-                    {
-                        Console.WriteLine(string.Format("Distance {0} for {1} at Frame {2}", distance, entry.Item1, entry.Item2));
-                    }
-                }
+                database.PhotoFingerPrints = fingerPrintList.ToArray();
+                DatabaseSaver.Save(database, databaseFile);
             }
         }
 
         private static string GetDatabasePath(string[] args)
         {
             return GetArgumentTuple(args, "--database");
-        }
-
-        private static string GetVideoPath(string[] args)
-        {
-            return GetArgumentTuple(args, "--video");
         }
 
         private static string GetPhotoPath(string[] args)
@@ -223,7 +192,7 @@ namespace VideoIndexer
         private static void PrintHelp(string messageToPrint)
         {
             var builder = new StringBuilder();
-            builder.AppendLine("Video Indexer v1.0");
+            builder.AppendLine("Photo Indexer v1.0");
 
             if (string.IsNullOrWhiteSpace(messageToPrint) == false)
             {
@@ -237,7 +206,7 @@ namespace VideoIndexer
                 .AppendLine()
                 .AppendLine("Index Related Commands")
                 .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a video").AppendLine()
-                .Append('\t').Append("--video").Append('\t').Append('\t').Append("The video to index").AppendLine()
+                .Append('\t').Append("--photo").Append('\t').Append('\t').Append("The photo to index").AppendLine()
                 .Append('\t').Append("--database").Append('\t').Append("The path to save the database to. This will update existing databases").AppendLine()
                 .AppendLine()
                 .AppendLine("Search Related Commands")
@@ -248,5 +217,8 @@ namespace VideoIndexer
             Console.Write(builder.ToString());
         }
         #endregion
+
+
+
     }
 }

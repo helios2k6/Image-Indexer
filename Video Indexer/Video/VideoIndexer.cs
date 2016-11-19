@@ -65,7 +65,7 @@ namespace VideoIndexer.Video
             for (var startTime = TimeSpan.FromSeconds(0); startTime < totalDuration; startTime += PlaybackDuration)
             {
                 int numFramesToOutput = CalculateFramesToOutputFromFramerate(startTime, quarterFramerate, totalDuration);
-                fingerPrints.AddRange(IndexVideoSegment(videoFile, startTime, framerate, numFramesToOutput, frameIndex));
+                fingerPrints.AddRange(IndexVideoSegment(videoFile, startTime, quarterFramerate, numFramesToOutput, frameIndex));
                 frameIndex += numFramesToOutput;
             }
 

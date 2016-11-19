@@ -45,19 +45,25 @@ namespace VideoIndexer.Video
         private readonly BlockingCollection<WorkItem> _buffer;
         private readonly ConcurrentBag<FrameFingerPrintWrapper> _fingerPrints;
         private readonly Task[] _workerThreads;
+        private readonly int _numThreads;
         #endregion
 
         #region ctor
-        public VideoIndexThreadPool()
+        public VideoIndexThreadPool(int numThreads)
         {
+            _numThreads = numThreads;
             _buffer = new BlockingCollection<WorkItem>();
             _fingerPrints = new ConcurrentBag<FrameFingerPrintWrapper>();
-            _workerThreads = new Task[DEFAULT_WORKER_THREADS];
+            _workerThreads = new Task[_numThreads];
 
-            for (int i = 0; i < DEFAULT_WORKER_THREADS; i++)
+            for (int i = 0; i < _numThreads; i++)
             {
                 _workerThreads[i] = Task.Factory.StartNew(RunConsumer);
             }
+        }
+
+        public VideoIndexThreadPool() : this(DEFAULT_WORKER_THREADS)
+        {
         }
         #endregion
 

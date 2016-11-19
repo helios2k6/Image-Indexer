@@ -27,10 +27,10 @@ using VideoIndexer.Wrappers;
 namespace UnitTests
 {
     [TestClass]
-    public class Serialization
+    public class VideoIndexerSerializationTests
     {
         [TestMethod]
-        public void TestSerialization()
+        public void TestVideoIndexerSerialization()
         {
             var frameFingerPrint = new FrameFingerPrintWrapper
             {

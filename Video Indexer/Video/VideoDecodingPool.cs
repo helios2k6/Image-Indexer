@@ -38,14 +38,19 @@ namespace VideoIndexer.Video
         #region public methods
         public static void StartDecoding(VideoFile videoFile, VideoIndexThreadPool sink, int currentFrameIndex)
         {
-            var workerTasks = new Task[DEFAULT_WORKER_THREADS];
+            StartDecoding(videoFile, sink, currentFrameIndex, DEFAULT_WORKER_THREADS);
+        }
+
+        public static void StartDecoding(VideoFile videoFile, VideoIndexThreadPool sink, int currentFrameIndex, int numThreads)
+        {
+            var workerTasks = new Task[numThreads];
             List<long> offsets = videoFile.FrameOffsets.ToList();
-            int lengthOfSubarrays = offsets.Count / DEFAULT_WORKER_THREADS;
-            int remainder = offsets.Count % DEFAULT_WORKER_THREADS;
-            for (int i = 0; i < DEFAULT_WORKER_THREADS; i++)
+            int lengthOfSubarrays = offsets.Count / numThreads;
+            int remainder = offsets.Count % numThreads;
+            for (int i = 0; i < numThreads; i++)
             {
                 int firstElementIndex = i * lengthOfSubarrays;
-                IEnumerable<long> slicedArray = remainder > 0 && i + 1 == DEFAULT_WORKER_THREADS
+                IEnumerable<long> slicedArray = remainder > 0 && i + 1 == numThreads
                     ? Slice(offsets, firstElementIndex, lengthOfSubarrays + remainder)
                     : Slice(offsets, firstElementIndex, lengthOfSubarrays);
 

@@ -43,7 +43,7 @@ namespace VideoIndexer.Serialization
         public static void Save(VideoFingerPrintDatabaseWrapper database, string filePath)
         {
             byte[] rawDatabaseBytes = SaveDatabase(database);
-            using (BinaryWriter writer = new BinaryWriter(File.Open(filePath, FileMode.OpenOrCreate)))
+            using (BinaryWriter writer = new BinaryWriter(File.Open(filePath, FileMode.Create)))
             {
                 writer.Write(rawDatabaseBytes);
             }
