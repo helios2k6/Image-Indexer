@@ -27,12 +27,12 @@ namespace ImageIndexer
     public static class DistanceCalculator
     {
         /// <summary>
-        /// Calculates the distance between two image fingerprints
+        /// Calculates the hamming distance between two image fingerprints
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
-        /// <returns></returns>
-        public static int CalculateDistance(ulong pHashcodeA, ulong pHashCodeB)
+        /// <param name="pHashcodeA">The first hash code</param>
+        /// <param name="pHashCodeB">The second hash code</param>
+        /// <returns>The hamming distance between two hashcodes</returns>
+        public static int CalculateHammingDistance(ulong pHashcodeA, ulong pHashCodeB)
         {
             int numBits = 0;
             for (int i = 0; i < 64; i++)

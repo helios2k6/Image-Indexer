@@ -134,7 +134,7 @@ namespace VideoIndexer
                 {
                     foreach (var fingerPrint in video.FingerPrints)
                     {
-                        int distance = DistanceCalculator.CalculateDistance(providedPhotoHash, fingerPrint.PHashCode);
+                        int distance = DistanceCalculator.CalculateHammingDistance(providedPhotoHash, fingerPrint.PHashCode);
 
                         HashSet<Tuple<string, int>> bucket;
                         if (distanceToFingerprints.TryGetValue(distance, out bucket) == false)
