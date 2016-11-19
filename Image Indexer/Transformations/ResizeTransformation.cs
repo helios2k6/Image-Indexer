@@ -29,88 +29,41 @@ namespace ImageIndexer
     /// <summary>
     /// A resizing transformation
     /// </summary>
-    internal sealed class ResizeTransformation : ITransformation, IDisposable
+    internal static class ResizeTransformation
     {
-        private bool _disposed;
-        private readonly Image _sourceImage;
-        private readonly int _width;
-        private readonly int _height;
-
-        /// <summary>
-        /// construct a new resize transformation
-        /// </summary>
-        /// <param name="sourceImage">The source image to transform</param>
-        /// <param name="width">The width of the final image</param>
-        /// <param name="height">The height of the final image</param>
-        public ResizeTransformation(Image sourceImage, int width, int height)
-        {
-            _disposed = false;
-            _sourceImage = sourceImage.Clone() as Image;
-            _width = width;
-            _height = height;
-        }
-
         /// <summary>
         /// Transform the image
         /// </summary>
         /// <returns>A transformed image</returns>
-        public Image Transform()
+        public static Image Transform(Image sourceImage, int width, int height)
         {
             // Easy check to avoid lots of work for things already sized properly
-            if (_width == _sourceImage.Width && _height == _sourceImage.Height)
+            if (width == sourceImage.Width && height == sourceImage.Height)
             {
-                return (_sourceImage.Clone() as Image);
+                throw new InvalidOperationException("Image and target size are the same");
             }
 
-            var destRect = new Rectangle(0, 0, _width, _height);
-            var destImage = new Bitmap(_width, _height);
+            var destRect = new Rectangle(0, 0, width, height);
+            var destImage = new Bitmap(width, height);
 
-            destImage.SetResolution(_sourceImage.HorizontalResolution, _sourceImage.VerticalResolution);
+            destImage.SetResolution(sourceImage.HorizontalResolution, sourceImage.VerticalResolution);
 
             using (var graphics = Graphics.FromImage(destImage))
             {
                 graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                graphics.CompositingQuality = CompositingQuality.HighSpeed;
+                graphics.InterpolationMode = InterpolationMode.Bilinear;
+                graphics.SmoothingMode = SmoothingMode.HighSpeed;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighSpeed;
 
                 using (var wrapMode = new ImageAttributes())
                 {
                     wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(_sourceImage, destRect, 0, 0, _sourceImage.Width, _sourceImage.Height, GraphicsUnit.Pixel, wrapMode);
+                    graphics.DrawImage(sourceImage, destRect, 0, 0, sourceImage.Width, sourceImage.Height, GraphicsUnit.Pixel, wrapMode);
                 }
             }
 
             return destImage;
-        }
-
-        /// <summary>
-        /// Factory version of this transformation
-        /// </summary>
-        /// <param name="sourceImage"></param>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <returns></returns>
-        public static Image Transform(Image sourceImage, int width, int height)
-        {
-            using (var transformation = new ResizeTransformation(sourceImage, width, height))
-            {
-                return transformation.Transform();
-            }
-        }
-
-        /// <summary>
-        /// Dispose of this object
-        /// </summary>
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-            _disposed = true;
-            _sourceImage.Dispose();
         }
     }
 }

@@ -40,7 +40,7 @@ namespace UnitTests
         [TestMethod]
         public void SamePhotoTest()
         {
-            using (Image testImage = GetTestImage(TestPhoto1))
+            using (WritableLockBitImage testImage = GetTestImage(TestPhoto1))
             {
                 VideoFingerPrintWrapper fingerprint = Indexer.IndexVideo(new[] { testImage }, string.Empty);
                 VideoFingerPrintWrapper fingerPrint2 = Indexer.IndexVideo(new[] { testImage }, string.Empty);
@@ -52,38 +52,40 @@ namespace UnitTests
         [TestMethod]
         public void VerySimilarPhotoTest()
         {
-            using (Image testImage1 = GetTestImage(TestPhoto1))
-            using (Image testImage2 = GetTestImage(TestPhoto2))
+            using (WritableLockBitImage testImage1 = GetTestImage(TestPhoto1))
+            using (WritableLockBitImage testImage2 = GetTestImage(TestPhoto2))
             {
                 VideoFingerPrintWrapper fingerprint1 = Indexer.IndexVideo(new[] { testImage1 }, string.Empty);
                 VideoFingerPrintWrapper fingerPrint2 = Indexer.IndexVideo(new[] { testImage2 }, string.Empty);
 
                 int distance = DistanceCalculator.CalculateDistance(fingerprint1.FingerPrints[0], fingerPrint2.FingerPrints[0]);
 
-                Assert.AreEqual(2, distance);
+                Assert.AreEqual(3, distance);
             }
         }
 
         [TestMethod]
         public void TotallyDifferentPhotosTest()
         {
-            using (Image testImage1 = GetTestImage(TestPhoto1))
-            using (Image testImage2 = GetTestImage(TestPhoto3))
+            using (WritableLockBitImage testImage1 = GetTestImage(TestPhoto1))
+            using (WritableLockBitImage testImage2 = GetTestImage(TestPhoto3))
             {
                 VideoFingerPrintWrapper fingerprint1 = Indexer.IndexVideo(new[] { testImage1 }, string.Empty);
                 VideoFingerPrintWrapper fingerPrint2 = Indexer.IndexVideo(new[] { testImage2 }, string.Empty);
 
                 int distance = DistanceCalculator.CalculateDistance(fingerprint1.FingerPrints[0], fingerPrint2.FingerPrints[0]);
 
-                Assert.AreEqual(7, distance);
+                Assert.AreEqual(8, distance);
             }
         }
 
-        private static Image GetTestImage(string path)
+        private static WritableLockBitImage GetTestImage(string path)
         {
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
             {
-                return new Bitmap(stream);
+                var image = new WritableLockBitImage(new Bitmap(stream), false);
+                image.Lock();
+                return image;
             }
         }
     }

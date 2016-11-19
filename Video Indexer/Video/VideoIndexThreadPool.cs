@@ -91,7 +91,7 @@ namespace VideoIndexer.Video
         {
             foreach (WorkItem item in _buffer.GetConsumingEnumerable())
             {
-                FrameFingerPrintWrapper fingerPrint = Indexer.IndexFrame(item.Frame.LockBitImage.GetImage(), item.FrameNumber);
+                FrameFingerPrintWrapper fingerPrint = Indexer.IndexFrame(item.Frame.LockBitImage, item.FrameNumber);
                 _fingerPrints.Add(fingerPrint);
             }
         }

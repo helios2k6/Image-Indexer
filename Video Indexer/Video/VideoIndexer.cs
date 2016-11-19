@@ -22,7 +22,6 @@
 using Functional.Maybe;
 using ImageIndexer;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;

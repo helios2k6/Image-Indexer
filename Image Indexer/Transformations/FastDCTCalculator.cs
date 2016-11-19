@@ -22,7 +22,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Numerics;
 
@@ -31,37 +30,11 @@ namespace ImageIndexer
     /// <summary>
     /// A fast DCT calculator 
     /// </summary>
-    public sealed class FastDCTCalculator
+    internal static class FastDCTCalculator
     {
         #region private fields
-        private readonly byte[,] _sourceMatrix;
-
         private static readonly ConcurrentDictionary<Tuple<int, int>, Complex> WFunctionCache =
             new ConcurrentDictionary<Tuple<int, int>, Complex>();
-        #endregion
-
-        #region ctor
-        /// <summary>
-        /// Construct a calcualtor from an image
-        /// </summary>
-        /// <param name="sourceImage"></param>
-        public FastDCTCalculator(Image sourceImage)
-        {
-            if (sourceImage.Width != sourceImage.Height)
-            {
-                throw new ArgumentException("Image must be square for DCT transform");
-            }
-            _sourceMatrix = CopyImageToMatrix(sourceImage);
-        }
-
-        /// <summary>
-        /// Construct a calculator from a given matrix
-        /// </summary>
-        /// <param name="sourceMatrix"></param>
-        public FastDCTCalculator(byte[,] sourceMatrix)
-        {
-            _sourceMatrix = sourceMatrix;
-        }
         #endregion
 
         #region public methods
@@ -70,33 +43,43 @@ namespace ImageIndexer
         /// </summary>
         /// <param name="sourceImage">The source image to find the DCT of</param>
         /// <returns>The DCT coefficients</returns>
-        public static double[,] Calculate(Image sourceImage)
+        public static double[,] Calculate(WritableLockBitImage sourceImage)
         {
-            return (new FastDCTCalculator(sourceImage)).Calculate();
+            if (sourceImage.Width != sourceImage.Height)
+            {
+                throw new ArgumentException("DCTs can only be calculated on square matrices");
+            }
+
+            byte[,] sourceMatrix = new byte[sourceImage.Height, sourceImage.Width];
+            for (int y = 0; y < sourceImage.Height; y++)
+            {
+                for (int x = 0; x < sourceImage.Width; x++)
+                {
+                    // We only need the greyscale 
+                    sourceMatrix[y, x] = sourceImage.GetPixel(x, y).R;
+                }
+            }
+
+            return Calculate(sourceMatrix);
         }
 
         /// <summary>
         /// Calculate the DCT
         /// </summary>
-        /// <param name="sourceMatrix">The source matrix to find the DCT of</param>
         /// <returns>The DCT coefficients</returns>
         public static double[,] Calculate(byte[,] sourceMatrix)
         {
-            return (new FastDCTCalculator(sourceMatrix)).Calculate();
-        }
+            if (sourceMatrix.GetLength(0) != sourceMatrix.GetLength(1))
+            {
+                throw new ArgumentException("DCTs can only be calculated on square matrices");
+            }
 
-        /// <summary>
-        /// Calculate the DCT
-        /// </summary>
-        /// <returns>The DCT coefficients</returns>
-        public double[,] Calculate()
-        {
-            int length = _sourceMatrix.GetLength(0);
-            Complex[][] dft = CalculateDFT2D(CreateYSequence(_sourceMatrix));
+            int length = sourceMatrix.GetLength(0);
+            Complex[][] dft = CalculateDFT2D(CreateYSequence(sourceMatrix));
             double[,] dctOutput = new double[length, length];
             for (int row = 0; row < length; row++)
             {
-                for (int col = 0; col < _sourceMatrix.GetLength(1); col++)
+                for (int col = 0; col < sourceMatrix.GetLength(1); col++)
                 {
                     Complex dftAsComplex = WFunctionCached(2 * length, row) * WFunctionCached(2 * length, col) * dft[row][col];
                     dctOutput[row, col] = dftAsComplex.Real;
@@ -127,23 +110,6 @@ namespace ImageIndexer
             }
 
             return NormalizeDFT(output);
-        }
-
-        private static byte[,] CopyImageToMatrix(Image image)
-        {
-            byte[,] sourceMatrix = new byte[image.Width, image.Height];
-            using (var lockbitImage = new WritableLockBitImage(image))
-            {
-                for (int y = 0; y < lockbitImage.Height; y++)
-                {
-                    for (int x = 0; x < lockbitImage.Width; x++)
-                    {
-                        sourceMatrix[y, x] = lockbitImage.GetPixel(x, y).R;
-                    }
-                }
-            }
-
-            return sourceMatrix;
         }
 
         private static Complex[][] CreateYSequence(byte[,] sourceMatrix)

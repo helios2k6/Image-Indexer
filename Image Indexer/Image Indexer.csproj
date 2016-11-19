@@ -68,7 +68,6 @@
     <Compile Include="SharpFFT\RealDoubleFFT_Odd_Odd.cs" />
     <Compile Include="Transformations\FastDCTCalculator.cs" />
     <Compile Include="Transformations\GreyScaleTransformation.cs" />
-    <Compile Include="Transformations\ITransformation.cs" />
     <Compile Include="Transformations\ResizeTransformation.cs" />
     <Compile Include="Wrappers\VideoFingerPrintDatabaseWrapper.cs" />
     <Compile Include="Wrappers\FrameFingerPrintWrapper.cs" />

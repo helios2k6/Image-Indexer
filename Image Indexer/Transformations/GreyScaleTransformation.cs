@@ -27,84 +27,50 @@ namespace ImageIndexer
     /// <summary>
     /// A transformation that turns an image into a grey scale
     /// </summary>
-    internal sealed class GreyScaleTransformation : ITransformation, IDisposable
+    internal static class GreyScaleTransformation
     {
-        #region private fields
-        private bool _disposed;
-        private readonly Image _sourceImage;
-        #endregion
-
-        #region ctor
-        /// <summary>
-        /// Construct this black and white transformation
-        /// </summary>
-        /// <param name="sourceImage"></param>
-        public GreyScaleTransformation(Image sourceImage)
-        {
-            _disposed = false;
-            _sourceImage = sourceImage.Clone() as Image;
-        }
-        #endregion
-
         #region public methods
         /// <summary>
-        /// Transform this image to black and white
+        /// Transform this image to a greyscale version in-place
         /// </summary>
+        /// <remarks>This will transform the image INPLACE</remarks>
         /// <returns>A black and white image</returns>
-        public Image Transform()
+        public static void Transform(WritableLockBitImage image)
         {
-            using (var sourceLockbitImage = new WritableLockBitImage(_sourceImage))
-            using (var outputLockbitImage = new WritableLockBitImage(_sourceImage.Width, _sourceImage.Height))
+            Transform(image, image);
+        }
+
+        /// <summary>
+        /// Transform this image to a greyscale version out-of-place
+        /// </summary>
+        /// <param name="source">The source image</param>
+        /// <param name="output">The image to write to</param>
+        public static void Transform(WritableLockBitImage source, WritableLockBitImage output)
+        {
+            if (source.Locked || output.Locked)
             {
-                for (int y = 0; y < sourceLockbitImage.Height; y++)
+                throw new ArgumentException("Lockbit image is locked.");
+            }
+
+            for (int y = 0; y < source.Height; y++)
+            {
+                for (int x = 0; x < source.Width; x++)
                 {
-                    for (int x = 0; x < sourceLockbitImage.Width; x++)
-                    {
-                        Color sourcePixel = sourceLockbitImage.GetPixel(x, y);
+                    Color sourcePixel = source.GetPixel(x, y);
 
-                        int greyColor =
-                            (int)Math.Floor(sourcePixel.R * 0.299) +
-                            (int)Math.Floor(sourcePixel.G * 0.587) +
-                            (int)Math.Floor(sourcePixel.B * 0.114);
+                    int greyColor =
+                        (int)Math.Floor(sourcePixel.R * 0.299) +
+                        (int)Math.Floor(sourcePixel.G * 0.587) +
+                        (int)Math.Floor(sourcePixel.B * 0.114);
 
-                        Color greyScale = Color.FromArgb(
-                            greyColor,
-                            0,
-                            0
-                        );
-                        outputLockbitImage.SetPixel(x, y, greyScale);
-                    }
+                    Color greyScale = Color.FromArgb(
+                        greyColor,
+                        0,
+                        0
+                    );
+                    output.SetPixel(x, y, greyScale);
                 }
-                outputLockbitImage.Lock();
-                return outputLockbitImage.GetImage();
             }
-        }
-
-        /// <summary>
-        /// Factory version of this transformation
-        /// </summary>
-        /// <param name="sourceImage"></param>
-        /// <returns></returns>
-        public static Image Transform(Image sourceImage)
-        {
-            using (var transformation = new GreyScaleTransformation(sourceImage))
-            {
-                return transformation.Transform();
-            }
-        }
-
-        /// <summary>
-        /// Dispose of this object
-        /// </summary>
-        public void Dispose()
-        {
-            if (_disposed)
-            {
-                return;
-            }
-
-            _disposed = true;
-            _sourceImage.Dispose();
         }
         #endregion
     }

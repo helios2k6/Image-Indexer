@@ -20,6 +20,8 @@
  */
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -32,6 +34,7 @@ namespace ImageIndexer
     /// </summary>
     public sealed class WritableLockBitImage : IDisposable
     {
+        #region private fields
         private bool _disposed;
         private bool _locked;
 
@@ -41,7 +44,49 @@ namespace ImageIndexer
         private readonly int _bitDepth;
         private readonly int _width;
         private readonly int _height;
+        #endregion
 
+        #region public properties
+        /// <summary>
+        /// Get whether this lockbit image is locked
+        /// </summary>
+        public bool Locked
+        {
+            get { return _locked; }
+        }
+
+        /// <summary>
+        /// The width of the image
+        /// </summary>
+        public int Width
+        {
+            get
+            {
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException("Object already disposed");
+                }
+                return _width;
+            }
+        }
+
+        /// <summary>
+        /// The height of the image
+        /// </summary>
+        public int Height
+        {
+            get
+            {
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException("Object already disposed");
+                }
+                return _height;
+            }
+        }
+        #endregion
+
+        #region ctor
         /// <summary>
         /// Creates a new writable lockbit image
         /// </summary>
@@ -50,9 +95,27 @@ namespace ImageIndexer
         /// so it's safe to dispose of any references passed to this object
         /// </remarks>
         public WritableLockBitImage(Image image)
+            : this(image, true)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new writable lockbit image, but gives the consumer the ability to pass a flag 
+        /// specifying whether to clone the input image
+        /// </summary>
+        /// <param name="image">The image to use for this writable lockbit image</param>
+        /// <param name="shouldClone">Whether or not to clone this image</param>
+        public WritableLockBitImage(Image image, bool shouldClone)
         {
             _disposed = _locked = false;
-            _bitmap = new Bitmap(image.Clone() as Image);
+            if (shouldClone)
+            {
+                _bitmap = new Bitmap(image.Clone() as Image);
+            }
+            else
+            {
+                _bitmap = new Bitmap(image);
+            }
             _bitmapData = _bitmap.LockBits(
                 new Rectangle(0, 0, image.Width, image.Height),
                 ImageLockMode.ReadWrite,
@@ -95,7 +158,9 @@ namespace ImageIndexer
 
             Marshal.Copy(_bitmapData.Scan0, _buffer, 0, _buffer.Length);
         }
+        #endregion
 
+        #region public methods
         /// <summary>
         /// Get the pixel at a specific point in this image
         /// </summary>
@@ -161,6 +226,7 @@ namespace ImageIndexer
             {
                 throw new ObjectDisposedException("Object already disposed");
             }
+
             // Get color components count
             int cCount = _bitDepth / 8;
 
@@ -192,36 +258,6 @@ namespace ImageIndexer
         }
 
         /// <summary>
-        /// The width of the image
-        /// </summary>
-        public int Width
-        {
-            get
-            {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException("Object already disposed");
-                }
-                return _width;
-            }
-        }
-
-        /// <summary>
-        /// The height of the image
-        /// </summary>
-        public int Height
-        {
-            get
-            {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException("Object already disposed");
-                }
-                return _height;
-            }
-        }
-
-        /// <summary>
         /// Lock this image
         /// </summary>
         public void Lock()
@@ -246,7 +282,7 @@ namespace ImageIndexer
                 throw new InvalidOperationException("Cannot retrieve unlocked object");
             }
 
-            return _bitmap.Clone() as Image;
+            return _bitmap;
         }
 
         /// <summary>
@@ -269,7 +305,9 @@ namespace ImageIndexer
 
             _bitmap.Dispose();
         }
+        #endregion
 
+        #region private methods
         private void WriteBufferDirectlyToMemory()
         {
             unsafe
@@ -305,5 +343,6 @@ namespace ImageIndexer
                 });
             }
         }
+        #endregion
     }
 }
