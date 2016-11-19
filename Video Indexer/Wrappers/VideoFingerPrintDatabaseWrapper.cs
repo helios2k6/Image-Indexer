@@ -22,23 +22,28 @@
 using System;
 using System.Linq;
 
-namespace ImageIndexer
+namespace VideoIndexer.Wrappers
 {
     /// <summary>
-    /// The fingerprints for a video
+    /// Represents the Image Finger Print database
     /// </summary>
-    public sealed class VideoFingerPrintWrapper : IEquatable<VideoFingerPrintWrapper>
+    public sealed class VideoFingerPrintDatabaseWrapper : IEquatable<VideoFingerPrintDatabaseWrapper>
     {
         #region public properties
         /// <summary>
-        /// The file path to the video
+        /// The fingerprints of all of the videos
         /// </summary>
-        public string FilePath { get; set; }
+        public VideoFingerPrintWrapper[] VideoFingerPrints { get; set; }
+        #endregion
 
+        #region ctor
         /// <summary>
-        /// The fingerprints for all of the frames of this video
+        /// Construct a default VideoFingerPrintDatabaseWrapper
         /// </summary>
-        public FrameFingerPrintWrapper[] FingerPrints { get; set; }
+        public VideoFingerPrintDatabaseWrapper()
+        {
+            VideoFingerPrints = new VideoFingerPrintWrapper[0];
+        }
         #endregion
 
         #region public methods
@@ -47,15 +52,14 @@ namespace ImageIndexer
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(VideoFingerPrintWrapper other)
+        public bool Equals(VideoFingerPrintDatabaseWrapper other)
         {
             if (EqualsPreamble(other) == false)
             {
                 return false;
             }
 
-            return string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
-                Enumerable.SequenceEqual(FingerPrints, other.FingerPrints);
+            return Enumerable.SequenceEqual(VideoFingerPrints, other.VideoFingerPrints);
         }
 
         /// <summary>
@@ -70,7 +74,7 @@ namespace ImageIndexer
                 return false;
             }
 
-            return Equals(obj as VideoFingerPrintWrapper);
+            return Equals(obj as VideoFingerPrintDatabaseWrapper);
         }
 
         /// <summary>
@@ -79,11 +83,9 @@ namespace ImageIndexer
         /// <returns></returns>
         public override int GetHashCode()
         {
-            int fingerPrintHashCode = FingerPrints != null
-                ? FingerPrints.Aggregate(0, (acc, f) => acc + f.GetHashCode())
+            return VideoFingerPrints != null
+                ? VideoFingerPrints.Aggregate(0, (acc, f) => acc ^ f.GetHashCode())
                 : 0;
-
-            return FilePath.GetHashCode() ^ fingerPrintHashCode;
         }
         #endregion
 

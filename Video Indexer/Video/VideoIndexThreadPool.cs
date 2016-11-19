@@ -24,6 +24,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using VideoIndexer.Y4M;
+using VideoIndexer.Wrappers;
 
 namespace VideoIndexer.Video
 {
@@ -91,8 +92,12 @@ namespace VideoIndexer.Video
         {
             foreach (WorkItem item in _buffer.GetConsumingEnumerable())
             {
-                FrameFingerPrintWrapper fingerPrint = Indexer.IndexFrame(item.Frame.LockBitImage, item.FrameNumber);
-                _fingerPrints.Add(fingerPrint);
+                ulong framePHash = FrameIndexer.IndexFrame(item.Frame.LockBitImage);
+                _fingerPrints.Add(new FrameFingerPrintWrapper
+                {
+                    PHashCode = framePHash,
+                    FrameNumber = item.FrameNumber,
+                });
             }
         }
         #endregion

@@ -32,13 +32,13 @@ namespace ImageIndexer
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static int CalculateDistance(FrameFingerPrintWrapper a, FrameFingerPrintWrapper b)
+        public static int CalculateDistance(ulong pHashcodeA, ulong pHashCodeB)
         {
             int numBits = 0;
             for (int i = 0; i < 64; i++)
             {
-                ulong aBit = a.PHashCode & ((ulong)1) << i;
-                ulong bBit = b.PHashCode & ((ulong)1) << i;
+                ulong aBit = pHashcodeA & ((ulong)1) << i;
+                ulong bBit = pHashCodeB & ((ulong)1) << i;
 
                 if (aBit != bBit)
                 {

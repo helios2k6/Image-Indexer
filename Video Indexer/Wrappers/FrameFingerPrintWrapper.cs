@@ -22,48 +22,44 @@
 using System;
 using System.Linq;
 
-namespace ImageIndexer
+namespace VideoIndexer.Wrappers
 {
     /// <summary>
-    /// Represents the Image Finger Print database
+    /// The image fingerprint of an image
     /// </summary>
-    public sealed class VideoFingerPrintDatabaseWrapper : IEquatable<VideoFingerPrintDatabaseWrapper>
+    public sealed class FrameFingerPrintWrapper : IEquatable<FrameFingerPrintWrapper>
     {
         #region public properties
         /// <summary>
-        /// The fingerprints of all of the videos
+        /// The frame that this frame occurs at
         /// </summary>
-        public VideoFingerPrintWrapper[] VideoFingerPrints { get; set; }
-        #endregion
+        public int FrameNumber { get; set; }
 
-        #region ctor
         /// <summary>
-        /// Construct a default VideoFingerPrintDatabaseWrapper
+        /// The pHash code of this frame
         /// </summary>
-        public VideoFingerPrintDatabaseWrapper()
-        {
-            VideoFingerPrints = new VideoFingerPrintWrapper[0];
-        }
+        public ulong PHashCode { get; set; }
         #endregion
 
         #region public methods
         /// <summary>
-        /// 
+        /// Compares this object with the given object
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(VideoFingerPrintDatabaseWrapper other)
+        public bool Equals(FrameFingerPrintWrapper other)
         {
             if (EqualsPreamble(other) == false)
             {
                 return false;
             }
 
-            return Enumerable.SequenceEqual(VideoFingerPrints, other.VideoFingerPrints);
+            return FrameNumber == other.FrameNumber &&
+                PHashCode == other.PHashCode;
         }
 
         /// <summary>
-        /// 
+        /// Compares this object with the given object
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
@@ -74,18 +70,16 @@ namespace ImageIndexer
                 return false;
             }
 
-            return Equals(obj as VideoFingerPrintDatabaseWrapper);
+            return Equals(obj as FrameFingerPrintWrapper);
         }
 
         /// <summary>
-        /// 
+        /// Gets the hashcode
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The hashcode</returns>
         public override int GetHashCode()
         {
-            return VideoFingerPrints != null
-                ? VideoFingerPrints.Aggregate(0, (acc, f) => acc ^ f.GetHashCode())
-                : 0;
+            return FrameNumber ^ PHashCode.GetHashCode();
         }
         #endregion
 

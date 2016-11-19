@@ -20,7 +20,6 @@
  */
 
 using Functional.Maybe;
-using ImageIndexer;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,6 +27,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using VideoIndexer.Media;
 using VideoIndexer.Y4M;
+using VideoIndexer.Wrappers;
 
 namespace VideoIndexer.Video
 {

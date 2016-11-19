@@ -26,6 +26,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using VideoIndexer.Serialization;
+using VideoIndexer.Wrappers;
 
 namespace VideoIndexer
 {
@@ -125,14 +127,14 @@ namespace VideoIndexer
             using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false))
             {
                 lockbitImage.Lock();
-                FrameFingerPrintWrapper providedPhotoHash = Indexer.IndexFrame(lockbitImage, 0);
+                ulong providedPhotoHash = FrameIndexer.IndexFrame(lockbitImage);
                 VideoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(databaseFile);
                 Dictionary<int, HashSet<Tuple<string, int>>> distanceToFingerprints = new Dictionary<int, HashSet<Tuple<string, int>>>();
                 foreach (var video in database.VideoFingerPrints)
                 {
                     foreach (var fingerPrint in video.FingerPrints)
                     {
-                        int distance = DistanceCalculator.CalculateDistance(providedPhotoHash, fingerPrint);
+                        int distance = DistanceCalculator.CalculateDistance(providedPhotoHash, fingerPrint.PHashCode);
 
                         HashSet<Tuple<string, int>> bucket;
                         if (distanceToFingerprints.TryGetValue(distance, out bucket) == false)

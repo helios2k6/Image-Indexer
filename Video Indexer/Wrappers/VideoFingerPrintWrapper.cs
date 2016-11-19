@@ -22,44 +22,44 @@
 using System;
 using System.Linq;
 
-namespace ImageIndexer
+namespace VideoIndexer.Wrappers
 {
     /// <summary>
-    /// The image fingerprint of an image
+    /// The fingerprints for a video
     /// </summary>
-    public sealed class FrameFingerPrintWrapper : IEquatable<FrameFingerPrintWrapper>
+    public sealed class VideoFingerPrintWrapper : IEquatable<VideoFingerPrintWrapper>
     {
         #region public properties
         /// <summary>
-        /// The frame that this frame occurs at
+        /// The file path to the video
         /// </summary>
-        public int FrameNumber { get; set; }
+        public string FilePath { get; set; }
 
         /// <summary>
-        /// The pHash code of this frame
+        /// The fingerprints for all of the frames of this video
         /// </summary>
-        public ulong PHashCode { get; set; }
+        public FrameFingerPrintWrapper[] FingerPrints { get; set; }
         #endregion
 
         #region public methods
         /// <summary>
-        /// Compares this object with the given object
+        /// 
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public bool Equals(FrameFingerPrintWrapper other)
+        public bool Equals(VideoFingerPrintWrapper other)
         {
             if (EqualsPreamble(other) == false)
             {
                 return false;
             }
 
-            return FrameNumber == other.FrameNumber &&
-                PHashCode == other.PHashCode;
+            return string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
+                Enumerable.SequenceEqual(FingerPrints, other.FingerPrints);
         }
 
         /// <summary>
-        /// Compares this object with the given object
+        /// 
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
@@ -70,16 +70,20 @@ namespace ImageIndexer
                 return false;
             }
 
-            return Equals(obj as FrameFingerPrintWrapper);
+            return Equals(obj as VideoFingerPrintWrapper);
         }
 
         /// <summary>
-        /// Gets the hashcode
+        /// 
         /// </summary>
-        /// <returns>The hashcode</returns>
+        /// <returns></returns>
         public override int GetHashCode()
         {
-            return FrameNumber ^ PHashCode.GetHashCode();
+            int fingerPrintHashCode = FingerPrints != null
+                ? FingerPrints.Aggregate(0, (acc, f) => acc + f.GetHashCode())
+                : 0;
+
+            return FilePath.GetHashCode() ^ fingerPrintHashCode;
         }
         #endregion
 

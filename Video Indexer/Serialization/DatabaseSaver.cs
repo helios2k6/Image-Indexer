@@ -21,8 +21,9 @@
 
 using FlatBuffers;
 using System.IO;
+using VideoIndexer.Wrappers;
 
-namespace ImageIndexer
+namespace VideoIndexer.Serialization
 {
     /// <summary>
     /// Saves the database

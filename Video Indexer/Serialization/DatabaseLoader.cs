@@ -24,8 +24,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using VideoIndexer.Wrappers;
 
-namespace ImageIndexer
+namespace VideoIndexer.Serialization
 {
     /// <summary>
     /// Loads the database from a file

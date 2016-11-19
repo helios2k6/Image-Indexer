@@ -19,9 +19,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using ImageIndexer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
+using VideoIndexer.Serialization;
+using VideoIndexer.Wrappers;
 
 namespace UnitTests
 {

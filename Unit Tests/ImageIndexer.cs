@@ -42,10 +42,10 @@ namespace UnitTests
         {
             using (WritableLockBitImage testImage = GetTestImage(TestPhoto1))
             {
-                VideoFingerPrintWrapper fingerprint = Indexer.IndexVideo(new[] { testImage }, string.Empty);
-                VideoFingerPrintWrapper fingerPrint2 = Indexer.IndexVideo(new[] { testImage }, string.Empty);
+                ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage);
+                ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage);
 
-                Assert.AreEqual(fingerPrint2, fingerprint);
+                Assert.AreEqual(fingerPrint1, fingerPrint2);
             }
         }
 
@@ -55,10 +55,9 @@ namespace UnitTests
             using (WritableLockBitImage testImage1 = GetTestImage(TestPhoto1))
             using (WritableLockBitImage testImage2 = GetTestImage(TestPhoto2))
             {
-                VideoFingerPrintWrapper fingerprint1 = Indexer.IndexVideo(new[] { testImage1 }, string.Empty);
-                VideoFingerPrintWrapper fingerPrint2 = Indexer.IndexVideo(new[] { testImage2 }, string.Empty);
-
-                int distance = DistanceCalculator.CalculateDistance(fingerprint1.FingerPrints[0], fingerPrint2.FingerPrints[0]);
+                ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage1);
+                ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
+                int distance = DistanceCalculator.CalculateDistance(fingerPrint1, fingerPrint2);
 
                 Assert.AreEqual(3, distance);
             }
@@ -70,10 +69,9 @@ namespace UnitTests
             using (WritableLockBitImage testImage1 = GetTestImage(TestPhoto1))
             using (WritableLockBitImage testImage2 = GetTestImage(TestPhoto3))
             {
-                VideoFingerPrintWrapper fingerprint1 = Indexer.IndexVideo(new[] { testImage1 }, string.Empty);
-                VideoFingerPrintWrapper fingerPrint2 = Indexer.IndexVideo(new[] { testImage2 }, string.Empty);
-
-                int distance = DistanceCalculator.CalculateDistance(fingerprint1.FingerPrints[0], fingerPrint2.FingerPrints[0]);
+                ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage1);
+                ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
+                int distance = DistanceCalculator.CalculateDistance(fingerPrint1, fingerPrint2);
 
                 Assert.AreEqual(8, distance);
             }
