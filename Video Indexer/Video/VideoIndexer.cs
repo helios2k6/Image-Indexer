@@ -142,19 +142,7 @@ namespace VideoIndexer.Video
             // Decode frames and send them to a threadpool
             Task producingTask = Task.Factory.StartNew(() =>
             {
-                var parser = new VideoFrameParser(videoFile.Header);
-                Parallel.ForEach(videoFile.FrameOffsets, (offset, _, localFrameIndex) =>
-                {
-                    using (var fileStream = new FileStream(videoFile.FilePath, FileMode.Open, FileAccess.Read))
-                    {
-                        fileStream.Position = offset;
-                        Maybe<VideoFrame> videoFrame = parser.TryParseVideoFrame(fileStream);
-                        videoFrame.Apply(frame =>
-                        {
-                            threadPool.SubmitVideoFrame(frame, (int)(localFrameIndex + currentFrameIndex));
-                        });
-                    }
-                });
+                VideoDecodingPool.StartDecoding(videoFile, threadPool, currentFrameIndex);
             });
 
             Task continuedTask = producingTask.ContinueWith(t =>

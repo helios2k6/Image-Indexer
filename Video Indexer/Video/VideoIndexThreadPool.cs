@@ -39,7 +39,7 @@ namespace VideoIndexer.Video
         #endregion
 
         #region private fields
-        private static readonly int DEFAULT_WORKER_THREADS = 3;
+        private static readonly int DEFAULT_WORKER_THREADS = 2;
 
         private readonly BlockingCollection<WorkItem> _buffer;
         private readonly ConcurrentBag<FrameFingerPrintWrapper> _fingerPrints;

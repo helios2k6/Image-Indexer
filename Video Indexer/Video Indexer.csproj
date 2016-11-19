@@ -73,6 +73,7 @@
     <Compile Include="Utils\CommonLinqExtensions.cs" />
     <Compile Include="Utils\CommonMaybeExtensions.cs" />
     <Compile Include="Utils\NumericalUtils.cs" />
+    <Compile Include="Video\VideoDecodingPool.cs" />
     <Compile Include="Video\VideoIndexer.cs" />
     <Compile Include="Video\VideoIndexThreadPool.cs" />
     <Compile Include="Y4M\ColorConverters.cs" />
