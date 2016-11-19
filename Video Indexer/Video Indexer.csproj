@@ -104,7 +104,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Image Indexer\Frame Index Library.csproj">
+    <ProjectReference Include="..\Frame Index Library\Frame Index Library.csproj">
       <Project>{3a3a5ea5-81a3-404c-aa78-8ae8ae8ca813}</Project>
       <Name>Frame Index Library</Name>
     </ProjectReference>
