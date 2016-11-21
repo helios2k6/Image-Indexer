@@ -28,7 +28,7 @@ using VideoIndexer.Wrappers;
 
 namespace VideoIndexer.Video
 {
-    internal sealed class VideoIndexThreadPool
+    internal sealed class VideoIndexingExecutor
     {
         #region private classes
         private sealed class WorkItem
@@ -49,7 +49,7 @@ namespace VideoIndexer.Video
         #endregion
 
         #region ctor
-        public VideoIndexThreadPool(int numThreads)
+        public VideoIndexingExecutor(int numThreads)
         {
             _numThreads = numThreads;
             _buffer = new BlockingCollection<WorkItem>();
@@ -62,7 +62,7 @@ namespace VideoIndexer.Video
             }
         }
 
-        public VideoIndexThreadPool() : this(DEFAULT_WORKER_THREADS)
+        public VideoIndexingExecutor() : this(DEFAULT_WORKER_THREADS)
         {
         }
         #endregion

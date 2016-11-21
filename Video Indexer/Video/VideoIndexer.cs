@@ -136,7 +136,7 @@ namespace VideoIndexer.Video
         private static IEnumerable<FrameFingerPrintWrapper> IndexFilesParallel(int currentFrameIndex, Maybe<VideoFile> videoFileMaybe)
         {
             VideoFile videoFile = videoFileMaybe.Value;
-            VideoIndexThreadPool threadPool = new VideoIndexThreadPool();
+            VideoIndexingExecutor threadPool = new VideoIndexingExecutor();
 
             // Decode frames and send them to a threadpool
             Task producingTask = Task.Factory.StartNew(() =>

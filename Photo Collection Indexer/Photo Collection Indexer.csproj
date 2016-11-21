@@ -15,7 +15,7 @@
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -45,11 +46,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Driver.cs" />
+    <Compile Include="Executors\PhotoFileIndexerExecutor.cs" />
+    <Compile Include="Executors\PhotoFileReaderExecutor.cs" />
+    <Compile Include="FileUtils.cs" />
     <Compile Include="Flatbuffer Schemas\PhotoCollectionIndexer\PhotoFingerPrint.cs" />
     <Compile Include="Flatbuffer Schemas\PhotoCollectionIndexer\PhotoFingerPrintDatabase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\DatabaseSaver.cs" />
     <Compile Include="Serialization\DatabaseLoader.cs" />
+    <Compile Include="Utils\ListExtensions.cs" />
     <Compile Include="Wrapper\PhotoFingerPrintDatabase.cs" />
     <Compile Include="Wrapper\PhotoFingerPrintWrapper.cs" />
   </ItemGroup>

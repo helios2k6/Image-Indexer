@@ -20,6 +20,7 @@
  */
 
 using FrameIndexLibrary;
+using PhotoCollectionIndexer.Executors;
 using PhotoCollectionIndexer.Serialization;
 using PhotoCollectionIndexer.Wrappers;
 using System;
@@ -128,33 +129,26 @@ namespace PhotoCollectionIndexer
                 return;
             }
 
-            if (photoFiles.All(File.Exists) == false)
-            {
-                PrintHelp("One of your photo files does not exist");
-                return;
-            }
-
             PhotoFingerPrintDatabaseWrapper database = File.Exists(databaseFile)
                 ? DatabaseLoader.Load(databaseFile)
                 : new PhotoFingerPrintDatabaseWrapper();
 
-            var fingerPrintBag = new ConcurrentBag<PhotoFingerPrintWrapper>(database.PhotoFingerPrints);
-            Parallel.ForEach(photoFiles, photoFile =>
-            {
-                using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false, true))
-                {
-                    PhotoFingerPrintWrapper fingerPrint = new PhotoFingerPrintWrapper
-                    {
-                        FilePath = Path.GetFullPath(photoFile),
-                        PHash = FrameIndexer.IndexFrame(lockbitImage),
-                    };
-
-                    fingerPrintBag.Add(fingerPrint);
-                }
-            });
+            IEnumerable<PhotoFingerPrintWrapper> fingerPrintBag = IndexPhotosImpl(photoFiles, database);
 
             database.PhotoFingerPrints = fingerPrintBag.ToArray();
             DatabaseSaver.Save(database, databaseFile);
+        }
+
+        private static IEnumerable<PhotoFingerPrintWrapper> IndexPhotosImpl(IEnumerable<string> photoFiles, PhotoFingerPrintDatabaseWrapper database)
+        {
+            PhotoFileReaderExecutor photoReader = new PhotoFileReaderExecutor(photoFiles, 3);
+            PhotoFileIndexerExecutor photoIndexer = new PhotoFileIndexerExecutor(photoReader, 4);
+
+            Task photoReaderTask = photoReader.LoadPhotos();
+            Task photoIndexerTask = photoIndexer.Start();
+            Task.WaitAll(photoReaderTask, photoIndexerTask);
+
+            return photoIndexer.GetFingerPrints();
         }
 
         private static string GetDatabasePath(string[] args)
@@ -175,6 +169,7 @@ namespace PhotoCollectionIndexer
         private static IEnumerable<string> GetPhotoPaths(string[] args)
         {
             bool collecting = false;
+            bool isRecursive = IsRecursive(args);
             for (int i = 0; i < args.Length; i++)
             {
                 string currentArg = args[i];
@@ -188,14 +183,24 @@ namespace PhotoCollectionIndexer
                 {
                     if (IsGlobbedPath(currentArg))
                     {
-                        foreach (string globbedPhotoPath in Directory.EnumerateFiles(Directory.GetCurrentDirectory(), currentArg))
+                        foreach (string globbedPhotoPath in FileUtils.Glob(currentArg).Where(IsPhotoFile))
                         {
                             yield return globbedPhotoPath;
                         }
                     }
+                    else if (Directory.Exists(currentArg))
+                    {
+                        foreach (string photo in ProcessDirectory(currentArg, isRecursive))
+                        {
+                            yield return photo;
+                        }
+                    }
                     else
                     {
-                        yield return currentArg;
+                        if (IsPhotoFile(currentArg) && File.Exists(currentArg))
+                        {
+                            yield return currentArg;
+                        }
                     }
                 }
                 else if (collecting && currentArg.IndexOf("--") != -1)
@@ -203,6 +208,41 @@ namespace PhotoCollectionIndexer
                     yield break;
                 }
             }
+        }
+
+        private static IEnumerable<string> ProcessDirectory(string directory, bool isRecursive)
+        {
+            if (isRecursive == false)
+            {
+                foreach (string photo in Directory.EnumerateFiles(directory).Where(IsPhotoFile))
+                {
+                    yield return photo;
+                }
+            }
+            else
+            {
+                foreach (string subdirectory in Directory.EnumerateDirectories(directory))
+                {
+                    foreach (string file in ProcessDirectory(subdirectory, isRecursive))
+                    {
+                        yield return file;
+                    }
+                }
+
+                foreach (string photo in Directory.EnumerateFiles(directory).Where(IsPhotoFile))
+                {
+                    yield return photo;
+                }
+            }
+        }
+
+        private static bool IsPhotoFile(string filePath)
+        {
+            string extension = Path.GetExtension(filePath);
+            return string.Equals(".png", extension, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(".jpg", extension, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(".jpeg", extension, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(".gif", extension, StringComparison.OrdinalIgnoreCase);
         }
 
         private static string GetArgumentTuple(string[] args, string argSwitch)
@@ -242,6 +282,11 @@ namespace PhotoCollectionIndexer
             return Mode.UNKNOWN;
         }
 
+        private static bool IsRecursive(string[] args)
+        {
+            return args.Any(t => string.Equals(t, "--recursive", StringComparison.OrdinalIgnoreCase));
+        }
+
         private static bool IsHelp(string[] args)
         {
             return args.Any(t => string.Equals(t, "--help", StringComparison.OrdinalIgnoreCase));
@@ -264,7 +309,8 @@ namespace PhotoCollectionIndexer
                 .AppendLine()
                 .AppendLine("Index Related Commands")
                 .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a video").AppendLine()
-                .Append('\t').Append("--photos").Append('\t').Append('\t').Append("The photos to index").AppendLine()
+                .Append('\t').Append("--photos").Append('\t').Append('\t').Append("The photos to index. Can use globbing for this or --recursive to search sub-directories").AppendLine()
+                .Append('\t').Append("--recursive").Append('\t').Append('\t').Append("If the supplied --photos argument is a directory, this switch allows you to search recursively for photo files")
                 .Append('\t').Append("--database").Append('\t').Append("The path to save the database to. This will update existing databases").AppendLine()
                 .AppendLine()
                 .AppendLine("Search Related Commands")

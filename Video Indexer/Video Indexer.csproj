@@ -15,7 +15,7 @@
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -81,7 +81,7 @@
     <Compile Include="Utils\NumericalUtils.cs" />
     <Compile Include="Video\VideoDecodingPool.cs" />
     <Compile Include="Video\VideoIndexer.cs" />
-    <Compile Include="Video\VideoIndexThreadPool.cs" />
+    <Compile Include="Video\VideoIndexingExecutor.cs" />
     <Compile Include="Wrappers\FrameFingerPrintWrapper.cs" />
     <Compile Include="Wrappers\VideoFingerPrintDatabaseWrapper.cs" />
     <Compile Include="Wrappers\VideoFingerPrintWrapper.cs" />

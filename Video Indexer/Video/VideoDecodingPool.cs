@@ -36,12 +36,12 @@ namespace VideoIndexer.Video
         #endregion
 
         #region public methods
-        public static void StartDecoding(VideoFile videoFile, VideoIndexThreadPool sink, int currentFrameIndex)
+        public static void StartDecoding(VideoFile videoFile, VideoIndexingExecutor sink, int currentFrameIndex)
         {
             StartDecoding(videoFile, sink, currentFrameIndex, DEFAULT_WORKER_THREADS);
         }
 
-        public static void StartDecoding(VideoFile videoFile, VideoIndexThreadPool sink, int currentFrameIndex, int numThreads)
+        public static void StartDecoding(VideoFile videoFile, VideoIndexingExecutor sink, int currentFrameIndex, int numThreads)
         {
             var workerTasks = new Task[numThreads];
             List<long> offsets = videoFile.FrameOffsets.ToList();
@@ -77,7 +77,7 @@ namespace VideoIndexer.Video
             string filePath,
             Header header,
             IEnumerable<long> offsets,
-            VideoIndexThreadPool sink,
+            VideoIndexingExecutor sink,
             int currentFrameIndex
         )
         {
