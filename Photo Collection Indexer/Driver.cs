@@ -23,11 +23,13 @@ using FrameIndexLibrary;
 using PhotoCollectionIndexer.Serialization;
 using PhotoCollectionIndexer.Wrappers;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PhotoCollectionIndexer
 {
@@ -93,26 +95,42 @@ namespace PhotoCollectionIndexer
                 return;
             }
 
-            using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false))
+            using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false, true))
             {
+                PhotoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(databaseFile);
+                ulong imageHash = FrameIndexer.IndexFrame(lockbitImage);
 
+                var results = from fingerPrint in database.PhotoFingerPrints.AsParallel()
+                              let distance = DistanceCalculator.CalculateHammingDistance(imageHash, fingerPrint.PHash)
+                              where distance < 5
+                              orderby distance
+                              select new
+                              {
+                                  Distance = distance,
+                                  FilePath = fingerPrint.FilePath
+                              };
+
+                foreach (var result in results)
+                {
+                    Console.WriteLine(string.Format("{0} - {1}", result.Distance, result.FilePath));
+                }
             }
         }
 
         private static void ExecuteIndex(string[] args)
         {
-            string photoFile = GetPhotoPath(args);
+            IEnumerable<string> photoFiles = GetPhotoPaths(args).Distinct();
             string databaseFile = GetDatabasePath(args);
 
-            if (string.IsNullOrWhiteSpace(photoFile) || string.IsNullOrWhiteSpace(databaseFile))
+            if (photoFiles.Any() == false || string.IsNullOrWhiteSpace(databaseFile))
             {
-                PrintHelp("Video path or database path not provided");
+                PrintHelp("Photo file or database path not provided");
                 return;
             }
 
-            if (File.Exists(photoFile) == false)
+            if (photoFiles.All(File.Exists) == false)
             {
-                PrintHelp("Video file does not exist");
+                PrintHelp("One of your photo files does not exist");
                 return;
             }
 
@@ -120,21 +138,23 @@ namespace PhotoCollectionIndexer
                 ? DatabaseLoader.Load(databaseFile)
                 : new PhotoFingerPrintDatabaseWrapper();
 
-            using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false))
+            var fingerPrintBag = new ConcurrentBag<PhotoFingerPrintWrapper>(database.PhotoFingerPrints);
+            Parallel.ForEach(photoFiles, photoFile =>
             {
-                PhotoFingerPrintWrapper fingerPrint = new PhotoFingerPrintWrapper
+                using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false, true))
                 {
-                    FilePath = photoFile,
-                    PHash = FrameIndexer.IndexFrame(lockbitImage),
-                };
+                    PhotoFingerPrintWrapper fingerPrint = new PhotoFingerPrintWrapper
+                    {
+                        FilePath = Path.GetFullPath(photoFile),
+                        PHash = FrameIndexer.IndexFrame(lockbitImage),
+                    };
 
-                var fingerPrintList = new List<PhotoFingerPrintWrapper>();
-                fingerPrintList.AddRange(database.PhotoFingerPrints);
-                fingerPrintList.Add(fingerPrint);
+                    fingerPrintBag.Add(fingerPrint);
+                }
+            });
 
-                database.PhotoFingerPrints = fingerPrintList.ToArray();
-                DatabaseSaver.Save(database, databaseFile);
-            }
+            database.PhotoFingerPrints = fingerPrintBag.ToArray();
+            DatabaseSaver.Save(database, databaseFile);
         }
 
         private static string GetDatabasePath(string[] args)
@@ -145,6 +165,44 @@ namespace PhotoCollectionIndexer
         private static string GetPhotoPath(string[] args)
         {
             return GetArgumentTuple(args, "--photo");
+        }
+
+        private static bool IsGlobbedPath(string path)
+        {
+            return path.IndexOf("*") != -1;
+        }
+
+        private static IEnumerable<string> GetPhotoPaths(string[] args)
+        {
+            bool collecting = false;
+            for (int i = 0; i < args.Length; i++)
+            {
+                string currentArg = args[i];
+                if (string.Equals(currentArg, "--photos"))
+                {
+                    collecting = true;
+                    continue;
+                }
+
+                if (collecting && currentArg.IndexOf("--") == -1)
+                {
+                    if (IsGlobbedPath(currentArg))
+                    {
+                        foreach (string globbedPhotoPath in Directory.EnumerateFiles(Directory.GetCurrentDirectory(), currentArg))
+                        {
+                            yield return globbedPhotoPath;
+                        }
+                    }
+                    else
+                    {
+                        yield return currentArg;
+                    }
+                }
+                else if (collecting && currentArg.IndexOf("--") != -1)
+                {
+                    yield break;
+                }
+            }
         }
 
         private static string GetArgumentTuple(string[] args, string argSwitch)
@@ -206,7 +264,7 @@ namespace PhotoCollectionIndexer
                 .AppendLine()
                 .AppendLine("Index Related Commands")
                 .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a video").AppendLine()
-                .Append('\t').Append("--photo").Append('\t').Append('\t').Append("The photo to index").AppendLine()
+                .Append('\t').Append("--photos").Append('\t').Append('\t').Append("The photos to index").AppendLine()
                 .Append('\t').Append("--database").Append('\t').Append("The path to save the database to. This will update existing databases").AppendLine()
                 .AppendLine()
                 .AppendLine("Search Related Commands")
@@ -217,8 +275,5 @@ namespace PhotoCollectionIndexer
             Console.Write(builder.ToString());
         }
         #endregion
-
-
-
     }
 }

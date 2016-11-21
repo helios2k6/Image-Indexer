@@ -98,12 +98,22 @@ namespace FrameIndexLibrary
         }
 
         /// <summary>
+        /// Creates a new writable lockbit image with the option to clone the incoming image
+        /// </summary>
+        /// <param name="image">The image to put into this lockbit image</param>
+        /// <param name="shouldClone">Whether to clone the image object</param>
+        public WritableLockBitImage(Image image, bool shouldClone) : this(image, shouldClone, false)
+        {
+        }
+
+        /// <summary>
         /// Creates a new writable lockbit image, but gives the consumer the ability to pass a flag 
         /// specifying whether to clone the input image
         /// </summary>
         /// <param name="image">The image to use for this writable lockbit image</param>
         /// <param name="shouldClone">Whether or not to clone this image</param>
-        public WritableLockBitImage(Image image, bool shouldClone)
+        /// <param name="locked">Whether to auto-lock this image immediately after construction</param>
+        public WritableLockBitImage(Image image, bool shouldClone, bool locked)
         {
             _disposed = _locked = false;
             if (shouldClone)
@@ -130,6 +140,11 @@ namespace FrameIndexLibrary
             _height = image.Height;
 
             Marshal.Copy(_bitmapData.Scan0, _buffer, 0, _buffer.Length);
+
+            if (locked)
+            {
+                Lock();
+            }
         }
 
         /// <summary>
