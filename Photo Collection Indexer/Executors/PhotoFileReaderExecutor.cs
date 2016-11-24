@@ -97,7 +97,15 @@ namespace PhotoCollectionIndexer.Executors
             {
                 foreach (string path in photoPaths)
                 {
-                    _loadedImages.Add(Tuple.Create(new WritableLockBitImage(Image.FromFile(path), false, true), path));
+                    using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 64000))
+                    {
+                        _loadedImages.Add(
+                            Tuple.Create(
+                                new WritableLockBitImage(Image.FromStream(fileStream), false, true),
+                                path
+                            )
+                        );
+                    }
                 }
             });
         }
