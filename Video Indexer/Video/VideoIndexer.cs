@@ -84,7 +84,7 @@ namespace VideoIndexer.Video
                         outputDirectory,
                         startTime,
                         numFramesToOutput,
-                        framerate,
+                        quarterFramerate,
                         FFMPEGOutputFormat.GBR24
                     );
 
