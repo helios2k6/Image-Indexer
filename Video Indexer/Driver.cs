@@ -81,24 +81,65 @@ namespace VideoIndexer
                 return;
             }
 
-            if (File.Exists(videoFile) == false)
-            {
-                PrintHelp("Video file does not exist");
-                return;
-            }
+            IndexImpl(databaseFile, GetVideoFiles(videoFile));
+        }
 
-            VideoFingerPrintDatabaseWrapper database = File.Exists(databaseFile)
-                ? DatabaseLoader.Load(databaseFile)
+        private static void IndexImpl(string databasePath, IEnumerable<string> videoPaths)
+        {
+            VideoFingerPrintDatabaseWrapper database = File.Exists(databasePath)
+                ? DatabaseLoader.Load(databasePath)
                 : new VideoFingerPrintDatabaseWrapper();
-
-            VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoFile);
 
             var fingerPrintList = new List<VideoFingerPrintWrapper>();
             fingerPrintList.AddRange(database.VideoFingerPrints);
-            fingerPrintList.Add(videoFingerPrint);
 
-            database.VideoFingerPrints = fingerPrintList.ToArray();
-            DatabaseSaver.Save(database, databaseFile);
+            long fingerPrintCount = 0;
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append("Saving Finger Print: ");
+            foreach (string videoPath in videoPaths)
+            {
+                VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath);
+                fingerPrintList.Add(videoFingerPrint);
+                fingerPrintCount++;
+                stringBuilder.Append(Path.GetFileNameWithoutExtension(videoPath));
+
+                if (fingerPrintCount % 10 == 0)
+                {
+                    Console.WriteLine(stringBuilder.ToString());
+                    stringBuilder = new StringBuilder();
+
+                    database.VideoFingerPrints = fingerPrintList.ToArray();
+                    DatabaseSaver.Save(database, databasePath);
+                }
+                else
+                {
+                    stringBuilder.Append(", ");
+                }
+            }
+        }
+
+        private static IEnumerable<string> GetVideoFiles(string path)
+        {
+            if (File.Exists(path))
+            {
+                return new[] { path };
+            }
+
+            if (Directory.Exists(path) == false)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            return Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Where(IsVideoFile);
+        }
+
+        private static bool IsVideoFile(string path)
+        {
+            string extension = Path.GetExtension(path);
+            return string.Equals(".mkv", extension, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(".mp4", extension, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(".ogm", extension, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(".wmv", extension, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void ExecuteSearch(string[] args)
@@ -237,7 +278,7 @@ namespace VideoIndexer
                 .AppendLine()
                 .AppendLine("Index Related Commands")
                 .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a video").AppendLine()
-                .Append('\t').Append("--video").Append('\t').Append('\t').Append("The video to index").AppendLine()
+                .Append('\t').Append("--video").Append('\t').Append('\t').Append("The video to index. If a directory is specified, the entire directory will be recursively indexed").AppendLine()
                 .Append('\t').Append("--database").Append('\t').Append("The path to save the database to. This will update existing databases").AppendLine()
                 .AppendLine()
                 .AppendLine("Search Related Commands")
