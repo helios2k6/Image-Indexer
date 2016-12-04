@@ -33,6 +33,13 @@ namespace VideoIndexer.Video
 {
     internal static class VideoIndexer
     {
+        #region private classes
+        private class WorkItem
+        {
+            public int NumFrames { get; set; }
+            public int CurrentFrameIndex { get; set; }
+        }
+        #endregion
         #region private static fields
         private static readonly TimeSpan PlaybackDuration = TimeSpan.FromSeconds(180);
         #endregion
@@ -57,65 +64,102 @@ namespace VideoIndexer.Video
         #region private methods
         private static IEnumerable<FrameFingerPrintWrapper> IndexEntries(string videoFile, MediaInfo info)
         {
-            var fingerPrints = new List<FrameFingerPrintWrapper>();
+            var fingerPrints = new ConcurrentBag<FrameFingerPrintWrapper>();
             TimeSpan totalDuration = info.GetDuration();
             Ratio framerate = info.GetFramerate();
-            Ratio quarterFramerate = new Ratio(framerate.Numerator, framerate.Denominator * 4);
-            int frameIndex = 0;
-            for (var startTime = TimeSpan.FromSeconds(0); startTime < totalDuration; startTime += PlaybackDuration)
+            var quarterFramerate = new Ratio(framerate.Numerator, framerate.Denominator * 4);
+            var blockingCollection = new BlockingCollection<WorkItem>(1); // Maximum of 1. These are the number of "spare" video files that we want waiting for the consumer thread
+            var rawVideoPathCollection = new BlockingCollection<string>(1);
+
+            // Producer Thread
+            Task producer = Task.Factory.StartNew(() =>
             {
-                int numFramesToOutput = CalculateFramesToOutputFromFramerate(startTime, quarterFramerate, totalDuration);
-                fingerPrints.AddRange(IndexVideoSegment(videoFile, startTime, quarterFramerate, numFramesToOutput, frameIndex, info));
-                frameIndex += numFramesToOutput;
-            }
+                int frameIndex = 0;
+                for (var startTime = TimeSpan.FromSeconds(0); startTime < totalDuration; startTime += PlaybackDuration)
+                {
+                    string outputDirectory = Path.GetRandomFileName();
+                    int numFramesToOutput = CalculateFramesToOutputFromFramerate(startTime, quarterFramerate, totalDuration);
+                    var ffmpegProcessSettings = new FFMPEGProcessSettings(
+                        videoFile,
+                        outputDirectory,
+                        startTime,
+                        numFramesToOutput,
+                        framerate,
+                        FFMPEGOutputFormat.GBR24
+                    );
+
+                    if (Directory.Exists(outputDirectory) == false)
+                    {
+                        Directory.CreateDirectory(outputDirectory);
+                    }
+
+                    using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings))
+                    {
+                        blockingCollection.Add(new WorkItem
+                        {
+                            CurrentFrameIndex = frameIndex,
+                            NumFrames = numFramesToOutput,
+                        });
+
+                        ffmpegProcess.Execute();
+
+                        rawVideoPathCollection.Add(ffmpegProcess.GetOutputFilePath());
+
+                        frameIndex += numFramesToOutput;
+                    }
+                }
+
+                blockingCollection.CompleteAdding();
+            });
+
+            // Consumer Thread
+            Task consumer = Task.Factory.StartNew(() =>
+            {
+                foreach (WorkItem workItem in blockingCollection.GetConsumingEnumerable())
+                {
+                    string rawVideoPath = rawVideoPathCollection.Take();
+                    IEnumerable<FrameFingerPrintWrapper> videoSegmentFingerPrints = IndexVideoSegment(
+                        rawVideoPath,
+                        workItem.NumFrames,
+                        workItem.CurrentFrameIndex,
+                        info
+                    );
+
+                    try
+                    {
+                        Directory.Delete(Path.GetDirectoryName(rawVideoPath), true);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Error.WriteLine(string.Format("Could not clean up output folder: {0}", e.Message));
+                    }
+
+                    foreach (var frameFingerPrint in videoSegmentFingerPrints)
+                    {
+                        fingerPrints.Add(frameFingerPrint);
+                    }
+                }
+            });
+
+            Task.WaitAll(producer, consumer);
 
             return fingerPrints;
         }
 
         private static IEnumerable<FrameFingerPrintWrapper> IndexVideoSegment(
-            string videoFile,
-            TimeSpan startTime,
-            Ratio framerate,
+            string rawVideoFilePath,
             int numFramesToOutput,
             int currentFrameIndex,
             MediaInfo info
         )
         {
-            string outputDirectory = Path.GetRandomFileName();
-            var ffmpegProcessSettings = new FFMPEGProcessSettings(
-                videoFile,
-                outputDirectory,
-                startTime,
-                numFramesToOutput,
-                framerate,
-                FFMPEGOutputFormat.GBR24
+            return IndexFilesInDirectoryUsingBGR24(
+                rawVideoFilePath,
+                currentFrameIndex,
+                info.GetWidth(),
+                info.GetHeight(),
+                numFramesToOutput
             );
-
-            if (Directory.Exists(outputDirectory) == false)
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
-            using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings))
-            {
-                ffmpegProcess.Execute();
-                IEnumerable<FrameFingerPrintWrapper> fingerPrints = IndexFilesInDirectoryUsingBGR24(
-                    ffmpegProcess.GetOutputFilePath(),
-                    currentFrameIndex,
-                    info.GetWidth(),
-                    info.GetHeight(),
-                    numFramesToOutput
-                );
-                try
-                {
-                    Directory.Delete(outputDirectory, true);
-                }
-                catch (Exception e)
-                {
-                    Console.Error.WriteLine(string.Format("Could not clean up output folder: {0}", e.Message));
-                }
-                return fingerPrints;
-            }
         }
 
         private static IEnumerable<FrameFingerPrintWrapper> IndexFilesInDirectoryUsingBGR24(
