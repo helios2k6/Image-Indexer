@@ -35,6 +35,7 @@ namespace PhotoCollectionIndexer.Executors
     {
         #region private fields
         private static readonly int DEFAULT_NUM_WORKERS = 2;
+        private static readonly int DEFAULT_BUFFER_SIZE = 64000;
 
         private readonly IEnumerable<string> _photoPaths;
         private readonly int _numWorkers;
@@ -98,7 +99,7 @@ namespace PhotoCollectionIndexer.Executors
             {
                 foreach (string path in photoPaths)
                 {
-                    using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 64000))
+                    using (var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, DEFAULT_BUFFER_SIZE))
                     {
                         _loadedImages.Add(
                             Tuple.Create(

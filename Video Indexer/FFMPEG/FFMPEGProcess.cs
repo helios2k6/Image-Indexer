@@ -77,7 +77,7 @@ namespace VideoIndexer
             {
                 throw new InvalidOperationException("This process has already executed");
             }
-
+            // TODO: http://stackoverflow.com/questions/15922175/ffmpeg-run-from-shell-runs-properly-but-does-not-when-called-from-within-net
             _hasExecuted = true;
             _process.StartInfo.UseShellExecute = true;
             _process.StartInfo.FileName = EnvironmentTools.CalculateProcessName(FFMPEG_PROC_NAME);

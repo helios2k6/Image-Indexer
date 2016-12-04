@@ -24,7 +24,6 @@ using PhotoCollectionIndexer.Executors;
 using PhotoCollectionIndexer.Serialization;
 using PhotoCollectionIndexer.Wrappers;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
