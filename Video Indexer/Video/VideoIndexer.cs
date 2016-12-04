@@ -19,15 +19,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using Functional.Maybe;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using VideoIndexer.Media;
-using VideoIndexer.Y4M;
 using VideoIndexer.Wrappers;
+using VideoIndexer.BGR24;
+using System.Collections.Concurrent;
 
 namespace VideoIndexer.Video
 {
@@ -65,7 +65,7 @@ namespace VideoIndexer.Video
             for (var startTime = TimeSpan.FromSeconds(0); startTime < totalDuration; startTime += PlaybackDuration)
             {
                 int numFramesToOutput = CalculateFramesToOutputFromFramerate(startTime, quarterFramerate, totalDuration);
-                fingerPrints.AddRange(IndexVideoSegment(videoFile, startTime, quarterFramerate, numFramesToOutput, frameIndex));
+                fingerPrints.AddRange(IndexVideoSegment(videoFile, startTime, quarterFramerate, numFramesToOutput, frameIndex, info));
                 frameIndex += numFramesToOutput;
             }
 
@@ -77,7 +77,8 @@ namespace VideoIndexer.Video
             TimeSpan startTime,
             Ratio framerate,
             int numFramesToOutput,
-            int currentFrameIndex
+            int currentFrameIndex,
+            MediaInfo info
         )
         {
             string outputDirectory = Path.GetRandomFileName();
@@ -87,7 +88,7 @@ namespace VideoIndexer.Video
                 startTime,
                 numFramesToOutput,
                 framerate,
-                FFMPEGOutputFormat.Y4M
+                FFMPEGOutputFormat.GBR24
             );
 
             if (Directory.Exists(outputDirectory) == false)
@@ -98,10 +99,12 @@ namespace VideoIndexer.Video
             using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings))
             {
                 ffmpegProcess.Execute();
-                IEnumerable<FrameFingerPrintWrapper> fingerPrints = IndexFilesInDirectory(
-                    videoFile,
+                IEnumerable<FrameFingerPrintWrapper> fingerPrints = IndexFilesInDirectoryUsingBGR24(
                     ffmpegProcess.GetOutputFilePath(),
-                    currentFrameIndex
+                    currentFrameIndex,
+                    info.GetWidth(),
+                    info.GetHeight(),
+                    numFramesToOutput
                 );
                 try
                 {
@@ -115,44 +118,30 @@ namespace VideoIndexer.Video
             }
         }
 
-        private static IEnumerable<FrameFingerPrintWrapper> IndexFilesInDirectory(
-            string originalFileName,
+        private static IEnumerable<FrameFingerPrintWrapper> IndexFilesInDirectoryUsingBGR24(
             string pathToOutputFile,
-            int currentFrameIndex
+            int currentFrameIndex,
+            int width,
+            int height,
+            int numFrames
         )
         {
-            using (var parser = new VideoFileParser(pathToOutputFile))
-            {
-                Maybe<VideoFile> videoFileMaybe = parser.TryParseVideoFile();
-                if (videoFileMaybe.IsNothing())
-                {
-                    return Enumerable.Empty<FrameFingerPrintWrapper>();
-                }
-
-                return IndexFilesParallel(currentFrameIndex, videoFileMaybe);
-            }
-        }
-
-        private static IEnumerable<FrameFingerPrintWrapper> IndexFilesParallel(int currentFrameIndex, Maybe<VideoFile> videoFileMaybe)
-        {
-            VideoFile videoFile = videoFileMaybe.Value;
-            VideoIndexingExecutor threadPool = new VideoIndexingExecutor();
-
-            // Decode frames and send them to a threadpool
+            var reader = new BGR24VideoReader(pathToOutputFile, width, height, numFrames);
+            VideoIndexingExecutor indexingPool = new VideoIndexingExecutor();
             Task producingTask = Task.Factory.StartNew(() =>
             {
-                VideoDecodingPool.StartDecoding(videoFile, threadPool, currentFrameIndex);
+                VideoDecodingPool.StartDecoding(reader, indexingPool, currentFrameIndex);
             });
 
             Task continuedTask = producingTask.ContinueWith(t =>
             {
-                threadPool.Shutdown();
-                threadPool.Wait();
+                indexingPool.Shutdown();
+                indexingPool.Wait();
             });
 
             continuedTask.Wait();
 
-            return threadPool.GetFingerPrints();
+            return indexingPool.GetFingerPrints();
         }
 
         private static int CalculateFramesToOutputFromFramerate(TimeSpan index, Ratio framerate, TimeSpan totalDuration)

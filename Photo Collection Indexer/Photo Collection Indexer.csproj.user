@@ -2,6 +2,6 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>
-    <StartArguments>--index --recursive --database anime_snapshots.bin --photos "\\HOME-SERVER-NAS\Public\Pictures\Anime Snapshots"</StartArguments>
+    <StartArguments>--search --database "D:\anime_snapshots.bin" --photo D:\test.png</StartArguments>
   </PropertyGroup>
 </Project>

@@ -153,7 +153,7 @@ namespace FrameIndexLibrary
         public WritableLockBitImage(int width, int height)
         {
             _disposed = _locked = false;
-            _bitmap = new Bitmap(width, height);
+            _bitmap = new Bitmap(width, height, PixelFormat.Format24bppRgb);
             _bitmapData = _bitmap.LockBits(
                 new Rectangle(0, 0, width, height),
                 ImageLockMode.ReadWrite,
@@ -161,10 +161,6 @@ namespace FrameIndexLibrary
             );
 
             _bitDepth = Image.GetPixelFormatSize(_bitmap.PixelFormat);
-            if (_bitDepth != 8 && _bitDepth != 24 && _bitDepth != 32)
-            {
-                throw new ArgumentException("Only 8, 24, and 32 bit pixels are supported.");
-            }
             _buffer = new byte[_bitmapData.Width * _bitmapData.Height * (_bitDepth / 8)];
             _width = width;
             _height = height;
@@ -268,6 +264,30 @@ namespace FrameIndexLibrary
             {
                 _buffer[offset] = color.B;
             }
+        }
+
+        /// <summary>
+        /// Sets the entire frame using raw bytes provided
+        /// </summary>
+        /// <param name="frameBuffer"></param>
+        public void SetFrame(byte[] frameBuffer)
+        {
+            if (_locked)
+            {
+                throw new InvalidOperationException("Cannote modify a locked image");
+            }
+
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("Object already disposed");
+            }
+
+            if (_buffer.Length != frameBuffer.Length)
+            {
+                throw new InvalidOperationException("Frame buffer does not match length of image");
+            }
+
+            Buffer.BlockCopy(frameBuffer, 0, _buffer, 0, frameBuffer.Length);
         }
 
         /// <summary>

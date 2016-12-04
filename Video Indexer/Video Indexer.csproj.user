@@ -2,10 +2,10 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>
-    <StartArguments>--search --photo D:\test\345.png --database D:\test\database.bin</StartArguments>
+    <StartArguments>--index --video D:\test_pixel\test.mkv --database D:\test_pixel\video_database.bin</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>
-    <StartArguments>--index --video D:\test\test.mkv --database D:\test\database.bin</StartArguments>
+    <StartArguments>--index --video D:\test_pixel\test.mkv --database D:\test_pixel\database.bin</StartArguments>
   </PropertyGroup>
 </Project>

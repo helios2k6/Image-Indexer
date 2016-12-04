@@ -141,6 +141,10 @@ namespace VideoIndexer
                     return "-codec:v png";
                 case FFMPEGOutputFormat.Y4M:
                     return "-f yuv4mpegpipe -pix_fmt yuv444p";
+                case FFMPEGOutputFormat.RGB24:
+                    return "-f rawvideo -pix_fmt rgb24";
+                case FFMPEGOutputFormat.GBR24:
+                    return "-f rawvideo -pix_fmt bgr24";
                 default:
                     throw new Exception("Unknown output format");
             }
@@ -161,6 +165,18 @@ namespace VideoIndexer
                 case FFMPEGOutputFormat.Y4M:
                     return string.Format(
                         "AUTOGEN_({0})_TIME_({1})_RAW_DUMP.y4m",
+                        rootFileName,
+                        formattedTimeSpan
+                    );
+                case FFMPEGOutputFormat.GBR24:
+                    return string.Format(
+                        "AUTOGEN_({0})_TIME_({1})_RAW_DUMP.bgr24",
+                        rootFileName,
+                        formattedTimeSpan
+                    );
+                case FFMPEGOutputFormat.RGB24:
+                    return string.Format(
+                        "AUTOGEN_({0})_TIME_({1})_RAW_DUMP.rgb24",
                         rootFileName,
                         formattedTimeSpan
                     );

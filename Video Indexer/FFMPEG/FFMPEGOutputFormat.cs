@@ -34,5 +34,13 @@ namespace VideoIndexer
         /// Specifies the raw video Y4M output
         /// </summary>
         Y4M,
+        /// <summary>
+        /// Specifies the raw RGB24 output format
+        /// </summary>
+        RGB24,
+        /// <summary>
+        /// Specifies the raw BGR24 output format (which is a reversed RGB24 format)
+        /// </summary>
+        GBR24,
     }
 }

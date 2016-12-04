@@ -39,6 +39,8 @@ namespace VideoIndexer.Media
         private readonly Lazy<Maybe<Track>> _videoTrack;
         private readonly Lazy<TimeSpan> _duration;
         private readonly Lazy<Ratio> _framerate;
+        private readonly Lazy<int> _width;
+        private readonly Lazy<int> _height;
         #endregion
 
         #region ctor
@@ -48,6 +50,8 @@ namespace VideoIndexer.Media
             _videoTrack = new Lazy<Maybe<Track>>(CalculateVideoTrack);
             _duration = new Lazy<TimeSpan>(CalculateDuration);
             _framerate = new Lazy<Ratio>(CalculateFramerate);
+            _width = new Lazy<int>(CalculateWidth);
+            _height = new Lazy<int>(CalculateHeight);
         }
         #endregion
 
@@ -84,6 +88,24 @@ namespace VideoIndexer.Media
         public Ratio GetFramerate()
         {
             return _framerate.Value;
+        }
+
+        /// <summary>
+        /// Get the width of the video
+        /// </summary>
+        /// <returns></returns>
+        public int GetWidth()
+        {
+            return _width.Value;
+        }
+
+        /// <summary>
+        /// Get the height of the video
+        /// </summary>
+        /// <returns></returns>
+        public int GetHeight()
+        {
+            return _height.Value;
         }
 
         public bool Equals(MediaInfo other)
@@ -125,6 +147,34 @@ namespace VideoIndexer.Media
             return (from track in File.Tracks
                     where string.Equals(track.Type, VIDEO_TRACK, StringComparison.OrdinalIgnoreCase)
                     select track).SingleOrDefault().ToMaybe();
+        }
+
+        private int CalculateWidth()
+        {
+            Maybe<string> rawTrackTextMaybe = from track in _videoTrack.Value
+                                              select track.Width;
+
+            Maybe<string> width = from text in rawTrackTextMaybe
+                                  let indexOfPixels = text.IndexOf("pixels")
+                                  let substringToPixels = text.Substring(0, indexOfPixels)
+                                  let implodedString = substringToPixels.Replace(" ", string.Empty)
+                                  select implodedString;
+
+            return int.Parse(width.OrElse("0"));
+        }
+
+        private int CalculateHeight()
+        {
+            Maybe<string> rawTrackTextMaybe = from track in _videoTrack.Value
+                                              select track.Height;
+
+            Maybe<string> height = from text in rawTrackTextMaybe
+                                   let indexOfPixels = text.IndexOf("pixels")
+                                   let substringToPixels = text.Substring(0, indexOfPixels)
+                                   let implodedString = substringToPixels.Replace(" ", string.Empty)
+                                   select implodedString;
+
+            return int.Parse(height.OrElse("0"));
         }
 
         private Ratio CalculateFramerate()

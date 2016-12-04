@@ -53,8 +53,16 @@ namespace VideoIndexer.Media
         public string CompleteName { get; set; }
 
         [YAXSerializeAs("Frame_rate")]
-        [YAXErrorIfMissedAttribute(YAXExceptionTypes.Ignore)]
+        [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
         public string Framerate { get; set; }
+
+        [YAXSerializeAs("Width")]
+        [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+        public string Width { get; set; }
+
+        [YAXSerializeAs("Height")]
+        [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
+        public string Height { get; set; }
         #endregion
 
         #region public methods
@@ -79,11 +87,13 @@ namespace VideoIndexer.Media
 
         public override int GetHashCode()
         {
-            return Type.GetHashCode() ^
-                Duration.GetHashCode() ^
-                ID.GetHashCode() ^
-                CompleteName.GetHashCode() ^
-                Framerate.GetHashCode();
+            return GetHashCodeSafe(Type) ^
+                GetHashCodeSafe(Duration) ^
+                GetHashCodeSafe(ID) ^
+                GetHashCodeSafe(CompleteName) ^
+                GetHashCodeSafe(Framerate) ^
+                GetHashCodeSafe(Width) ^
+                GetHashCodeSafe(Height);
         }
 
         /// <summary>
@@ -159,6 +169,16 @@ namespace VideoIndexer.Media
         #endregion
 
         #region private methods
+        private static int GetHashCodeSafe(object obj)
+        {
+            if (obj == null)
+            {
+                return 0;
+            }
+
+            return obj.GetHashCode();
+        }
+
         private bool EqualsPreamble(object other)
         {
             if (ReferenceEquals(null, other)) return false;

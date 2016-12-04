@@ -19,13 +19,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using Functional.Maybe;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using VideoIndexer.Utils;
-using VideoIndexer.Y4M;
+using VideoIndexer.BGR24;
 
 namespace VideoIndexer.Video
 {
@@ -36,27 +33,26 @@ namespace VideoIndexer.Video
         #endregion
 
         #region public methods
-        public static void StartDecoding(VideoFile videoFile, VideoIndexingExecutor sink, int currentFrameIndex)
+        public static void StartDecoding(BGR24VideoReader videoFileReader, VideoIndexingExecutor sink, int currentFrameIndex)
         {
-            StartDecoding(videoFile, sink, currentFrameIndex, DEFAULT_WORKER_THREADS);
+            StartDecoding(videoFileReader, sink, currentFrameIndex, DEFAULT_WORKER_THREADS);
         }
 
-        public static void StartDecoding(VideoFile videoFile, VideoIndexingExecutor sink, int currentFrameIndex, int numThreads)
+        public static void StartDecoding(BGR24VideoReader videoFileReader, VideoIndexingExecutor sink, int currentFrameIndex, int numThreads)
         {
             var workerTasks = new Task[numThreads];
-            List<long> offsets = videoFile.FrameOffsets.ToList();
-            int lengthOfSubarrays = offsets.Count / numThreads;
-            int remainder = offsets.Count % numThreads;
+            int lengthOfSubarrays = videoFileReader.NumFrames / numThreads;
+            int remainder = videoFileReader.NumFrames % numThreads;
             for (int i = 0; i < numThreads; i++)
             {
                 int firstElementIndex = i * lengthOfSubarrays;
-                IEnumerable<long> slicedArray = remainder > 0 && i + 1 == numThreads
-                    ? Slice(offsets, firstElementIndex, lengthOfSubarrays + remainder)
-                    : Slice(offsets, firstElementIndex, lengthOfSubarrays);
+                IEnumerable<int> slicedArray = remainder > 0 && i + 1 == numThreads
+                    ? Enumerable.Range(firstElementIndex, lengthOfSubarrays + remainder)
+                    : Enumerable.Range(firstElementIndex, lengthOfSubarrays);
 
                 workerTasks[i] = Task.Factory.StartNew(() =>
                 {
-                    RunDecoderThread(videoFile.FilePath, videoFile.Header, slicedArray, sink, currentFrameIndex + firstElementIndex);
+                    RunDecoderThread(videoFileReader, slicedArray, sink, firstElementIndex + currentFrameIndex);
                 });
             }
 
@@ -65,36 +61,18 @@ namespace VideoIndexer.Video
         #endregion
 
         #region private methods
-        private static IEnumerable<long> Slice(List<long> input, int startIndex, int count)
-        {
-            for (int i = 0; i < count; i++)
-            {
-                yield return input[i + startIndex];
-            }
-        }
-
         private static void RunDecoderThread(
-            string filePath,
-            Header header,
-            IEnumerable<long> offsets,
+            BGR24VideoReader reader,
+            IEnumerable<int> framesToDecode,
             VideoIndexingExecutor sink,
             int currentFrameIndex
         )
         {
-            var parser = new VideoFrameParser(header);
             int localFrameIndex = 0;
-            foreach (long offset in offsets)
+            foreach (int frame in framesToDecode)
             {
-                using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-                {
-                    fileStream.Position = offset;
-                    Maybe<VideoFrame> videoFrame = parser.TryParseVideoFrame(fileStream);
-                    videoFrame.Apply(frame =>
-                    {
-                        sink.SubmitVideoFrame(frame, localFrameIndex + currentFrameIndex);
-                        localFrameIndex++;
-                    });
-                }
+                sink.SubmitVideoFrame(reader.GetFrame(frame), currentFrameIndex + localFrameIndex);
+                localFrameIndex++;
             }
         }
         #endregion

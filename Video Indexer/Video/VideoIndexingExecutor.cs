@@ -23,7 +23,6 @@ using FrameIndexLibrary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using VideoIndexer.Y4M;
 using VideoIndexer.Wrappers;
 
 namespace VideoIndexer.Video
@@ -35,7 +34,7 @@ namespace VideoIndexer.Video
         {
             public int FrameNumber { get; set; }
 
-            public VideoFrame Frame { get; set; }
+            public WritableLockBitImage Frame { get; set; }
         }
         #endregion
 
@@ -68,7 +67,7 @@ namespace VideoIndexer.Video
         #endregion
 
         #region public methods
-        public void SubmitVideoFrame(VideoFrame frame, int frameNumber)
+        public void SubmitVideoFrame(WritableLockBitImage frame, int frameNumber)
         {
             _buffer.Add(new WorkItem
             {
@@ -98,7 +97,7 @@ namespace VideoIndexer.Video
         {
             foreach (WorkItem item in _buffer.GetConsumingEnumerable())
             {
-                ulong framePHash = FrameIndexer.IndexFrame(item.Frame.LockBitImage);
+                ulong framePHash = FrameIndexer.IndexFrame(item.Frame);
                 _fingerPrints.Add(new FrameFingerPrintWrapper
                 {
                     PHashCode = framePHash,

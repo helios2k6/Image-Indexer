@@ -95,6 +95,7 @@ namespace VideoIndexer
 
             long fingerPrintCount = 0;
             var stringBuilder = new StringBuilder();
+            bool needsFinalSave = true;
             stringBuilder.Append("Saving Finger Print: ");
             foreach (string videoPath in videoPaths)
             {
@@ -105,6 +106,7 @@ namespace VideoIndexer
 
                 if (fingerPrintCount % 10 == 0)
                 {
+                    needsFinalSave = false;
                     Console.WriteLine(stringBuilder.ToString());
                     stringBuilder = new StringBuilder();
 
@@ -113,8 +115,16 @@ namespace VideoIndexer
                 }
                 else
                 {
+                    needsFinalSave = true;
                     stringBuilder.Append(", ");
                 }
+            }
+
+            // Save the final database
+            if (needsFinalSave)
+            {
+                database.VideoFingerPrints = fingerPrintList.ToArray();
+                DatabaseSaver.Save(database, databasePath);
             }
         }
 
