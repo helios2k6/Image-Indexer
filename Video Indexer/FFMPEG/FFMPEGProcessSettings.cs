@@ -86,19 +86,6 @@ namespace VideoIndexer
             Framerate = framerate;
             OutputFormat = outputFormat;
         }
-
-        /// <summary>
-        /// Construct a new FFMPEGProcessSettings object to configure how to run the FFMPEG
-        /// process, but using the settings for harvesting images for comparison
-        /// </summary>
-        /// <param name="targetMediaFile">The media file to decode</param>
-        /// <param name="startTime">The time to seek to before outputting images</param>
-        public FFMPEGProcessSettings(
-            string targetMediaFile,
-            TimeSpan startTime
-        ) : this(targetMediaFile, string.Empty, startTime, 8, new Ratio(4, 1), FFMPEGOutputFormat.PNG)
-        {
-        }
         #endregion
 
         #region public methods

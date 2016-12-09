@@ -40,6 +40,7 @@ namespace VideoIndexer.Video
             public int CurrentFrameIndex { get; set; }
         }
         #endregion
+
         #region private static fields
         private static readonly TimeSpan PlaybackDuration = TimeSpan.FromSeconds(180);
         #endregion
