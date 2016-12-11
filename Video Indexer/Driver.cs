@@ -93,12 +93,18 @@ namespace VideoIndexer
                 ? DatabaseLoader.Load(databasePath)
                 : new VideoFingerPrintDatabaseWrapper();
             FingerPrintStore store = new FingerPrintStore(database, databasePath);
+            var knownHashes = new HashSet<string>(database.VideoFingerPrints.Select(w => w.FilePath));
 
             Parallel.ForEach(
                 videoPaths,
                 new ParallelOptions { MaxDegreeOfParallelism = 2 },
                 videoPath =>
                 {
+                    if (knownHashes.Contains(videoPath))
+                    {
+                        Console.WriteLine(string.Format("File {0} already hashed. Skipping", videoPath));
+                        return;
+                    }
                     VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath);
                     store.AddFingerprint(videoFingerPrint);
                 }
