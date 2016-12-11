@@ -128,6 +128,7 @@ namespace VideoIndexer
             string extension = Path.GetExtension(path);
             return string.Equals(".mkv", extension, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(".mp4", extension, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(".avi", extension, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(".ogm", extension, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(".wmv", extension, StringComparison.OrdinalIgnoreCase);
         }
