@@ -23,7 +23,6 @@ using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace FrameIndexLibrary
 {
@@ -38,7 +37,6 @@ namespace FrameIndexLibrary
 
         private readonly Bitmap _bitmap;
         private readonly BitmapData _bitmapData;
-        private readonly byte[] _buffer;
         private readonly int _bitDepth;
         private readonly int _width;
         private readonly int _height;
@@ -115,7 +113,10 @@ namespace FrameIndexLibrary
         /// <param name="locked">Whether to auto-lock this image immediately after construction</param>
         public WritableLockBitImage(Image image, bool shouldClone, bool locked)
         {
+            _width = image.Width;
+            _height = image.Height;
             _disposed = _locked = false;
+
             if (shouldClone)
             {
                 _bitmap = new Bitmap(image.Clone() as Image);
@@ -124,6 +125,7 @@ namespace FrameIndexLibrary
             {
                 _bitmap = new Bitmap(image);
             }
+
             _bitmapData = _bitmap.LockBits(
                 new Rectangle(0, 0, image.Width, image.Height),
                 ImageLockMode.ReadWrite,
@@ -135,11 +137,6 @@ namespace FrameIndexLibrary
             {
                 throw new ArgumentException("Only 8, 24, and 32 bit pixels are supported.");
             }
-            _buffer = new byte[_bitmapData.Width * _bitmapData.Height * (_bitDepth / 8)];
-            _width = image.Width;
-            _height = image.Height;
-
-            Marshal.Copy(_bitmapData.Scan0, _buffer, 0, _buffer.Length);
 
             if (locked)
             {
@@ -152,6 +149,28 @@ namespace FrameIndexLibrary
         /// </summary>
         public WritableLockBitImage(int width, int height)
         {
+            _width = width;
+            _height = height;
+            _disposed = _locked = false;
+            _bitmap = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            _bitmapData = _bitmap.LockBits(
+                new Rectangle(0, 0, width, height),
+                ImageLockMode.ReadWrite,
+                _bitmap.PixelFormat
+            );
+            _bitDepth = 24;
+        }
+
+        /// <summary>
+        /// Creats a writable lockbit image with the given frame byte array
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="frame"></param>
+        public WritableLockBitImage(int width, int height, byte[] frame)
+        {
+            _width = width;
+            _height = height;
             _disposed = _locked = false;
             _bitmap = new Bitmap(width, height, PixelFormat.Format24bppRgb);
             _bitmapData = _bitmap.LockBits(
@@ -160,12 +179,9 @@ namespace FrameIndexLibrary
                 _bitmap.PixelFormat
             );
 
-            _bitDepth = Image.GetPixelFormatSize(_bitmap.PixelFormat);
-            _buffer = new byte[_bitmapData.Width * _bitmapData.Height * (_bitDepth / 8)];
-            _width = width;
-            _height = height;
+            _bitDepth = 24;
 
-            Marshal.Copy(_bitmapData.Scan0, _buffer, 0, _buffer.Length);
+            Marshal.Copy(frame, 0, _bitmapData.Scan0, frame.Length);
         }
         #endregion
 
@@ -190,32 +206,35 @@ namespace FrameIndexLibrary
 
             // Get start index of the specified pixel
             int offset = ((y * Width) + x) * cCount;
-            if (offset > _buffer.Length - cCount)
+            if (offset > _width * _height * (_bitDepth / 8) - cCount)
             {
                 throw new IndexOutOfRangeException();
             }
 
-            if (_bitDepth == 32) // For 32 bpp get Red, Green, Blue and Alpha
+            unsafe
             {
-                byte b = _buffer[offset];
-                byte g = _buffer[offset + 1];
-                byte r = _buffer[offset + 2];
-                byte a = _buffer[offset + 3]; // a
-                clr = Color.FromArgb(a, r, g, b);
+                if (_bitDepth == 32) // For 32 bpp get Red, Green, Blue and Alpha
+                {
+                    byte b = *((byte*)_bitmapData.Scan0 + offset);
+                    byte g = *((byte*)_bitmapData.Scan0 + offset + 1);
+                    byte r = *((byte*)_bitmapData.Scan0 + offset + 2);
+                    byte a = *((byte*)_bitmapData.Scan0 + offset + 3);
+                    clr = Color.FromArgb(a, r, g, b);
+                }
+                else if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
+                {
+                    byte b = *((byte*)_bitmapData.Scan0 + offset);
+                    byte g = *((byte*)_bitmapData.Scan0 + offset + 1);
+                    byte r = *((byte*)_bitmapData.Scan0 + offset + 2);
+                    clr = Color.FromArgb(r, g, b);
+                }
+                else if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
+                {
+                    byte b = *((byte*)_bitmapData.Scan0 + offset);
+                    clr = Color.FromArgb(b, b, b);
+                }
+                return clr;
             }
-            else if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
-            {
-                byte b = _buffer[offset];
-                byte g = _buffer[offset + 1];
-                byte r = _buffer[offset + 2];
-                clr = Color.FromArgb(r, g, b);
-            }
-            else if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
-            {
-                byte c = _buffer[offset];
-                clr = Color.FromArgb(c, c, c);
-            }
-            return clr;
         }
 
         /// <summary>
@@ -241,28 +260,30 @@ namespace FrameIndexLibrary
 
             // Get start index of the specified pixel
             int offset = ((y * Width) + x) * cCount;
-
-            if (offset > _buffer.Length - cCount)
+            if (offset > _width * _height * (_bitDepth / 8) - cCount)
             {
                 throw new IndexOutOfRangeException();
             }
 
-            if (_bitDepth == 32) // For 32 bpp get Red, Green, Blue and Alpha
+            unsafe
             {
-                _buffer[offset] = color.B;
-                _buffer[offset + 1] = color.G;
-                _buffer[offset + 2] = color.R;
-                _buffer[offset + 3] = color.A; // a
-            }
-            else if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
-            {
-                _buffer[offset] = color.B;
-                _buffer[offset + 1] = color.G;
-                _buffer[offset + 2] = color.R;
-            }
-            else if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
-            {
-                _buffer[offset] = color.B;
+                if (_bitDepth == 32) // For 32 bpp get Red, Green, Blue and Alpha
+                {
+                    *((byte*)_bitmapData.Scan0 + offset) = color.B;
+                    *((byte*)_bitmapData.Scan0 + offset + 1) = color.G;
+                    *((byte*)_bitmapData.Scan0 + offset + 2) = color.R;
+                    *((byte*)_bitmapData.Scan0 + offset + 3) = color.A;
+                }
+                else if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
+                {
+                    *((byte*)_bitmapData.Scan0 + offset) = color.B;
+                    *((byte*)_bitmapData.Scan0 + offset + 1) = color.G;
+                    *((byte*)_bitmapData.Scan0 + offset + 2) = color.R;
+                }
+                else if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
+                {
+                    *((byte*)_bitmapData.Scan0 + offset) = color.B;
+                }
             }
         }
 
@@ -282,12 +303,12 @@ namespace FrameIndexLibrary
                 throw new ObjectDisposedException("Object already disposed");
             }
 
-            if (_buffer.Length != frameBuffer.Length)
+            if (_width * _height * (_bitDepth / 8) != frameBuffer.Length)
             {
                 throw new InvalidOperationException("Frame buffer does not match length of image");
             }
 
-            Buffer.BlockCopy(frameBuffer, 0, _buffer, 0, frameBuffer.Length);
+            Marshal.Copy(frameBuffer, 0, _bitmapData.Scan0, frameBuffer.Length);
         }
 
         /// <summary>
@@ -300,7 +321,6 @@ namespace FrameIndexLibrary
                 return;
             }
             _locked = true;
-            WriteBufferDirectlyToMemory();
             _bitmap.UnlockBits(_bitmapData);
         }
 
@@ -341,41 +361,6 @@ namespace FrameIndexLibrary
         #endregion
 
         #region private methods
-        private void WriteBufferDirectlyToMemory()
-        {
-            unsafe
-            {
-                int bytesPerPixel = _bitDepth / 8;
-                int widthInBytes = _bitmapData.Width * bytesPerPixel;
-                byte* ptrFirstPixel = (byte*)_bitmapData.Scan0;
-
-                Parallel.For(0, Height, y =>
-                {
-                    byte* currentLine = ptrFirstPixel + (y * _bitmapData.Stride);
-                    for (int x = 0; x < widthInBytes; x = x + bytesPerPixel)
-                    {
-                        Color bufferColor = GetPixel(x / bytesPerPixel, y);
-                        if (_bitDepth == 32) // For 32 bpp get Red, Green, Blue and Alpha
-                        {
-                            currentLine[x] = bufferColor.B;
-                            currentLine[x + 1] = bufferColor.G;
-                            currentLine[x + 2] = bufferColor.R;
-                            currentLine[x + 3] = bufferColor.A;
-                        }
-                        else if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
-                        {
-                            currentLine[x] = bufferColor.B;
-                            currentLine[x + 1] = bufferColor.G;
-                            currentLine[x + 2] = bufferColor.R;
-                        }
-                        else if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
-                        {
-                            currentLine[x] = bufferColor.B;
-                        }
-                    }
-                });
-            }
-        }
         #endregion
     }
 }

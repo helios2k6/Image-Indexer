@@ -21,11 +21,14 @@
 
 using FrameIndexLibrary;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using VideoIndex;
 using VideoIndexer.Serialization;
 using VideoIndexer.Wrappers;
 
@@ -89,43 +92,20 @@ namespace VideoIndexer
             VideoFingerPrintDatabaseWrapper database = File.Exists(databasePath)
                 ? DatabaseLoader.Load(databasePath)
                 : new VideoFingerPrintDatabaseWrapper();
+            FingerPrintStore store = new FingerPrintStore(database, databasePath);
 
-            var fingerPrintList = new List<VideoFingerPrintWrapper>();
-            fingerPrintList.AddRange(database.VideoFingerPrints);
-
-            long fingerPrintCount = 0;
-            var stringBuilder = new StringBuilder();
-            bool needsFinalSave = true;
-            stringBuilder.Append("Saving Finger Print: ");
-            foreach (string videoPath in videoPaths)
-            {
-                VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath);
-                fingerPrintList.Add(videoFingerPrint);
-                fingerPrintCount++;
-                stringBuilder.Append(Path.GetFileNameWithoutExtension(videoPath));
-
-                if (fingerPrintCount % 10 == 0)
+            Parallel.ForEach(
+                videoPaths,
+                new ParallelOptions { MaxDegreeOfParallelism = 2 },
+                videoPath =>
                 {
-                    needsFinalSave = false;
-                    Console.WriteLine(stringBuilder.ToString());
-                    stringBuilder = new StringBuilder();
-
-                    database.VideoFingerPrints = fingerPrintList.ToArray();
-                    DatabaseSaver.Save(database, databasePath);
+                    VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath);
+                    store.AddFingerprint(videoFingerPrint);
                 }
-                else
-                {
-                    needsFinalSave = true;
-                    stringBuilder.Append(", ");
-                }
-            }
+            );
 
-            // Save the final database
-            if (needsFinalSave)
-            {
-                database.VideoFingerPrints = fingerPrintList.ToArray();
-                DatabaseSaver.Save(database, databasePath);
-            }
+            store.Shutdown();
+            store.Wait();
         }
 
         private static IEnumerable<string> GetVideoFiles(string path)

@@ -19,9 +19,11 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using VideoIndexer.Video;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace VideoIndexer
 {
@@ -31,10 +33,12 @@ namespace VideoIndexer
     internal sealed class FFMPEGProcess : IDisposable
     {
         #region private fields
-        private static readonly string FFMPEG_PROC_NAME = "ffmpeg";
+        private static readonly int DefaultBufferSize = 64000;
+        private static readonly string FFMPEGProcName = "ffmpeg";
 
         private readonly Process _process;
-        private readonly FFMPEGProcessSettings _settings;
+        private readonly FFMPEGProcessVideoSettings _settings;
+        private readonly RawByteStore _byteStore;
 
         private bool _isDisposed;
         private bool _hasExecuted;
@@ -45,9 +49,10 @@ namespace VideoIndexer
         /// Constructs a new FFMPEG Process object with the provided settings
         /// </summary>
         /// <param name="settings">The process settings</param>
-        public FFMPEGProcess(FFMPEGProcessSettings settings)
+        public FFMPEGProcess(FFMPEGProcessVideoSettings settings, RawByteStore byteStore)
         {
             _settings = settings;
+            _byteStore = byteStore;
             _process = new Process();
             _isDisposed = false;
             _hasExecuted = false;
@@ -77,11 +82,15 @@ namespace VideoIndexer
             {
                 throw new InvalidOperationException("This process has already executed");
             }
-            // TODO: http://stackoverflow.com/questions/15922175/ffmpeg-run-from-shell-runs-properly-but-does-not-when-called-from-within-net
+
+            // Note: http://stackoverflow.com/questions/15922175/ffmpeg-run-from-shell-runs-properly-but-does-not-when-called-from-within-net
             _hasExecuted = true;
-            _process.StartInfo.UseShellExecute = true;
-            _process.StartInfo.FileName = EnvironmentTools.CalculateProcessName(FFMPEG_PROC_NAME);
+            _process.StartInfo.UseShellExecute = false;
             _process.StartInfo.CreateNoWindow = true;
+            _process.StartInfo.RedirectStandardError = true;
+            _process.StartInfo.RedirectStandardInput = true;
+            _process.StartInfo.RedirectStandardOutput = true;
+            _process.StartInfo.FileName = EnvironmentTools.CalculateProcessName(FFMPEGProcName);
             _process.StartInfo.Arguments = GetArguments();
 
             var processStarted = _process.Start();
@@ -90,6 +99,29 @@ namespace VideoIndexer
                 throw new Exception("Unable to start the FFMPEG process");
             }
 
+            Task stderr = Task.Factory.StartNew(() =>
+            {
+                while (_process.StandardError.EndOfStream == false)
+                {
+                    Console.Error.WriteLine(_process.StandardError.ReadLine());
+                }
+            });
+
+            int bytesRead = 0;
+            byte[] stdoutBuffer = new byte[DefaultBufferSize];
+            using (var binaryReader = new BinaryReader(_process.StandardOutput.BaseStream))
+            {
+                do
+                {
+                    bytesRead = binaryReader.Read(stdoutBuffer, 0, DefaultBufferSize);
+                    if (bytesRead > 0)
+                    {
+                        _byteStore.Submit(stdoutBuffer, bytesRead);
+                    }
+                } while (bytesRead > 0);
+            }
+
+            stderr.Wait();
             _process.WaitForExit();
 
             if (_process.ExitCode != 0)
@@ -97,92 +129,17 @@ namespace VideoIndexer
                 throw new Exception("FFMPEG did not execute properly");
             }
         }
-
-        /// <summary>
-        /// Calculate what the timespan string should be when it is embedded in a file name
-        /// </summary>
-        /// <param name="timespan">The timespan</param>
-        /// <returns>A string with the timespan formatted for a file name</returns>
-        public static string FormatTimeSpanFileName(TimeSpan timespan)
-        {
-            return string.Format("{0}_{1}_{2}", timespan.Hours, timespan.Minutes, timespan.Seconds);
-        }
-
-        /// <summary>
-        /// Get the output file path of the raw video output of this process
-        /// </summary>
-        /// <returns>A string with the full path to the output file</returns>
-        public string GetOutputFilePath()
-        {
-            return Path.GetFullPath(Path.Combine(_settings.OutputDirectory, GetOutputArgument()));
-        }
         #endregion
 
         #region private methods
         private string GetArguments()
         {
             return string.Format(
-                "-ss {0} -i \"{1}\" -vframes {2} {3} -vf fps={4}/{5} \"{6}\"",
-                _settings.StartTime,
+                "-i \"{0}\" -f rawvideo -pix_fmt bgr24 -vf fps={1}/{2} -",
                 _settings.TargetMediaFile,
-                _settings.FramesToOutput,
-                GetOutputVideoCodecArgument(),
                 _settings.Framerate.Numerator,
-                _settings.Framerate.Denominator,
-                GetOutputFilePath()
+                _settings.Framerate.Denominator
             );
-        }
-
-        private string GetOutputVideoCodecArgument()
-        {
-            switch (_settings.OutputFormat)
-            {
-                case FFMPEGOutputFormat.PNG:
-                    return "-codec:v png";
-                case FFMPEGOutputFormat.Y4M:
-                    return "-f yuv4mpegpipe -pix_fmt yuv444p";
-                case FFMPEGOutputFormat.RGB24:
-                    return "-f rawvideo -pix_fmt rgb24";
-                case FFMPEGOutputFormat.GBR24:
-                    return "-f rawvideo -pix_fmt bgr24";
-                default:
-                    throw new Exception("Unknown output format");
-            }
-        }
-
-        private string GetOutputArgument()
-        {
-            string rootFileName = Path.GetFileNameWithoutExtension(_settings.TargetMediaFile);
-            string formattedTimeSpan = FormatTimeSpanFileName(_settings.StartTime);
-            switch (_settings.OutputFormat)
-            {
-                case FFMPEGOutputFormat.PNG:
-                    return string.Format(
-                        "AUTOGEN_({0})_TIME_({1})_SNAPSHOT_(%02d).png",
-                        rootFileName,
-                        formattedTimeSpan
-                    );
-                case FFMPEGOutputFormat.Y4M:
-                    return string.Format(
-                        "AUTOGEN_({0})_TIME_({1})_RAW_DUMP.y4m",
-                        rootFileName,
-                        formattedTimeSpan
-                    );
-                case FFMPEGOutputFormat.GBR24:
-                    return string.Format(
-                        "AUTOGEN_({0})_TIME_({1})_RAW_DUMP.bgr24",
-                        rootFileName,
-                        formattedTimeSpan
-                    );
-                case FFMPEGOutputFormat.RGB24:
-                    return string.Format(
-                        "AUTOGEN_({0})_TIME_({1})_RAW_DUMP.rgb24",
-                        rootFileName,
-                        formattedTimeSpan
-                    );
-                default:
-                    throw new Exception("Unknown output format");
-            }
         }
         #endregion
     }

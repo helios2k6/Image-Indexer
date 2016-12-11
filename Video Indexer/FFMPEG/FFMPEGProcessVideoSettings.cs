@@ -26,7 +26,7 @@ namespace VideoIndexer
     /// <summary>
     /// Specifies the settings to use for running the FFMPEG Process
     /// </summary>
-    internal sealed class FFMPEGProcessSettings : IEquatable<FFMPEGProcessSettings>
+    internal sealed class FFMPEGProcessVideoSettings : IEquatable<FFMPEGProcessVideoSettings>
     {
         #region public properties
         /// <summary>
@@ -40,24 +40,9 @@ namespace VideoIndexer
         public string OutputDirectory { get; }
 
         /// <summary>
-        /// The time to seek to before outputting images
-        /// </summary>
-        public TimeSpan StartTime { get; }
-
-        /// <summary>
-        /// The number of frames to output
-        /// </summary>
-        public int FramesToOutput { get; }
-
-        /// <summary>
         /// The frame rate to playback the video
         /// </summary>
         public Ratio Framerate { get; }
-
-        /// <summary>
-        /// The output format to use for the FFMPEG Process
-        /// </summary>
-        public FFMPEGOutputFormat OutputFormat { get; }
         #endregion
 
         #region ctor
@@ -66,45 +51,30 @@ namespace VideoIndexer
         /// process
         /// </summary>
         /// <param name="targetMediaFile">The media file to decode</param>
-        /// <param name="outputDirectory">The path to the folder where the output images will be placed</param>
-        /// <param name="startTime">The time to seek to before outputting images</param>
-        /// <param name="framesToOutput">The number of frames to output</param>
         /// <param name="framerate">The playback framerate</param>
-        public FFMPEGProcessSettings(
+        public FFMPEGProcessVideoSettings(
             string targetMediaFile,
-            string outputDirectory,
-            TimeSpan startTime,
-            int framesToOutput,
-            Ratio framerate,
-            FFMPEGOutputFormat outputFormat
+            Ratio framerate
         )
         {
             TargetMediaFile = targetMediaFile;
-            OutputDirectory = outputDirectory;
-            StartTime = startTime;
-            FramesToOutput = framesToOutput;
             Framerate = framerate;
-            OutputFormat = outputFormat;
         }
         #endregion
 
         #region public methods
         public override bool Equals(object other)
         {
-            return Equals(other as FFMPEGProcessSettings);
+            return Equals(other as FFMPEGProcessVideoSettings);
         }
 
         public override int GetHashCode()
         {
             return TargetMediaFile.GetHashCode() ^
-                OutputDirectory.GetHashCode() ^
-                StartTime.GetHashCode() ^
-                FramesToOutput.GetHashCode() ^
-                Framerate.GetHashCode() ^
-                OutputFormat.GetHashCode();
+                Framerate.GetHashCode();
         }
 
-        public bool Equals(FFMPEGProcessSettings other)
+        public bool Equals(FFMPEGProcessVideoSettings other)
         {
             if (EqualsPreamble(other) == false)
             {
@@ -113,10 +83,7 @@ namespace VideoIndexer
 
             return Equals(TargetMediaFile, other.TargetMediaFile) &&
                 Equals(OutputDirectory, other.OutputDirectory) &&
-                Equals(StartTime, other.StartTime) &&
-                Equals(FramesToOutput, other.FramesToOutput) &&
-                Equals(Framerate, other.Framerate) &&
-                Equals(OutputFormat, other.OutputFormat);
+                Equals(Framerate, other.Framerate);
         }
         #endregion
 
