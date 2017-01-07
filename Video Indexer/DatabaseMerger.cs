@@ -19,7 +19,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using System.Collection.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using VideoIndexer.Wrappers;
 
@@ -41,10 +41,10 @@ namespace VideoIndexer
 
             foreach (VideoFingerPrintWrapper fingerPrint in second.VideoFingerPrints)
             {
-                if (videoFingerPrintsByFile.Contains(fingerPrint.FilePath))
+                if (videoFingerPrintsByFile.ContainsKey(fingerPrint.FilePath))
                 {
                     // Handle collision
-                    
+
                 }
                 else
                 {
@@ -52,6 +52,8 @@ namespace VideoIndexer
                     videoFingerPrintsByFile.Add(fingerPrint.FilePath, fingerPrint);
                 }
             }
+
+            return null;
         }
         #endregion
         #region private methods

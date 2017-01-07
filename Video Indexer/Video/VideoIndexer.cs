@@ -82,7 +82,7 @@ namespace VideoIndexer.Video
                         quarterFramerate
                     );
 
-                    using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, byteStore))
+                    using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, byteStore, cancellationToken))
                     {
                         ffmpegProcess.Execute();
                     }

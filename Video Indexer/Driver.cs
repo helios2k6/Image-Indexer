@@ -26,6 +26,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using VideoIndex;
 using VideoIndexer.Serialization;
@@ -35,7 +36,9 @@ namespace VideoIndexer
 {
     internal static class Driver
     {
-        enum Mode
+        private static readonly CancellationToken CancelToken = new CancellationToken();
+
+        internal enum Mode
         {
             INDEX,
             SEARCH,
@@ -104,7 +107,7 @@ namespace VideoIndexer
                         Console.WriteLine(string.Format("File {0} already hashed. Skipping", videoPath));
                         return;
                     }
-                    VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath);
+                    VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, CancelToken);
                     store.AddFingerprint(videoFingerPrint);
                 }
             );
