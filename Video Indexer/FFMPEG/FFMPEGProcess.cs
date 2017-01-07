@@ -24,6 +24,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace VideoIndexer
 {
@@ -39,6 +40,7 @@ namespace VideoIndexer
         private readonly Process _process;
         private readonly FFMPEGProcessVideoSettings _settings;
         private readonly RawByteStore _byteStore;
+        private readonly CancellationToken _cancellationToken;
 
         private bool _isDisposed;
         private bool _hasExecuted;
@@ -49,10 +51,11 @@ namespace VideoIndexer
         /// Constructs a new FFMPEG Process object with the provided settings
         /// </summary>
         /// <param name="settings">The process settings</param>
-        public FFMPEGProcess(FFMPEGProcessVideoSettings settings, RawByteStore byteStore)
+        public FFMPEGProcess(FFMPEGProcessVideoSettings settings, RawByteStore byteStore, CancellationToken cancellationToken)
         {
             _settings = settings;
             _byteStore = byteStore;
+            _cancellationToken = cancellationToken;
             _process = new Process();
             _isDisposed = false;
             _hasExecuted = false;
@@ -81,6 +84,11 @@ namespace VideoIndexer
             if (_hasExecuted)
             {
                 throw new InvalidOperationException("This process has already executed");
+            }
+
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException("this");
             }
 
             // Note: http://stackoverflow.com/questions/15922175/ffmpeg-run-from-shell-runs-properly-but-does-not-when-called-from-within-net
@@ -121,7 +129,7 @@ namespace VideoIndexer
                 } while (bytesRead > 0);
             }
 
-            stderr.Wait();
+            stderr.Wait(_cancellationToken);
             _process.WaitForExit();
 
             if (_process.ExitCode != 0)

@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using VideoIndexer.Media;
 using VideoIndexer.Wrappers;
 using System.IO;
+using System.Threading;
 
 namespace VideoIndexer.Video
 {
@@ -50,49 +51,51 @@ namespace VideoIndexer.Video
         /// </summary>
         /// <param name="videoFile"></param>
         /// <returns></returns>
-        public static VideoFingerPrintWrapper IndexVideo(string videoFile)
+        public static VideoFingerPrintWrapper IndexVideo(string videoFile, CancellationToken cancellationToken)
         {
             MediaInfo info = new MediaInfoProcess(videoFile).Execute();
             return new VideoFingerPrintWrapper
             {
                 FilePath = videoFile,
-                FingerPrints = IndexVideo(videoFile, info).ToArray(),
+                FingerPrints = IndexVideo(videoFile, info, cancellationToken).ToArray(),
             };
         }
         #endregion
 
         #region private methods
-        private static IEnumerable<FrameFingerPrintWrapper> IndexVideo(string videoFile, MediaInfo info)
+        private static IEnumerable<FrameFingerPrintWrapper> IndexVideo(string videoFile, MediaInfo info, CancellationToken cancellationToken)
         {
             TimeSpan totalDuration = info.GetDuration();
             var quarterFramerate = new Ratio(
                 info.GetFramerate().Numerator,
                 info.GetFramerate().Denominator * 4
             );
-            var indexingPool = new VideoIndexingExecutor(4);
-            var byteStore = new RawByteStore(info.GetWidth(), info.GetHeight(), indexingPool);
 
-            // Producer Thread
-            Task producer = Task.Factory.StartNew(() =>
+            using (var indexingPool = new VideoIndexingExecutor(4, cancellationToken))
+            using (var byteStore = new RawByteStore(info.GetWidth(), info.GetHeight(), indexingPool, cancellationToken))
             {
-                var ffmpegProcessSettings = new FFMPEGProcessVideoSettings(
-                    videoFile,
-                    quarterFramerate
-                );
-
-                using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, byteStore))
+                // Producer Thread
+                Task producer = Task.Factory.StartNew(() =>
                 {
-                    ffmpegProcess.Execute();
-                }
-            });
+                    var ffmpegProcessSettings = new FFMPEGProcessVideoSettings(
+                        videoFile,
+                        quarterFramerate
+                    );
 
-            producer.Wait();
-            byteStore.Shutdown();
-            byteStore.Wait();
-            indexingPool.Shutdown();
-            indexingPool.Wait();
+                    using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, byteStore))
+                    {
+                        ffmpegProcess.Execute();
+                    }
+                });
 
-            return indexingPool.GetFingerPrints();
+                producer.Wait();
+                byteStore.Shutdown();
+                byteStore.Wait();
+                indexingPool.Shutdown();
+                indexingPool.Wait();
+
+                return indexingPool.GetFingerPrints();
+            }
         }
         #endregion
     }

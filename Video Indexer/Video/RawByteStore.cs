@@ -24,28 +24,33 @@ using System;
 using System.Collections.Concurrent;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace VideoIndexer.Video
 {
-    internal sealed class RawByteStore
+    internal sealed class RawByteStore : IDisposable
     {
         #region private fields
+        private bool _disposed;
         private readonly int _width;
         private readonly int _height;
         private readonly BlockingCollection<byte[]> _rawByteQueue;
         private readonly VideoIndexingExecutor _videoIndexer;
         private readonly Task _queueTask;
+        private readonly CancellationToken _cancellationToken;
         #endregion
 
         #region public properties
         #endregion
 
         #region ctor
-        public RawByteStore(int width, int height, VideoIndexingExecutor videoIndexer)
+        public RawByteStore(int width, int height, VideoIndexingExecutor videoIndexer, CancellationToken cancellationToken)
         {
+            _disposed = false;
             _width = width;
             _height = height;
+            _cancellationToken = cancellationToken;
             _rawByteQueue = new BlockingCollection<byte[]>();
             _videoIndexer = videoIndexer;
             _queueTask = Task.Factory.StartNew(RunQueue);
@@ -53,8 +58,24 @@ namespace VideoIndexer.Video
         #endregion
 
         #region public methods
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _rawByteQueue.Dispose();
+        }
+
         public void Submit(byte[] rawBytes, int bytesToCopy)
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("this");
+            }
+
             byte[] copy = new byte[bytesToCopy];
             Buffer.BlockCopy(rawBytes, 0, copy, 0, bytesToCopy);
             _rawByteQueue.Add(copy);
@@ -62,11 +83,21 @@ namespace VideoIndexer.Video
 
         public void Shutdown()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("this");
+            }
+
             _rawByteQueue.CompleteAdding();
         }
 
         public void Wait()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("this");
+            }
+
             _queueTask.Wait();
         }
         #endregion
@@ -78,31 +109,38 @@ namespace VideoIndexer.Video
             int frameSize = 3 * _width * _height;
             byte[] frameBuffer = new byte[frameSize];
             int currentIndex = 0;
-            foreach (byte[] rawBytes in _rawByteQueue.GetConsumingEnumerable())
+            try
             {
-                // Raw bytes don't overflow frame
-                if (rawBytes.Length < frameSize - currentIndex)
+                foreach (byte[] rawBytes in _rawByteQueue.GetConsumingEnumerable(_cancellationToken))
                 {
-                    Buffer.BlockCopy(rawBytes, 0, frameBuffer, currentIndex, rawBytes.Length);
-                    currentIndex += rawBytes.Length;
+                    // Raw bytes don't overflow frame
+                    if (rawBytes.Length < frameSize - currentIndex)
+                    {
+                        Buffer.BlockCopy(rawBytes, 0, frameBuffer, currentIndex, rawBytes.Length);
+                        currentIndex += rawBytes.Length;
+                    }
+                    // Raw bytes overflow frame
+                    else
+                    {
+                        int numBytesToCopy = frameSize - currentIndex;
+                        Buffer.BlockCopy(rawBytes, 0, frameBuffer, currentIndex, numBytesToCopy);
+
+                        // Frame is now full. Create image and ship it off
+                        WritableLockBitImage frame = new WritableLockBitImage(_width, _height, frameBuffer);
+                        frame.Lock();
+
+                        _videoIndexer.SubmitVideoFrame(frame, currentFrame);
+                        currentFrame++;
+
+                        // Write overflow stuff now
+                        Buffer.BlockCopy(rawBytes, numBytesToCopy, frameBuffer, 0, rawBytes.Length - numBytesToCopy);
+                        currentIndex = rawBytes.Length - numBytesToCopy;
+                    }
                 }
-                // Raw bytes overflow frame
-                else
-                {
-                    int numBytesToCopy = frameSize - currentIndex;
-                    Buffer.BlockCopy(rawBytes, 0, frameBuffer, currentIndex, numBytesToCopy);
-
-                    // Frame is now full. Create image and ship it off
-                    WritableLockBitImage frame = new WritableLockBitImage(_width, _height, frameBuffer);
-                    frame.Lock();
-
-                    _videoIndexer.SubmitVideoFrame(frame, currentFrame);
-                    currentFrame++;
-
-                    // Write overflow stuff now
-                    Buffer.BlockCopy(rawBytes, numBytesToCopy, frameBuffer, 0, rawBytes.Length - numBytesToCopy);
-                    currentIndex = rawBytes.Length - numBytesToCopy;
-                }
+            }
+            catch (OperationCanceledException)
+            {
+                Shutdown();
             }
         }
         #endregion

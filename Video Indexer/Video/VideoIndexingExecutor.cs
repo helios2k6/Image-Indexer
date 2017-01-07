@@ -20,14 +20,16 @@
  */
 
 using FrameIndexLibrary;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using VideoIndexer.Wrappers;
 
 namespace VideoIndexer.Video
 {
-    internal sealed class VideoIndexingExecutor
+    internal sealed class VideoIndexingExecutor : IDisposable
     {
         #region private classes
         private sealed class WorkItem
@@ -43,14 +45,19 @@ namespace VideoIndexer.Video
 
         private readonly BlockingCollection<WorkItem> _buffer;
         private readonly ConcurrentBag<FrameFingerPrintWrapper> _fingerPrints;
+        private readonly CancellationToken _cancellationToken;
         private readonly Task[] _workerThreads;
         private readonly int _numThreads;
+
+        private bool _disposed;
         #endregion
 
         #region ctor
-        public VideoIndexingExecutor(int numThreads)
+        public VideoIndexingExecutor(int numThreads, CancellationToken cancellationToken)
         {
+            _disposed = false;
             _numThreads = numThreads;
+            _cancellationToken = cancellationToken;
             _buffer = new BlockingCollection<WorkItem>();
             _fingerPrints = new ConcurrentBag<FrameFingerPrintWrapper>();
             _workerThreads = new Task[_numThreads];
@@ -61,14 +68,20 @@ namespace VideoIndexer.Video
             }
         }
 
-        public VideoIndexingExecutor() : this(DEFAULT_WORKER_THREADS)
+        public VideoIndexingExecutor(CancellationToken cancellationToken) : this(DEFAULT_WORKER_THREADS, cancellationToken)
         {
         }
         #endregion
 
         #region public methods
+
         public void SubmitVideoFrame(WritableLockBitImage frame, int frameNumber)
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("this");
+            }
+
             _buffer.Add(new WorkItem
             {
                 FrameNumber = frameNumber,
@@ -78,31 +91,64 @@ namespace VideoIndexer.Video
 
         public void Shutdown()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("this");
+            }
+
             _buffer.CompleteAdding();
         }
 
         public void Wait()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("this");
+            }
+
             Task.WaitAll(_workerThreads);
         }
 
         public IEnumerable<FrameFingerPrintWrapper> GetFingerPrints()
         {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("this");
+            }
+
             return _fingerPrints;
+        }
+
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _buffer.Dispose();
         }
         #endregion
 
         #region private methods
         private void RunConsumer()
         {
-            foreach (WorkItem item in _buffer.GetConsumingEnumerable())
+            try
             {
-                ulong framePHash = FrameIndexer.IndexFrame(item.Frame);
-                _fingerPrints.Add(new FrameFingerPrintWrapper
+                foreach (WorkItem item in _buffer.GetConsumingEnumerable(_cancellationToken))
                 {
-                    PHashCode = framePHash,
-                    FrameNumber = item.FrameNumber,
-                });
+                    ulong framePHash = FrameIndexer.IndexFrame(item.Frame);
+                    _fingerPrints.Add(new FrameFingerPrintWrapper
+                    {
+                        PHashCode = framePHash,
+                        FrameNumber = item.FrameNumber,
+                    });
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Shutdown();
             }
         }
         #endregion
