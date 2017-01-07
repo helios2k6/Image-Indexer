@@ -60,6 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DatabaseMerger.cs" />
     <Compile Include="Driver.cs" />
     <Compile Include="EnvironmentTools.cs" />
     <Compile Include="FFMPEG\FFMPEGProcess.cs" />
