@@ -36,7 +36,8 @@ namespace VideoIndexer
 {
     internal static class Driver
     {
-        private static readonly CancellationToken CancelToken = new CancellationToken();
+        private static readonly CancellationTokenSource PanicButton = new CancellationTokenSource();
+        private static int CancelRequestedCount = 0;
 
         internal enum Mode
         {
@@ -54,6 +55,8 @@ namespace VideoIndexer
                 return;
             }
 
+            Console.CancelKeyPress += ConsoleCancelKeyPress;
+
             Mode mode = GetMode(args);
 
             if (mode == Mode.UNKNOWN)
@@ -70,6 +73,22 @@ namespace VideoIndexer
             if (mode == Mode.SEARCH)
             {
                 ExecuteSearch(args);
+            }
+        }
+
+        private static void ConsoleCancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            int incrementedValue = Interlocked.Increment(ref CancelRequestedCount);
+
+            if (incrementedValue < 1)
+            {
+                e.Cancel = true;
+                Console.WriteLine("Cancellation requested. Shutting down systems cleanly");
+                PanicButton.Cancel();
+            }
+            else
+            {
+                Console.WriteLine("Cancellation forced! Shutting down systems immediately");
             }
         }
         #endregion
@@ -102,12 +121,17 @@ namespace VideoIndexer
                 new ParallelOptions { MaxDegreeOfParallelism = 2 },
                 videoPath =>
                 {
+                    if (PanicButton.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     if (knownHashes.Contains(videoPath))
                     {
                         Console.WriteLine(string.Format("File {0} already hashed. Skipping", videoPath));
                         return;
                     }
-                    VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, CancelToken);
+                    VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token);
                     store.AddFingerprint(videoFingerPrint);
                 }
             );

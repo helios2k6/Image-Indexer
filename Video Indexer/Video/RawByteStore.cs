@@ -22,8 +22,6 @@
 using FrameIndexLibrary;
 using System;
 using System.Collections.Concurrent;
-using System.Drawing.Imaging;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -74,6 +72,14 @@ namespace VideoIndexer.Video
             if (_disposed)
             {
                 throw new ObjectDisposedException("this");
+            }
+
+            if (_cancellationToken.IsCancellationRequested)
+            {
+                // It's possible that someone cancelled this operation, but hasn't 
+                // shutdown producer threads. In that case, we'll forgive them and
+                // simply stop accepting bytes instead of throw an exception
+                return;
             }
 
             byte[] copy = new byte[bytesToCopy];

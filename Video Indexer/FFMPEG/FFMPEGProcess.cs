@@ -59,6 +59,8 @@ namespace VideoIndexer
             _process = new Process();
             _isDisposed = false;
             _hasExecuted = false;
+
+            _cancellationToken.Register(KillProcess);
         }
         #endregion
 
@@ -132,7 +134,7 @@ namespace VideoIndexer
             stderr.Wait(_cancellationToken);
             _process.WaitForExit();
 
-            if (_process.ExitCode != 0)
+            if (_process.ExitCode != 0 && _cancellationToken.IsCancellationRequested == false)
             {
                 throw new Exception("FFMPEG did not execute properly");
             }
@@ -140,6 +142,11 @@ namespace VideoIndexer
         #endregion
 
         #region private methods
+        private void KillProcess()
+        {
+            _process.Kill();
+        }
+
         private string GetArguments()
         {
             return string.Format(
