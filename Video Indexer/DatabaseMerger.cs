@@ -41,19 +41,14 @@ namespace VideoIndexer
 
             foreach (VideoFingerPrintWrapper fingerPrint in second.VideoFingerPrints)
             {
-                if (videoFingerPrintsByFile.ContainsKey(fingerPrint.FilePath))
-                {
-                    // Handle collision
-
-                }
-                else
-                {
-                    // Just add it if there's no collision
-                    videoFingerPrintsByFile.Add(fingerPrint.FilePath, fingerPrint);
-                }
+                // Override fingerprints
+                videoFingerPrintsByFile.Add(fingerPrint.FilePath, fingerPrint);
             }
 
-            return null;
+            return new VideoFingerPrintDatabaseWrapper
+            {
+                VideoFingerPrints = videoFingerPrintsByFile.Values.ToArray(),
+            };
         }
         #endregion
         #region private methods
