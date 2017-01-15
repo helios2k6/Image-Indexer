@@ -21,6 +21,7 @@
 
 using FrameIndexLibrary;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -30,6 +31,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using VideoIndex;
 using VideoIndexer.Serialization;
+using VideoIndexer.Utils;
 using VideoIndexer.Wrappers;
 
 namespace VideoIndexer
@@ -43,6 +45,7 @@ namespace VideoIndexer
         {
             INDEX,
             SEARCH,
+            MERGE,
             UNKNOWN,
         }
 
@@ -74,6 +77,11 @@ namespace VideoIndexer
             {
                 ExecuteSearch(args);
             }
+
+            if (mode == Mode.MERGE)
+            {
+                ExecuteMerge(args);
+            }
         }
 
         private static void ConsoleCancelKeyPress(object sender, ConsoleCancelEventArgs e)
@@ -94,10 +102,40 @@ namespace VideoIndexer
         #endregion
 
         #region private methods
+        private static void ExecuteMerge(string[] args)
+        {
+            Tuple<string, string, string> databasesToMerge = GetMergeArguments(args);
+            if (string.IsNullOrWhiteSpace(databasesToMerge.Item1) || string.IsNullOrWhiteSpace(databasesToMerge.Item2) || string.IsNullOrWhiteSpace(databasesToMerge.Item3))
+            {
+                Console.WriteLine("Database files not provided");
+                return;
+            }
+
+            if (File.Exists(databasesToMerge.Item1) == false || File.Exists(databasesToMerge.Item2) == false)
+            {
+                Console.WriteLine("Database files cannot be found");
+                return;
+            }
+
+            if (File.Exists(databasesToMerge.Item3))
+            {
+                Console.WriteLine(string.Format("Database {0} exists. Cannot override", databasesToMerge.Item3));
+                return;
+            }
+
+            VideoFingerPrintDatabaseWrapper mergedDatabase = DatabaseMerger.Merge(
+                DatabaseLoader.Load(databasesToMerge.Item1),
+                DatabaseLoader.Load(databasesToMerge.Item2)
+            );
+
+            DatabaseSaver.Save(mergedDatabase, databasesToMerge.Item3);
+        }
+
         private static void ExecuteIndex(string[] args)
         {
             string videoFile = GetVideoPath(args);
             string databaseFile = GetDatabasePath(args);
+            string numThreadsArg = GetNumThreads(args);
 
             if (string.IsNullOrWhiteSpace(videoFile) || string.IsNullOrWhiteSpace(databaseFile))
             {
@@ -105,39 +143,77 @@ namespace VideoIndexer
                 return;
             }
 
-            IndexImpl(databaseFile, GetVideoFiles(videoFile));
+            int numThreads = 1;
+            if (string.IsNullOrWhiteSpace(numThreadsArg) == false)
+            {
+                int.TryParse(numThreadsArg, out numThreads);
+            }
+
+            IndexImpl(databaseFile, GetVideoFiles(videoFile), numThreads);
         }
 
-        private static void IndexImpl(string databasePath, IEnumerable<string> videoPaths)
+        private static void IndexImpl(string databasePath, IEnumerable<string> videoPaths, int numThreads)
         {
             VideoFingerPrintDatabaseWrapper database = File.Exists(databasePath)
                 ? DatabaseLoader.Load(databasePath)
                 : new VideoFingerPrintDatabaseWrapper();
             FingerPrintStore store = new FingerPrintStore(database, databasePath);
             var knownHashes = new HashSet<string>(database.VideoFingerPrints.Select(w => w.FilePath));
+            var skippedFiles = new ConcurrentBag<string>();
+            using (ChangeErrorMode _ = new ChangeErrorMode(ChangeErrorMode.ErrorModes.FailCriticalErrors | ChangeErrorMode.ErrorModes.NoGpFaultErrorBox))
+            {
+                Parallel.ForEach(
+                    videoPaths,
+                    new ParallelOptions { MaxDegreeOfParallelism = numThreads },
+                    videoPath =>
+                    {
+                        if (PanicButton.IsCancellationRequested)
+                        {
+                            return;
+                        }
 
-            Parallel.ForEach(
-                videoPaths,
-                new ParallelOptions { MaxDegreeOfParallelism = 2 },
-                videoPath =>
+                        if (knownHashes.Contains(videoPath))
+                        {
+                            Console.WriteLine(string.Format("File {0} already hashed. Skipping", videoPath));
+                            return;
+                        }
+                        try
+                        {
+                            if (videoPath.Length > 260) // Max file path that mediainfo can handle
+                            {
+                                Console.WriteLine("File path is too long. Skipping: " + videoPath);
+                                return;
+                            }
+
+                            VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token);
+                            store.AddFingerprint(videoFingerPrint);
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            Console.WriteLine(string.Format("Unable to hash file {0}. Skipping", videoPath));
+                            skippedFiles.Add(videoPath);
+                        }
+                    }
+                );
+
+                // Attempting to index skipped files
+                foreach (string skippedFile in skippedFiles)
                 {
-                    if (PanicButton.IsCancellationRequested)
+                    Console.WriteLine("Attempting to hash skipped file: " + skippedFile);
+                    try
                     {
-                        return;
+                        VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(skippedFile, PanicButton.Token);
+                        store.AddFingerprint(videoFingerPrint);
                     }
-
-                    if (knownHashes.Contains(videoPath))
+                    catch (InvalidOperationException)
                     {
-                        Console.WriteLine(string.Format("File {0} already hashed. Skipping", videoPath));
-                        return;
+                        Console.WriteLine(string.Format("Unable to hash file {0} for the second time. Giving up", skippedFile));
                     }
-                    VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token);
-                    store.AddFingerprint(videoFingerPrint);
                 }
-            );
 
-            store.Shutdown();
-            store.Wait();
+                store.Shutdown();
+                store.Wait();
+            }
         }
 
         private static IEnumerable<string> GetVideoFiles(string path)
@@ -242,6 +318,11 @@ namespace VideoIndexer
             return GetArgumentTuple(args, "--photo");
         }
 
+        private static string GetNumThreads(string[] args)
+        {
+            return GetArgumentTuple(args, "--threads");
+        }
+
         private static string GetArgumentTuple(string[] args, string argSwitch)
         {
             for (int i = 0; i < args.Length; i++)
@@ -261,6 +342,42 @@ namespace VideoIndexer
             return string.Empty;
         }
 
+        private static Tuple<string, string, string> GetMergeArguments(string[] args)
+        {
+            string first = null, second = null, output = null;
+            bool collectStrings = false;
+            foreach (string arg in args)
+            {
+                if (string.Equals("--merge", arg) && collectStrings == false)
+                {
+                    collectStrings = true;
+                }
+                else if (collectStrings)
+                {
+                    if (first == null)
+                    {
+                        first = arg;
+                    }
+                    else if (second == null)
+                    {
+                        second = arg;
+                    }
+                    else if (output == null)
+                    {
+                        output = arg;
+                        break;
+                    }
+                }
+            }
+
+            if (first != null && second != null && output != null)
+            {
+                return Tuple.Create(first, second, output);
+            }
+
+            return Tuple.Create(string.Empty, string.Empty, string.Empty);
+        }
+
         private static Mode GetMode(string[] args)
         {
             foreach (var arg in args)
@@ -273,6 +390,11 @@ namespace VideoIndexer
                 if (string.Equals(arg, "--search"))
                 {
                     return Mode.SEARCH;
+                }
+
+                if (string.Equals(arg, "--merge"))
+                {
+                    return Mode.MERGE;
                 }
             }
 
@@ -303,11 +425,15 @@ namespace VideoIndexer
                 .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a video").AppendLine()
                 .Append('\t').Append("--video").Append('\t').Append('\t').Append("The video to index. If a directory is specified, the entire directory will be recursively indexed").AppendLine()
                 .Append('\t').Append("--database").Append('\t').Append("The path to save the database to. This will update existing databases").AppendLine()
+                .Append('\t').Append("--threads").Append('\t').Append("The number of threads to use when indexing. Default is 1")
                 .AppendLine()
                 .AppendLine("Search Related Commands")
                 .Append('\t').Append("--search").Append('\t').Append("Search for similar frames using an image").AppendLine()
                 .Append('\t').Append("--photo").Append('\t').Append('\t').Append("The path to the photo you want to search for ").AppendLine()
-                .Append('\t').Append("--database").Append('\t').Append("The path to the photo you want to use for ").AppendLine();
+                .Append('\t').Append("--database").Append('\t').Append("The path to the photo you want to use for ").AppendLine()
+                .AppendLine()
+                .AppendLine("Database Operations")
+                .Append('\t').Append("--merge").Append('\t').Append("Merge two databases into a third database").AppendLine();
 
             Console.Write(builder.ToString());
         }

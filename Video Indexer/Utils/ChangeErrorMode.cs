@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  * Copyright (c) 2015 Andrew Johnson
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -19,39 +19,36 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using System.Collections.Generic;
-using System.Linq;
-using VideoIndexer.Wrappers;
+using System;
+using System.Runtime.InteropServices;
 
-namespace VideoIndexer
+namespace VideoIndexer.Utils
 {
-    public static class DatabaseMerger
+    public struct ChangeErrorMode : IDisposable
     {
-        #region public methods
-        public static VideoFingerPrintDatabaseWrapper Merge(
-            VideoFingerPrintDatabaseWrapper first,
-            VideoFingerPrintDatabaseWrapper second
-        )
+        [Flags]
+        public enum ErrorModes
         {
-            var videoFingerPrintsByFile = new Dictionary<string, VideoFingerPrintWrapper>();
-            foreach (VideoFingerPrintWrapper fingerPrint in first.VideoFingerPrints)
-            {
-                videoFingerPrintsByFile.Add(fingerPrint.FilePath, fingerPrint);
-            }
-
-            foreach (VideoFingerPrintWrapper fingerPrint in second.VideoFingerPrints)
-            {
-                // Override fingerprints
-                videoFingerPrintsByFile[fingerPrint.FilePath] = fingerPrint;
-            }
-
-            return new VideoFingerPrintDatabaseWrapper
-            {
-                VideoFingerPrints = videoFingerPrintsByFile.Values.ToArray(),
-            };
+            Default = 0x0,
+            FailCriticalErrors = 0x1,
+            NoGpFaultErrorBox = 0x2,
+            NoAlignmentFaultExcept = 0x4,
+            NoOpenFileErrorBox = 0x8000
         }
-        #endregion
-        #region private methods
-        #endregion
+
+        private int _oldMode;
+
+        public ChangeErrorMode(ErrorModes mode)
+        {
+            _oldMode = SetErrorMode((int)mode);
+        }
+
+        public void Dispose()
+        {
+            SetErrorMode(_oldMode);
+        }
+
+        [DllImport("kernel32.dll")]
+        private static extern int SetErrorMode(int newMode);
     }
 }

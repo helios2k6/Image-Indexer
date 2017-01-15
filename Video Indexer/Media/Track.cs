@@ -117,7 +117,7 @@ namespace VideoIndexer.Media
             }
 
             int indexOfHourMarker = Duration.IndexOf("h");
-            int indexOfMinuteMarker = Duration.IndexOf("mn");
+            int indexOfMinuteMarker = Duration.IndexOf("min");
             int indexOfSecondMarker = Duration.IndexOf("s");
 
             int hours, minutes, seconds;
@@ -154,7 +154,7 @@ namespace VideoIndexer.Media
                 // Check to see if minutes is specified. If not, then we start at index
                 // 0. Otherwise, it starts at indexOfMinutesMarker + 1
                 int startIndexForSeconds = indexOfMinuteMarker != -1
-                    ? indexOfMinuteMarker + 2
+                    ? indexOfMinuteMarker + 3
                     : 0;
 
                 string secondsAsString = Duration

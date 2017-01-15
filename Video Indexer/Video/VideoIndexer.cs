@@ -54,6 +54,11 @@ namespace VideoIndexer.Video
         public static VideoFingerPrintWrapper IndexVideo(string videoFile, CancellationToken cancellationToken)
         {
             MediaInfo info = new MediaInfoProcess(videoFile).Execute();
+            if (info.GetFramerate().Numerator == 0)
+            {
+                throw new InvalidOperationException("Invalid framerate for: " + videoFile);
+            }
+
             return new VideoFingerPrintWrapper
             {
                 FilePath = videoFile,

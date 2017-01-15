@@ -102,6 +102,7 @@ namespace VideoIndexer
             _process.StartInfo.RedirectStandardOutput = true;
             _process.StartInfo.FileName = EnvironmentTools.CalculateProcessName(FFMPEGProcName);
             _process.StartInfo.Arguments = GetArguments();
+            _process.StartInfo.ErrorDialog = false;
 
             var processStarted = _process.Start();
             if (processStarted == false)

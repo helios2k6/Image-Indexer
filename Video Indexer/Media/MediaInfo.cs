@@ -139,14 +139,14 @@ namespace VideoIndexer.Media
         {
             return (from track in File.Tracks
                     where string.Equals(track.Type, GENERAL_TRACK, StringComparison.OrdinalIgnoreCase)
-                    select track).SingleOrDefault().ToMaybe();
+                    select track).FirstOrDefault().ToMaybe();
         }
 
         private Maybe<Track> CalculateVideoTrack()
         {
             return (from track in File.Tracks
                     where string.Equals(track.Type, VIDEO_TRACK, StringComparison.OrdinalIgnoreCase)
-                    select track).SingleOrDefault().ToMaybe();
+                    select track).FirstOrDefault().ToMaybe();
         }
 
         private int CalculateWidth()

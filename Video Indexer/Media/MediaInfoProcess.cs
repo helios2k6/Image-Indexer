@@ -21,6 +21,7 @@
 
 using System;
 using System.Diagnostics;
+using VideoIndexer.Utils;
 using YAXLib;
 
 namespace VideoIndexer.Media
@@ -74,6 +75,7 @@ namespace VideoIndexer.Media
             _process.StartInfo.RedirectStandardInput = true;
             _process.StartInfo.RedirectStandardOutput = true;
             _process.StartInfo.RedirectStandardError = true;
+            _process.StartInfo.ErrorDialog = false;
 
             bool processStarted = _process.Start();
             string mediaInfoOutput = _process.StandardOutput.ReadToEnd();
