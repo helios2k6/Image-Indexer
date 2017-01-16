@@ -84,21 +84,16 @@ namespace VideoIndexer.Video
             using (var indexingPool = new VideoIndexingExecutor(4, cancellationToken))
             using (var byteStore = new RawByteStore(info.GetWidth(), info.GetHeight(), indexingPool, cancellationToken, maxMemory))
             {
-                // Producer Thread
-                Task producer = Task.Factory.StartNew(() =>
+                var ffmpegProcessSettings = new FFMPEGProcessVideoSettings(
+                    videoFile,
+                    quarterFramerate
+                );
+
+                using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, byteStore, cancellationToken))
                 {
-                    var ffmpegProcessSettings = new FFMPEGProcessVideoSettings(
-                        videoFile,
-                        quarterFramerate
-                    );
+                    ffmpegProcess.Execute();
+                }
 
-                    using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, byteStore, cancellationToken))
-                    {
-                        ffmpegProcess.Execute();
-                    }
-                });
-
-                producer.Wait();
                 byteStore.Shutdown();
                 byteStore.Wait();
                 indexingPool.Shutdown();

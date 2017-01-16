@@ -204,10 +204,14 @@ namespace VideoIndexer
                             VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token, maxMemory);
                             store.AddFingerprint(videoFingerPrint);
                         }
-                        catch (InvalidOperationException)
+                        catch (InvalidOperationException e)
                         {
-                            Console.WriteLine(string.Format("Unable to hash file {0}. Skipping", videoPath));
+                            Console.WriteLine(string.Format("Unable to hash file {0}. Reason: {1}. Skipping", videoPath, e.Message));
                             skippedFiles.Add(videoPath);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(string.Format("Unable to hash file {0}. Reason: {1}. Skipping", videoPath, e.Message));
                         }
                     }
                 );
