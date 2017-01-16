@@ -31,27 +31,34 @@ namespace VideoIndexer.Video
     {
         #region private fields
         private bool _disposed;
+        private long _currentMemoryLevel;
+
         private readonly int _width;
         private readonly int _height;
         private readonly BlockingCollection<byte[]> _rawByteQueue;
         private readonly VideoIndexingExecutor _videoIndexer;
         private readonly Task _queueTask;
         private readonly CancellationToken _cancellationToken;
+        private readonly long _maxCapacity;
+        private readonly ManualResetEventSlim _capacityBarrier;
         #endregion
 
         #region public properties
         #endregion
 
         #region ctor
-        public RawByteStore(int width, int height, VideoIndexingExecutor videoIndexer, CancellationToken cancellationToken)
+        public RawByteStore(int width, int height, VideoIndexingExecutor videoIndexer, CancellationToken cancellationToken, long maxCapacity)
         {
             _disposed = false;
+            _currentMemoryLevel = 0;
             _width = width;
             _height = height;
             _cancellationToken = cancellationToken;
             _rawByteQueue = new BlockingCollection<byte[]>();
             _videoIndexer = videoIndexer;
             _queueTask = Task.Factory.StartNew(RunQueue);
+            _maxCapacity = maxCapacity;
+            _capacityBarrier = new ManualResetEventSlim(true);
         }
         #endregion
 
@@ -65,6 +72,7 @@ namespace VideoIndexer.Video
 
             _disposed = true;
             _rawByteQueue.Dispose();
+            _capacityBarrier.Dispose();
         }
 
         public void Submit(byte[] rawBytes, int bytesToCopy)
@@ -73,6 +81,9 @@ namespace VideoIndexer.Video
             {
                 throw new ObjectDisposedException("this");
             }
+
+            // Wait until capacity is available or until the user hits the cancellation button
+            _capacityBarrier.Wait(_cancellationToken);
 
             if (_cancellationToken.IsCancellationRequested)
             {
@@ -84,6 +95,7 @@ namespace VideoIndexer.Video
 
             byte[] copy = new byte[bytesToCopy];
             Buffer.BlockCopy(rawBytes, 0, copy, 0, bytesToCopy);
+            Interlocked.Add(ref _currentMemoryLevel, bytesToCopy);
             _rawByteQueue.Add(copy);
         }
 
@@ -141,6 +153,19 @@ namespace VideoIndexer.Video
                         // Write overflow stuff now
                         Buffer.BlockCopy(rawBytes, numBytesToCopy, frameBuffer, 0, rawBytes.Length - numBytesToCopy);
                         currentIndex = rawBytes.Length - numBytesToCopy;
+                    }
+
+                    // Reduce the amount of bytes 
+                    long currentMemoryLevels = Interlocked.Add(ref _currentMemoryLevel, -rawBytes.Length);
+
+                    // Check capacity and set or reset the barrier
+                    if (currentMemoryLevels < _maxCapacity)
+                    {
+                        _capacityBarrier.Set();
+                    }
+                    else
+                    {
+                        _capacityBarrier.Reset();
                     }
                 }
             }

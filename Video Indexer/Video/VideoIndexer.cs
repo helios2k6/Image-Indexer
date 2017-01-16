@@ -51,7 +51,7 @@ namespace VideoIndexer.Video
         /// </summary>
         /// <param name="videoFile"></param>
         /// <returns></returns>
-        public static VideoFingerPrintWrapper IndexVideo(string videoFile, CancellationToken cancellationToken)
+        public static VideoFingerPrintWrapper IndexVideo(string videoFile, CancellationToken cancellationToken, long maxMemory)
         {
             MediaInfo info = new MediaInfoProcess(videoFile).Execute();
             if (info.GetFramerate().Numerator == 0)
@@ -62,13 +62,18 @@ namespace VideoIndexer.Video
             return new VideoFingerPrintWrapper
             {
                 FilePath = videoFile,
-                FingerPrints = IndexVideo(videoFile, info, cancellationToken).ToArray(),
+                FingerPrints = IndexVideo(videoFile, info, cancellationToken, maxMemory).ToArray(),
             };
         }
         #endregion
 
         #region private methods
-        private static IEnumerable<FrameFingerPrintWrapper> IndexVideo(string videoFile, MediaInfo info, CancellationToken cancellationToken)
+        private static IEnumerable<FrameFingerPrintWrapper> IndexVideo(
+            string videoFile,
+            MediaInfo info,
+            CancellationToken cancellationToken,
+            long maxMemory
+        )
         {
             TimeSpan totalDuration = info.GetDuration();
             var quarterFramerate = new Ratio(
@@ -77,7 +82,7 @@ namespace VideoIndexer.Video
             );
 
             using (var indexingPool = new VideoIndexingExecutor(4, cancellationToken))
-            using (var byteStore = new RawByteStore(info.GetWidth(), info.GetHeight(), indexingPool, cancellationToken))
+            using (var byteStore = new RawByteStore(info.GetWidth(), info.GetHeight(), indexingPool, cancellationToken, maxMemory))
             {
                 // Producer Thread
                 Task producer = Task.Factory.StartNew(() =>

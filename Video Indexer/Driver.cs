@@ -136,6 +136,7 @@ namespace VideoIndexer
             string videoFile = GetVideoPath(args);
             string databaseFile = GetDatabasePath(args);
             string numThreadsArg = GetNumThreads(args);
+            string maxMemoryArg = GetMaxMemory(args);
 
             if (string.IsNullOrWhiteSpace(videoFile) || string.IsNullOrWhiteSpace(databaseFile))
             {
@@ -149,10 +150,29 @@ namespace VideoIndexer
                 int.TryParse(numThreadsArg, out numThreads);
             }
 
-            IndexImpl(databaseFile, GetVideoFiles(videoFile), numThreads);
+            if (string.IsNullOrWhiteSpace(maxMemoryArg))
+            {
+                PrintHelp("--max-memory must be set");
+                return;
+            }
+
+            long maxMemory = 0;
+            if (long.TryParse(maxMemoryArg, out maxMemory) == false)
+            {
+                PrintHelp("--max-memory could not be parsed");
+                return;
+            }
+
+            if (maxMemory <= 0)
+            {
+                PrintHelp("--max-memory must be greater than 0");
+                return;
+            }
+
+            IndexImpl(databaseFile, GetVideoFiles(videoFile), numThreads, maxMemory);
         }
 
-        private static void IndexImpl(string databasePath, IEnumerable<string> videoPaths, int numThreads)
+        private static void IndexImpl(string databasePath, IEnumerable<string> videoPaths, int numThreads, long maxMemory)
         {
             VideoFingerPrintDatabaseWrapper database = File.Exists(databasePath)
                 ? DatabaseLoader.Load(databasePath)
@@ -160,10 +180,11 @@ namespace VideoIndexer
             FingerPrintStore store = new FingerPrintStore(database, databasePath);
             var knownHashes = new HashSet<string>(database.VideoFingerPrints.Select(w => w.FilePath));
             var skippedFiles = new ConcurrentBag<string>();
+
             using (ChangeErrorMode _ = new ChangeErrorMode(ChangeErrorMode.ErrorModes.FailCriticalErrors | ChangeErrorMode.ErrorModes.NoGpFaultErrorBox))
             {
                 Parallel.ForEach(
-                    videoPaths,
+                    videoPaths.Except(knownHashes),
                     new ParallelOptions { MaxDegreeOfParallelism = numThreads },
                     videoPath =>
                     {
@@ -172,11 +193,6 @@ namespace VideoIndexer
                             return;
                         }
 
-                        if (knownHashes.Contains(videoPath))
-                        {
-                            Console.WriteLine(string.Format("File {0} already hashed. Skipping", videoPath));
-                            return;
-                        }
                         try
                         {
                             if (videoPath.Length > 260) // Max file path that mediainfo can handle
@@ -185,7 +201,7 @@ namespace VideoIndexer
                                 return;
                             }
 
-                            VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token);
+                            VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token, maxMemory);
                             store.AddFingerprint(videoFingerPrint);
                         }
                         catch (InvalidOperationException)
@@ -202,7 +218,7 @@ namespace VideoIndexer
                     Console.WriteLine("Attempting to hash skipped file: " + skippedFile);
                     try
                     {
-                        VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(skippedFile, PanicButton.Token);
+                        VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(skippedFile, PanicButton.Token, maxMemory);
                         store.AddFingerprint(videoFingerPrint);
                     }
                     catch (InvalidOperationException)
@@ -323,6 +339,11 @@ namespace VideoIndexer
             return GetArgumentTuple(args, "--threads");
         }
 
+        private static string GetMaxMemory(string[] args)
+        {
+            return GetArgumentTuple(args, "--max-memory");
+        }
+
         private static string GetArgumentTuple(string[] args, string argSwitch)
         {
             for (int i = 0; i < args.Length; i++)
@@ -426,6 +447,7 @@ namespace VideoIndexer
                 .Append('\t').Append("--video").Append('\t').Append('\t').Append("The video to index. If a directory is specified, the entire directory will be recursively indexed").AppendLine()
                 .Append('\t').Append("--database").Append('\t').Append("The path to save the database to. This will update existing databases").AppendLine()
                 .Append('\t').Append("--threads").Append('\t').Append("The number of threads to use when indexing. Default is 1")
+                .Append('\t').Append("--max-memory").Append('\t').Append("The maximum number of bytes to take up in the frame buffer")
                 .AppendLine()
                 .AppendLine("Search Related Commands")
                 .Append('\t').Append("--search").Append('\t').Append("Search for similar frames using an image").AppendLine()

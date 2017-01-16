@@ -138,12 +138,15 @@ namespace VideoIndexer.Video
             {
                 foreach (WorkItem item in _buffer.GetConsumingEnumerable(_cancellationToken))
                 {
-                    ulong framePHash = FrameIndexer.IndexFrame(item.Frame);
-                    _fingerPrints.Add(new FrameFingerPrintWrapper
+                    using (var frame = item.Frame)
                     {
-                        PHashCode = framePHash,
-                        FrameNumber = item.FrameNumber,
-                    });
+                        ulong framePHash = FrameIndexer.IndexFrame(item.Frame);
+                        _fingerPrints.Add(new FrameFingerPrintWrapper
+                        {
+                            PHashCode = framePHash,
+                            FrameNumber = item.FrameNumber,
+                        });
+                    }
                 }
             }
             catch (OperationCanceledException)
