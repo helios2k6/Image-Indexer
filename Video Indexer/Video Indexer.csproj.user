@@ -6,6 +6,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>
-    <StartArguments>--index --video "\\HOME-SERVER-NAS\Public\Videos\Anime\Honey and Clover" --database D:\anime_database.bin --threads 1</StartArguments>
+    <StartArguments>
+    </StartArguments>
   </PropertyGroup>
 </Project>

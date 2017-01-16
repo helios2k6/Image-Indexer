@@ -434,7 +434,7 @@ namespace VideoIndexer
         private static void PrintHelp(string messageToPrint)
         {
             var builder = new StringBuilder();
-            builder.AppendLine("Video Indexer v1.0");
+            builder.AppendLine("Video Indexer v1.3");
 
             if (string.IsNullOrWhiteSpace(messageToPrint) == false)
             {
@@ -450,8 +450,8 @@ namespace VideoIndexer
                 .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a video").AppendLine()
                 .Append('\t').Append("--video").Append('\t').Append('\t').Append("The video to index. If a directory is specified, the entire directory will be recursively indexed").AppendLine()
                 .Append('\t').Append("--database").Append('\t').Append("The path to save the database to. This will update existing databases").AppendLine()
-                .Append('\t').Append("--threads").Append('\t').Append("The number of threads to use when indexing. Default is 1")
-                .Append('\t').Append("--max-memory").Append('\t').Append("The maximum number of bytes to take up in the frame buffer")
+                .Append('\t').Append("--threads").Append('\t').Append("The number of threads to use when indexing. Default is 1").AppendLine()
+                .Append('\t').Append("--max-memory").Append('\t').Append("The maximum number of bytes to take up in the frame buffer").AppendLine()
                 .AppendLine()
                 .AppendLine("Search Related Commands")
                 .Append('\t').Append("--search").Append('\t').Append("Search for similar frames using an image").AppendLine()
