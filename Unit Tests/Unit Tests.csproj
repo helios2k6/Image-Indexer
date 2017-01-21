@@ -57,7 +57,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ImageIndexer.cs" />
+    <Compile Include="DatabaseMetaTableSerializationTests.cs" />
+    <Compile Include="ImageIndexerTests.cs" />
     <Compile Include="PhotoIndexerSerializationTests.cs" />
     <Compile Include="VideoIndexerSerializationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

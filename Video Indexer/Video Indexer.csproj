@@ -67,15 +67,19 @@
     <Compile Include="FFMPEG\FFMPEGProcessVideoSettings.cs" />
     <Compile Include="FFMPEG\Ratio.cs" />
     <Compile Include="FingerPrintStore.cs" />
-    <Compile Include="Flatbuffer Schemas\ImageIndexer\FrameFingerPrint.cs" />
-    <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrint.cs" />
-    <Compile Include="Flatbuffer Schemas\ImageIndexer\VideoFingerPrintDatabase.cs" />
+    <Compile Include="Flatbuffer Schemas\VideoIndexer\DatabaseMetaTable.cs" />
+    <Compile Include="Flatbuffer Schemas\VideoIndexer\DatabaseMetaTableEntry.cs" />
+    <Compile Include="Flatbuffer Schemas\VideoIndexer\FrameFingerPrint.cs" />
+    <Compile Include="Flatbuffer Schemas\VideoIndexer\VideoFingerPrint.cs" />
+    <Compile Include="Flatbuffer Schemas\VideoIndexer\VideoFingerPrintDatabase.cs" />
     <Compile Include="Media\FileXMLNode.cs" />
     <Compile Include="Media\MediaInfo.cs" />
     <Compile Include="Media\MediaInfoProcess.cs" />
     <Compile Include="Media\Track.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\DatabaseLoader.cs" />
+    <Compile Include="Serialization\DatabaseMetaTableLoader.cs" />
+    <Compile Include="Serialization\DatabaseMetaTableSaver.cs" />
     <Compile Include="Serialization\DatabaseSaver.cs" />
     <Compile Include="Utils\ChangeErrorMode.cs" />
     <Compile Include="Utils\CommonLinqExtensions.cs" />
@@ -84,12 +88,15 @@
     <Compile Include="Video\RawByteStore.cs" />
     <Compile Include="Video\VideoIndexer.cs" />
     <Compile Include="Video\VideoIndexingExecutor.cs" />
+    <Compile Include="Wrappers\DatabaseMetaTableEntryWrapper.cs" />
+    <Compile Include="Wrappers\DatabaseMetaTableWrapper.cs" />
     <Compile Include="Wrappers\FrameFingerPrintWrapper.cs" />
     <Compile Include="Wrappers\VideoFingerPrintDatabaseWrapper.cs" />
     <Compile Include="Wrappers\VideoFingerPrintWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Flatbuffer Schemas\DatabaseMetaTable.fbs" />
     <None Include="Flatbuffer Schemas\VideoFingerPrintDatabase.fbs" />
     <None Include="packages.config" />
   </ItemGroup>

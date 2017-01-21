@@ -31,7 +31,7 @@ namespace UnitTests
     /// Summary description for ImageIndexer
     /// </summary>
     [TestClass]
-    public class ImageIndexer
+    public class ImageIndexerTests
     {
         private static readonly string TestPhoto1 = "UnitTests.TestData.TEST_PHOTO_1.png";
         private static readonly string TestPhoto2 = "UnitTests.TestData.TEST_PHOTO_2.png";

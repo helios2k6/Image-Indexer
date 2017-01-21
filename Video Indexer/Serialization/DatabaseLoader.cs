@@ -89,7 +89,6 @@ namespace VideoIndexer.Serialization
 
         private static VideoFingerPrintWrapper Convert(VideoFingerPrint videoFingerPrint)
         {
-
             IEnumerable<FrameFingerPrintWrapper> frameFingerPrints = from i in Enumerable.Range(0, videoFingerPrint.FrameFingerPrintsLength)
                                                                      select Convert(videoFingerPrint.GetFrameFingerPrints(i));
             return new VideoFingerPrintWrapper
