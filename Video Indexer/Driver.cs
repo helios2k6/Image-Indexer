@@ -177,7 +177,7 @@ namespace VideoIndexer
             VideoFingerPrintDatabaseWrapper database = File.Exists(databasePath)
                 ? DatabaseLoader.Load(databasePath)
                 : new VideoFingerPrintDatabaseWrapper();
-            FingerPrintStore store = new FingerPrintStore(database, databasePath);
+            FingerPrintStore store = new FingerPrintStore(databasePath);
             var knownHashes = new HashSet<string>(database.VideoFingerPrints.Select(w => w.FilePath));
             var skippedFiles = new ConcurrentBag<string>();
 
@@ -193,11 +193,12 @@ namespace VideoIndexer
                             return;
                         }
 
+                        string fileName = Path.GetFileName(videoPath);
                         try
                         {
                             if (videoPath.Length > 260) // Max file path that mediainfo can handle
                             {
-                                Console.WriteLine("File path is too long. Skipping: " + videoPath);
+                                Console.WriteLine("File path is too long. Skipping: " + fileName);
                                 return;
                             }
 
@@ -206,12 +207,12 @@ namespace VideoIndexer
                         }
                         catch (InvalidOperationException e)
                         {
-                            Console.WriteLine(string.Format("Unable to hash file {0}. Reason: {1}. Skipping", videoPath, e.Message));
+                            Console.WriteLine(string.Format("Unable to hash file {0}. Reason: {1}. Skipping", fileName, e.Message));
                             skippedFiles.Add(videoPath);
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine(string.Format("Unable to hash file {0}. Reason: {1}. Skipping", videoPath, e.Message));
+                            Console.WriteLine(string.Format("Unable to hash file {0}. Reason: {1}. Skipping", fileName, e.Message));
                         }
                     }
                 );

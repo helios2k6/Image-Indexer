@@ -39,6 +39,14 @@ namespace VideoIndexer.Wrappers
         /// The fingerprints for all of the frames of this video
         /// </summary>
         public FrameFingerPrintWrapper[] FingerPrints { get; set; }
+
+        /// <summary>
+        /// Gets the size of this video fingerprint wrapper in bytes
+        /// </summary>
+        public long MemorySize
+        {
+            get { return FingerPrints.LongLength * (96); }
+        }
         #endregion
 
         #region public methods

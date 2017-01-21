@@ -111,7 +111,6 @@ namespace VideoIndexer
             _process.StartInfo.Arguments = GetArguments();
             _process.StartInfo.ErrorDialog = false;
 
-            Console.WriteLine("Starting FFMPEG with {0}", _process.StartInfo.Arguments);
             var processStarted = _process.Start();
             if (processStarted == false)
             {

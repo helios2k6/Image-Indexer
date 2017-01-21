@@ -1,0 +1,14 @@
+﻿namespace VideoIndexer;
+
+table DatabaseMetaTableEntry
+{
+    fileName:string;
+    fileSize:ulong;
+}
+
+table DatabaseMetaTable
+{
+    databaseMetaTableEntries:[DatabaseMetaTableEntry];
+}
+
+root_type DatabaseMetaTable;
