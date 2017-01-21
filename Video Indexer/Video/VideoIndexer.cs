@@ -22,7 +22,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using VideoIndexer.Media;
 using VideoIndexer.Wrappers;
 using System.IO;
@@ -89,7 +88,7 @@ namespace VideoIndexer.Video
                     quarterFramerate
                 );
 
-                using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, byteStore, cancellationToken))
+                using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, byteStore, cancellationToken, false))
                 {
                     ffmpegProcess.Execute();
                 }

@@ -72,6 +72,7 @@ namespace VideoIndex
             bool needsFinalFlush = false;
             foreach (VideoFingerPrintWrapper fingerprint in _workItems.GetConsumingEnumerable())
             {
+                Console.WriteLine(string.Format("Adding {0} to database", fingerprint.FilePath));
                 needsFinalFlush = true;
                 _fingerprints.Add(fingerprint);
                 if (_fingerprints.Count % 5 == 0)

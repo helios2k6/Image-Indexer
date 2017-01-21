@@ -2,7 +2,7 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>
-    <StartArguments>--index --video "\\HOME-SERVER-NAS\Public\Videos\Anime" --database D:\anime_database.bin --threads 1 --max-memory 15032385536</StartArguments>
+    <StartArguments>--index --video "\\HOME-SERVER-NAS\Public\Videos\Anime\Needless" --database D:\anime_database.bin --threads 1 --max-memory 15032385536</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>

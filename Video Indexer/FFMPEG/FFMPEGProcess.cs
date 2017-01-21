@@ -41,6 +41,7 @@ namespace VideoIndexer
         private readonly FFMPEGProcessVideoSettings _settings;
         private readonly RawByteStore _byteStore;
         private readonly CancellationToken _cancellationToken;
+        private readonly bool _logVerbose;
 
         private bool _isDisposed;
         private bool _hasExecuted;
@@ -51,7 +52,12 @@ namespace VideoIndexer
         /// Constructs a new FFMPEG Process object with the provided settings
         /// </summary>
         /// <param name="settings">The process settings</param>
-        public FFMPEGProcess(FFMPEGProcessVideoSettings settings, RawByteStore byteStore, CancellationToken cancellationToken)
+        public FFMPEGProcess(
+            FFMPEGProcessVideoSettings settings,
+            RawByteStore byteStore,
+            CancellationToken cancellationToken,
+            bool logVerbose
+        )
         {
             _settings = settings;
             _byteStore = byteStore;
@@ -59,6 +65,7 @@ namespace VideoIndexer
             _process = new Process();
             _isDisposed = false;
             _hasExecuted = false;
+            _logVerbose = logVerbose;
 
             _cancellationToken.Register(KillProcess);
         }
@@ -104,6 +111,7 @@ namespace VideoIndexer
             _process.StartInfo.Arguments = GetArguments();
             _process.StartInfo.ErrorDialog = false;
 
+            Console.WriteLine("Starting FFMPEG with {0}", _process.StartInfo.Arguments);
             var processStarted = _process.Start();
             if (processStarted == false)
             {
@@ -112,9 +120,19 @@ namespace VideoIndexer
 
             Task stderr = Task.Factory.StartNew(() =>
             {
-                while (_process.StandardError.EndOfStream == false)
+                using (FileStream errorLog = File.OpenWrite(Path.GetRandomFileName() + ".log"))
+                using (StreamWriter writer = new StreamWriter(errorLog))
                 {
-                    Console.Error.WriteLine(_process.StandardError.ReadLine());
+                    while (_process.StandardError.EndOfStream == false)
+                    {
+                        string message = _process.StandardError.ReadLine();
+                        if (_logVerbose)
+                        {
+                            Console.Error.WriteLine(message);
+                        }
+
+                        writer.WriteLine(message);
+                    }
                 }
             });
 
