@@ -34,6 +34,14 @@ namespace VideoIndexer.Wrappers
         /// The fingerprints of all of the videos
         /// </summary>
         public VideoFingerPrintWrapper[] VideoFingerPrints { get; set; }
+
+        public ulong FileSize
+        {
+            get
+            {
+                return VideoFingerPrints.Aggregate(0uL, (acc, entry) => entry.MemorySize + acc);
+            }
+        }
         #endregion
 
         #region ctor

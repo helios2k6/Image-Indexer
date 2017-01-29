@@ -174,14 +174,11 @@ namespace VideoIndexer
 
         private static void IndexImpl(string databaseMetaTablePath, IEnumerable<string> videoPaths, int numThreads, long maxMemory)
         {
-            VideoFingerPrintDatabaseWrapper database = File.Exists(databaseMetaTablePath)
-                ? DatabaseLoader.Load(databaseMetaTablePath)
-                : new VideoFingerPrintDatabaseWrapper();
-            FingerPrintStore store = new FingerPrintStore(databaseMetaTablePath);
-            var knownHashes = new HashSet<string>(database.VideoFingerPrints.Select(w => w.FilePath));
+            IEnumerable<string> knownHashes = GetKnownDatabaseEntries(databaseMetaTablePath);
             var skippedFiles = new ConcurrentBag<string>();
 
             using (ChangeErrorMode _ = new ChangeErrorMode(ChangeErrorMode.ErrorModes.FailCriticalErrors | ChangeErrorMode.ErrorModes.NoGpFaultErrorBox))
+            using (FingerPrintStore store = new FingerPrintStore(databaseMetaTablePath))
             {
                 Parallel.ForEach(
                     videoPaths.Except(knownHashes),
@@ -203,7 +200,7 @@ namespace VideoIndexer
                             }
 
                             VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token, maxMemory);
-                            store.AddFingerPrintAsync(videoFingerPrint);
+                            store.AddFingerPrint(videoFingerPrint);
                         }
                         catch (InvalidOperationException e)
                         {
@@ -224,7 +221,7 @@ namespace VideoIndexer
                     try
                     {
                         VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(skippedFile, PanicButton.Token, maxMemory);
-                        store.AddFingerPrintAsync(videoFingerPrint);
+                        store.AddFingerPrint(videoFingerPrint);
                     }
                     catch (InvalidOperationException)
                     {
@@ -233,8 +230,29 @@ namespace VideoIndexer
                 }
 
                 store.Shutdown();
-                store.WaitAsync();
+                store.Wait();
             }
+        }
+
+        private static IEnumerable<string> GetKnownDatabaseEntries(string databaseMetaTablePath)
+        {
+            if (File.Exists(databaseMetaTablePath) == false)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            var knownDatabaseEntries = new HashSet<string>();
+            DatabaseMetaTableWrapper metatable = DatabaseMetaTableLoader.Load(databaseMetaTablePath);
+            foreach (DatabaseMetaTableEntryWrapper entry in metatable.DatabaseMetaTableEntries)
+            {
+                VideoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(entry.FileName);
+                foreach (VideoFingerPrintWrapper fingerprint in database.VideoFingerPrints)
+                {
+                    knownDatabaseEntries.Add(fingerprint.FilePath);
+                }
+            }
+
+            return knownDatabaseEntries;
         }
 
         private static IEnumerable<string> GetVideoFiles(string path)

@@ -43,9 +43,9 @@ namespace VideoIndexer.Wrappers
         /// <summary>
         /// Gets the size of this video fingerprint wrapper in bytes
         /// </summary>
-        public long MemorySize
+        public ulong MemorySize
         {
-            get { return FingerPrints.LongLength * (96); }
+            get { return (ulong)FingerPrints.LongLength * (96ul); }
         }
         #endregion
 
