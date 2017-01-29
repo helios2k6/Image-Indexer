@@ -23,7 +23,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using VideoIndexer.Serialization;
 using VideoIndexer.Wrappers;
 
 namespace VideoIndex
@@ -31,32 +30,35 @@ namespace VideoIndex
     internal sealed class FingerPrintStore
     {
         #region private fields
+        private string _currentDatabase;
+
         private readonly List<VideoFingerPrintWrapper> _fingerprints;
         private readonly BlockingCollection<VideoFingerPrintWrapper> _workItems;
-        private readonly string _databaseFilePath;
+        private readonly string _databaseMetaTablePath;
         private readonly Task _queueTask;
         #endregion
 
         #region ctor
-        public FingerPrintStore(string databaseFilePath)
+        public FingerPrintStore(string databaseMetaTablePath)
         {
-            _databaseFilePath = databaseFilePath;
+            _databaseMetaTablePath = databaseMetaTablePath;
             _fingerprints = new List<VideoFingerPrintWrapper>();
             _workItems = new BlockingCollection<VideoFingerPrintWrapper>();
             _queueTask = Task.Factory.StartNew(RunQueue);
+            _currentDatabase = string.Empty;
         }
         #endregion
 
         #region public methods
-        public void AddFingerprint(VideoFingerPrintWrapper fingerprint)
+        public void AddFingerPrint(VideoFingerPrintWrapper fingerprint)
         {
-            _workItems.Add(fingerprint);
         }
 
         public void Shutdown()
         {
             _workItems.CompleteAdding();
         }
+
 
         public void Wait()
         {
@@ -67,34 +69,11 @@ namespace VideoIndex
         #region private methods
         private void RunQueue()
         {
-            bool needsFinalFlush = false;
-            foreach (VideoFingerPrintWrapper fingerprint in _workItems.GetConsumingEnumerable())
-            {
-                try
-                {
-                    Console.WriteLine("Adding {0} to database", fingerprint.FilePath);
-                    needsFinalFlush = true;
-                    _fingerprints.Add(fingerprint);
-                    if (_fingerprints.Count % 5 == 0)
-                    {
-                        Console.WriteLine("Flushing database");
-                        // Flush
-                        _database.VideoFingerPrints = _fingerprints.ToArray();
-                        DatabaseSaver.Save(_database, _databaseFilePath);
-                        needsFinalFlush = false;
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Could not write {0} to database. Reason: {1}", fingerprint.FilePath, e.Message);
-                }
-            }
 
-            if (needsFinalFlush)
-            {
-                _database.VideoFingerPrints = _fingerprints.ToArray();
-                DatabaseSaver.Save(_database, _databaseFilePath);
-            }
+        }
+
+        private void HandleAddingFingerPrint()
+        {
         }
         #endregion
     }

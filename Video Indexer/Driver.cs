@@ -134,7 +134,7 @@ namespace VideoIndexer
         private static void ExecuteIndex(string[] args)
         {
             string videoFile = GetVideoPath(args);
-            string databaseFile = GetDatabasePath(args);
+            string databaseFile = GetDatabaseMetaTable(args);
             string numThreadsArg = GetNumThreads(args);
             string maxMemoryArg = GetMaxMemory(args);
 
@@ -172,12 +172,12 @@ namespace VideoIndexer
             IndexImpl(databaseFile, GetVideoFiles(videoFile), numThreads, maxMemory);
         }
 
-        private static void IndexImpl(string databasePath, IEnumerable<string> videoPaths, int numThreads, long maxMemory)
+        private static void IndexImpl(string databaseMetaTablePath, IEnumerable<string> videoPaths, int numThreads, long maxMemory)
         {
-            VideoFingerPrintDatabaseWrapper database = File.Exists(databasePath)
-                ? DatabaseLoader.Load(databasePath)
+            VideoFingerPrintDatabaseWrapper database = File.Exists(databaseMetaTablePath)
+                ? DatabaseLoader.Load(databaseMetaTablePath)
                 : new VideoFingerPrintDatabaseWrapper();
-            FingerPrintStore store = new FingerPrintStore(databasePath);
+            FingerPrintStore store = new FingerPrintStore(databaseMetaTablePath);
             var knownHashes = new HashSet<string>(database.VideoFingerPrints.Select(w => w.FilePath));
             var skippedFiles = new ConcurrentBag<string>();
 
@@ -203,7 +203,7 @@ namespace VideoIndexer
                             }
 
                             VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token, maxMemory);
-                            store.AddFingerprint(videoFingerPrint);
+                            store.AddFingerPrintAsync(videoFingerPrint);
                         }
                         catch (InvalidOperationException e)
                         {
@@ -224,7 +224,7 @@ namespace VideoIndexer
                     try
                     {
                         VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(skippedFile, PanicButton.Token, maxMemory);
-                        store.AddFingerprint(videoFingerPrint);
+                        store.AddFingerPrintAsync(videoFingerPrint);
                     }
                     catch (InvalidOperationException)
                     {
@@ -233,7 +233,7 @@ namespace VideoIndexer
                 }
 
                 store.Shutdown();
-                store.Wait();
+                store.WaitAsync();
             }
         }
 
@@ -264,69 +264,73 @@ namespace VideoIndexer
 
         private static void ExecuteSearch(string[] args)
         {
-            string photoFile = GetPhotoPath(args);
-            string databaseFile = GetDatabasePath(args);
+            string photoFilePath = GetPhotoPath(args);
+            string databaseMetaTablePath = GetDatabaseMetaTable(args);
 
-            if (string.IsNullOrWhiteSpace(photoFile) || string.IsNullOrWhiteSpace(databaseFile))
+            if (string.IsNullOrWhiteSpace(photoFilePath) || string.IsNullOrWhiteSpace(databaseMetaTablePath))
             {
-                PrintHelp("Photo path or database path not provided");
+                PrintHelp("Photo path or database metatable path not provided");
                 return;
             }
 
-            if (File.Exists(photoFile) == false)
+            if (File.Exists(photoFilePath) == false)
             {
                 PrintHelp("Photo file does not exist");
                 return;
             }
 
-            if (File.Exists(databaseFile) == false)
+            if (File.Exists(databaseMetaTablePath) == false)
             {
-                PrintHelp("Database does not exist");
+                PrintHelp("Database MetaTable does not exist");
                 return;
             }
 
-            using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false))
+            using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFilePath), false))
             {
                 lockbitImage.Lock();
                 ulong providedPhotoHash = FrameIndexer.IndexFrame(lockbitImage);
-                VideoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(databaseFile);
-                Dictionary<int, HashSet<Tuple<string, int>>> distanceToFingerprints = new Dictionary<int, HashSet<Tuple<string, int>>>();
-                foreach (var video in database.VideoFingerPrints)
+                DatabaseMetaTableWrapper metaTable = DatabaseMetaTableLoader.Load(databaseMetaTablePath);
+                foreach (string databasePath in metaTable.DatabaseMetaTableEntries.Select(e => e.FileName))
                 {
-                    foreach (var fingerPrint in video.FingerPrints)
+                    VideoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(databasePath);
+                    Dictionary<int, HashSet<Tuple<string, int>>> distanceToFingerprints = new Dictionary<int, HashSet<Tuple<string, int>>>();
+                    foreach (var video in database.VideoFingerPrints)
                     {
-                        int distance = DistanceCalculator.CalculateHammingDistance(providedPhotoHash, fingerPrint.PHashCode);
-
-                        HashSet<Tuple<string, int>> bucket;
-                        if (distanceToFingerprints.TryGetValue(distance, out bucket) == false)
+                        foreach (var fingerPrint in video.FingerPrints)
                         {
-                            bucket = new HashSet<Tuple<string, int>>();
-                            distanceToFingerprints.Add(distance, bucket);
+                            int distance = DistanceCalculator.CalculateHammingDistance(providedPhotoHash, fingerPrint.PHashCode);
+
+                            HashSet<Tuple<string, int>> bucket;
+                            if (distanceToFingerprints.TryGetValue(distance, out bucket) == false)
+                            {
+                                bucket = new HashSet<Tuple<string, int>>();
+                                distanceToFingerprints.Add(distance, bucket);
+                            }
+
+                            bucket.Add(Tuple.Create(video.FilePath, fingerPrint.FrameNumber));
                         }
-
-                        bucket.Add(Tuple.Create(video.FilePath, fingerPrint.FrameNumber));
                     }
-                }
 
-                var filteredDistances = from distanceToBucket in distanceToFingerprints
-                                        where distanceToBucket.Key <= 4
-                                        orderby distanceToBucket.Key
-                                        select distanceToBucket;
+                    var filteredDistances = from distanceToBucket in distanceToFingerprints
+                                            where distanceToBucket.Key <= 4
+                                            orderby distanceToBucket.Key
+                                            select distanceToBucket;
 
-                foreach (KeyValuePair<int, HashSet<Tuple<string, int>>> kvp in filteredDistances)
-                {
-                    int distance = kvp.Key;
-                    foreach (Tuple<string, int> entry in kvp.Value)
+                    foreach (KeyValuePair<int, HashSet<Tuple<string, int>>> kvp in filteredDistances)
                     {
-                        Console.WriteLine(string.Format("Distance {0} for {1} at Frame {2}", distance, entry.Item1, entry.Item2));
+                        int distance = kvp.Key;
+                        foreach (Tuple<string, int> entry in kvp.Value)
+                        {
+                            Console.WriteLine(string.Format("Distance {0} for {1} at Frame {2}", distance, entry.Item1, entry.Item2));
+                        }
                     }
                 }
             }
         }
 
-        private static string GetDatabasePath(string[] args)
+        private static string GetDatabaseMetaTable(string[] args)
         {
-            return GetArgumentTuple(args, "--database");
+            return GetArgumentTuple(args, "--database-metatable");
         }
 
         private static string GetVideoPath(string[] args)
@@ -435,7 +439,7 @@ namespace VideoIndexer
         private static void PrintHelp(string messageToPrint)
         {
             var builder = new StringBuilder();
-            builder.AppendLine("Video Indexer v1.3");
+            builder.AppendLine("Video Indexer v2.0");
 
             if (string.IsNullOrWhiteSpace(messageToPrint) == false)
             {
@@ -450,14 +454,14 @@ namespace VideoIndexer
                 .AppendLine("Index Related Commands")
                 .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a video").AppendLine()
                 .Append('\t').Append("--video").Append('\t').Append('\t').Append("The video to index. If a directory is specified, the entire directory will be recursively indexed").AppendLine()
-                .Append('\t').Append("--database").Append('\t').Append("The path to save the database to. This will update existing databases").AppendLine()
+                .Append('\t').Append("--database-metatable").Append('\t').Append("The path to save the database metatable to. This will update existing database metatables").AppendLine()
                 .Append('\t').Append("--threads").Append('\t').Append("The number of threads to use when indexing. Default is 1").AppendLine()
                 .Append('\t').Append("--max-memory").Append('\t').Append("The maximum number of bytes to take up in the frame buffer").AppendLine()
                 .AppendLine()
                 .AppendLine("Search Related Commands")
                 .Append('\t').Append("--search").Append('\t').Append("Search for similar frames using an image").AppendLine()
-                .Append('\t').Append("--photo").Append('\t').Append('\t').Append("The path to the photo you want to search for ").AppendLine()
-                .Append('\t').Append("--database").Append('\t').Append("The path to the photo you want to use for ").AppendLine()
+                .Append('\t').Append("--photo").Append('\t').Append('\t').Append("The path to the photo you want to search for").AppendLine()
+                .Append('\t').Append("--database-metatable").Append('\t').Append("The path to the database metatable").AppendLine()
                 .AppendLine()
                 .AppendLine("Database Operations")
                 .Append('\t').Append("--merge").Append('\t').Append("Merge two databases into a third database").AppendLine();
