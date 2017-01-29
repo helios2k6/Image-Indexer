@@ -121,38 +121,58 @@ namespace VideoIndex
             bool needsFinalFlush = false;
             foreach (VideoFingerPrintWrapper fingerprint in _workItems.GetConsumingEnumerable())
             {
-                fingerprintBuffer.Add(fingerprint);
-                if (fingerprintBuffer.Count > 5)
+                try
                 {
-                    // Flush the buffer
-                    needsFinalFlush = false;
-
-                    // Add entries to database
-                    currentDatabaseTuple.Item1.VideoFingerPrints = currentDatabaseTuple.Item1.VideoFingerPrints.Concat(fingerprintBuffer).ToArray();
-
-                    // Save entries to disk
-                    DatabaseSaver.Save(currentDatabaseTuple.Item1, currentDatabaseTuple.Item2);
-
-                    // Now, check if we need to update the current database
-                    if (currentDatabaseTuple.Item1.FileSize > MaxDatabaseSize)
+                    Console.WriteLine("Adding fingerprint: {0}", Path.GetFileName(fingerprint.FilePath));
+                    fingerprintBuffer.Add(fingerprint);
+                    if (fingerprintBuffer.Count > 5)
                     {
-                        currentDatabaseTuple = GetNextEligibleDatabase();
+                        Console.WriteLine("Flushing database");
+                        // Flush the buffer
+                        needsFinalFlush = false;
+
+                        // Add entries to database
+                        currentDatabaseTuple.Item1.VideoFingerPrints = currentDatabaseTuple.Item1.VideoFingerPrints.Concat(fingerprintBuffer).ToArray();
+
+                        // Save entries to disk
+                        DatabaseSaver.Save(currentDatabaseTuple.Item1, currentDatabaseTuple.Item2);
+
+                        // Now, check if we need to update the current database
+                        if (currentDatabaseTuple.Item1.FileSize > MaxDatabaseSize)
+                        {
+                            currentDatabaseTuple = GetNextEligibleDatabase();
+                        }
+
+                        // Lastly, clear the buffer
+                        fingerprintBuffer.Clear();
+                    }
+                    else
+                    {
+                        needsFinalFlush = true;
                     }
                 }
-                else
+                catch (Exception e)
                 {
-                    needsFinalFlush = true;
+                    Console.WriteLine("Could not write database. {0}", e.Message);
                 }
             }
 
             if (needsFinalFlush)
             {
-                // Flush the buffer one last time
-                // Add entries to database
-                currentDatabaseTuple.Item1.VideoFingerPrints = currentDatabaseTuple.Item1.VideoFingerPrints.Concat(fingerprintBuffer).ToArray();
+                try
+                {
+                    Console.WriteLine("Flushing database for the final time");
+                    // Flush the buffer one last time
+                    // Add entries to database
+                    currentDatabaseTuple.Item1.VideoFingerPrints = currentDatabaseTuple.Item1.VideoFingerPrints.Concat(fingerprintBuffer).ToArray();
 
-                // Save entries to disk
-                DatabaseSaver.Save(currentDatabaseTuple.Item1, currentDatabaseTuple.Item2);
+                    // Save entries to disk
+                    DatabaseSaver.Save(currentDatabaseTuple.Item1, currentDatabaseTuple.Item2);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Could not perform final flush of database. {0}", e.Message);
+                }
             }
         }
 
@@ -169,7 +189,7 @@ namespace VideoIndex
 
         private Tuple<VideoFingerPrintDatabaseWrapper, string> CreateNewDatabaseAndAddToMetatable()
         {
-            string emptyDatabaseFileName = Path.GetRandomFileName();
+            string emptyDatabaseFileName = Path.GetRandomFileName() + ".bin";
             VideoFingerPrintDatabaseWrapper emptyDatabase = new VideoFingerPrintDatabaseWrapper();
             DatabaseSaver.Save(emptyDatabase, emptyDatabaseFileName);
 
@@ -185,7 +205,7 @@ namespace VideoIndex
 
             DatabaseMetaTableSaver.Save(_metatable, _metatablePath);
 
-            return Tuple.Create(emptyDatabase, _metatablePath);
+            return Tuple.Create(emptyDatabase, emptyDatabaseFileName);
         }
         #endregion
     }

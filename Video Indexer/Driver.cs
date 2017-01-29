@@ -134,11 +134,11 @@ namespace VideoIndexer
         private static void ExecuteIndex(string[] args)
         {
             string videoFile = GetVideoPath(args);
-            string databaseFile = GetDatabaseMetaTable(args);
+            string metatable = GetDatabaseMetaTable(args);
             string numThreadsArg = GetNumThreads(args);
             string maxMemoryArg = GetMaxMemory(args);
 
-            if (string.IsNullOrWhiteSpace(videoFile) || string.IsNullOrWhiteSpace(databaseFile))
+            if (string.IsNullOrWhiteSpace(videoFile) || string.IsNullOrWhiteSpace(metatable))
             {
                 PrintHelp("Video path or database path not provided");
                 return;
@@ -169,7 +169,7 @@ namespace VideoIndexer
                 return;
             }
 
-            IndexImpl(databaseFile, GetVideoFiles(videoFile), numThreads, maxMemory);
+            IndexImpl(metatable, GetVideoFiles(videoFile), numThreads, maxMemory);
         }
 
         private static void IndexImpl(string databaseMetaTablePath, IEnumerable<string> videoPaths, int numThreads, long maxMemory)
