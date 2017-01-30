@@ -24,22 +24,12 @@ using System.Collections.Generic;
 using System.Linq;
 using VideoIndexer.Media;
 using VideoIndexer.Wrappers;
-using System.IO;
 using System.Threading;
 
 namespace VideoIndexer.Video
 {
     internal static class VideoIndexer
     {
-        #region private classes
-        private class MemoryMappedFileData
-        {
-            public int NumFrames { get; set; }
-            public int CurrentFrameIndex { get; set; }
-            public MemoryStream Stream { get; set; }
-        }
-        #endregion
-
         #region private static fields
         private static readonly TimeSpan PlaybackDuration = TimeSpan.FromSeconds(180);
         #endregion
@@ -80,8 +70,8 @@ namespace VideoIndexer.Video
                 info.GetFramerate().Denominator * 4
             );
 
-            using (var indexingPool = new VideoIndexingExecutor(4, cancellationToken))
-            using (var byteStore = new RawByteStore(info.GetWidth(), info.GetHeight(), indexingPool, cancellationToken, maxMemory))
+            using (var indexingPool = new VideoIndexingExecutor(4, cancellationToken, (long)Math.Round((3.0 * maxMemory) / 4.0)))
+            using (var byteStore = new RawByteStore(info.GetWidth(), info.GetHeight(), indexingPool, cancellationToken, (long)Math.Round(maxMemory / 4.0)))
             {
                 var ffmpegProcessSettings = new FFMPEGProcessVideoSettings(
                     videoFile,

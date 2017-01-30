@@ -180,6 +180,7 @@ namespace VideoIndexer
             using (ChangeErrorMode _ = new ChangeErrorMode(ChangeErrorMode.ErrorModes.FailCriticalErrors | ChangeErrorMode.ErrorModes.NoGpFaultErrorBox))
             using (FingerPrintStore store = new FingerPrintStore(databaseMetaTablePath))
             {
+                long maxMemoryPerIndexJob = (long)Math.Round((double)maxMemory / numThreads);
                 Parallel.ForEach(
                     videoPaths.Except(knownHashes),
                     new ParallelOptions { MaxDegreeOfParallelism = numThreads },
@@ -199,7 +200,7 @@ namespace VideoIndexer
                                 return;
                             }
 
-                            VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token, maxMemory);
+                            VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token, maxMemoryPerIndexJob);
                             store.AddFingerPrint(videoFingerPrint);
                         }
                         catch (InvalidOperationException e)

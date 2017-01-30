@@ -41,19 +41,22 @@ namespace VideoIndexer.Video
         #endregion
 
         #region private fields
-        private static readonly int DEFAULT_WORKER_THREADS = 2;
+        private static readonly int DefaultWorkerCapacity = 2;
 
         private readonly BlockingCollection<WorkItem> _buffer;
         private readonly ConcurrentBag<FrameFingerPrintWrapper> _fingerPrints;
         private readonly CancellationToken _cancellationToken;
         private readonly Task[] _workerThreads;
         private readonly int _numThreads;
+        private readonly long _maxCapacity;
+        private readonly ManualResetEventSlim _capacityBarrier;
 
+        private long _currentMemoryLevel;
         private bool _disposed;
         #endregion
 
         #region ctor
-        public VideoIndexingExecutor(int numThreads, CancellationToken cancellationToken)
+        public VideoIndexingExecutor(int numThreads, CancellationToken cancellationToken, long maxCapacity)
         {
             _disposed = false;
             _numThreads = numThreads;
@@ -61,6 +64,9 @@ namespace VideoIndexer.Video
             _buffer = new BlockingCollection<WorkItem>();
             _fingerPrints = new ConcurrentBag<FrameFingerPrintWrapper>();
             _workerThreads = new Task[_numThreads];
+            _maxCapacity = maxCapacity;
+            _capacityBarrier = new ManualResetEventSlim(true);
+            _currentMemoryLevel = 0;
 
             for (int i = 0; i < _numThreads; i++)
             {
@@ -68,7 +74,7 @@ namespace VideoIndexer.Video
             }
         }
 
-        public VideoIndexingExecutor(CancellationToken cancellationToken) : this(DEFAULT_WORKER_THREADS, cancellationToken)
+        public VideoIndexingExecutor(CancellationToken cancellationToken, long maxCapacity) : this(DefaultWorkerCapacity, cancellationToken, maxCapacity)
         {
         }
         #endregion
@@ -81,6 +87,17 @@ namespace VideoIndexer.Video
             {
                 throw new ObjectDisposedException("this");
             }
+
+            // Wait until capacity is available or until the user hits the cancellation button
+            _capacityBarrier.Wait(_cancellationToken);
+
+            if (_cancellationToken.IsCancellationRequested)
+            {
+                // Give slack to actors catching up
+                return;
+            }
+
+            Interlocked.Add(ref _currentMemoryLevel, frame.Width * frame.Height * 3);
 
             _buffer.Add(new WorkItem
             {
@@ -128,6 +145,7 @@ namespace VideoIndexer.Video
 
             _disposed = true;
             _buffer.Dispose();
+            _capacityBarrier.Dispose();
         }
         #endregion
 
@@ -138,7 +156,7 @@ namespace VideoIndexer.Video
             {
                 foreach (WorkItem item in _buffer.GetConsumingEnumerable(_cancellationToken))
                 {
-                    using (var frame = item.Frame)
+                    using (WritableLockBitImage frame = item.Frame)
                     {
                         ulong framePHash = FrameIndexer.IndexFrame(item.Frame);
                         _fingerPrints.Add(new FrameFingerPrintWrapper
@@ -146,6 +164,21 @@ namespace VideoIndexer.Video
                             PHashCode = framePHash,
                             FrameNumber = item.FrameNumber,
                         });
+
+                        // Reduce the current memory level
+                        long currentMemoryLevels = Interlocked.Add(ref _currentMemoryLevel, -frame.Width * frame.Height * 3);
+
+                        // Check capacity
+                        if (currentMemoryLevels < _maxCapacity)
+                        {
+                            // If we have space, set event
+                            _capacityBarrier.Set();
+                        }
+                        else
+                        {
+                            // Otherwise, reset the event
+                            _capacityBarrier.Reset();
+                        }
                     }
                 }
             }
