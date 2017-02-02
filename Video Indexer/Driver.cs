@@ -483,7 +483,8 @@ namespace VideoIndexer
                 .Append('\t').Append("--database-metatable").Append('\t').Append("The path to the database metatable").AppendLine()
                 .AppendLine()
                 .AppendLine("Database Operations")
-                .Append('\t').Append("--merge").Append('\t').Append("Merge two databases into a third database").AppendLine();
+                .Append('\t').Append("--merge").Append('\t').Append("Merge two databases into a third database").AppendLine()
+                .Append('\t').Append("--check-database").Append('\t').Append("Check the database for consistency and ensure that the images still hash to the same values stored in the database").AppendLine();
 
             Console.Write(builder.ToString());
         }
