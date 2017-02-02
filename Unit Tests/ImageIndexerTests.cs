@@ -21,9 +21,6 @@
 
 using FrameIndexLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Drawing;
-using System.IO;
-using System.Reflection;
 
 namespace UnitTests
 {
@@ -33,14 +30,10 @@ namespace UnitTests
     [TestClass]
     public class ImageIndexerTests
     {
-        private static readonly string TestPhoto1 = "UnitTests.TestData.TEST_PHOTO_1.png";
-        private static readonly string TestPhoto2 = "UnitTests.TestData.TEST_PHOTO_2.png";
-        private static readonly string TestPhoto3 = "UnitTests.TestData.TEST_PHOTO_3.png";
-
         [TestMethod]
         public void SamePhotoTest()
         {
-            using (WritableLockBitImage testImage = GetTestImage(TestPhoto1))
+            using (WritableLockBitImage testImage = TestUtils.GetImage(TestUtils.TestPhoto1))
             {
                 ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage);
                 ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage);
@@ -52,8 +45,8 @@ namespace UnitTests
         [TestMethod]
         public void VerySimilarPhotoTest()
         {
-            using (WritableLockBitImage testImage1 = GetTestImage(TestPhoto1))
-            using (WritableLockBitImage testImage2 = GetTestImage(TestPhoto2))
+            using (WritableLockBitImage testImage1 = TestUtils.GetImage(TestUtils.TestPhoto1))
+            using (WritableLockBitImage testImage2 = TestUtils.GetImage(TestUtils.TestPhoto2))
             {
                 ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage1);
                 ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
@@ -66,24 +59,14 @@ namespace UnitTests
         [TestMethod]
         public void TotallyDifferentPhotosTest()
         {
-            using (WritableLockBitImage testImage1 = GetTestImage(TestPhoto1))
-            using (WritableLockBitImage testImage2 = GetTestImage(TestPhoto3))
+            using (WritableLockBitImage testImage1 = TestUtils.GetImage(TestUtils.TestPhoto1))
+            using (WritableLockBitImage testImage2 = TestUtils.GetImage(TestUtils.TestPhoto3))
             {
                 ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage1);
                 ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
                 int distance = DistanceCalculator.CalculateHammingDistance(fingerPrint1, fingerPrint2);
 
                 Assert.AreEqual(8, distance);
-            }
-        }
-
-        private static WritableLockBitImage GetTestImage(string path)
-        {
-            using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
-            {
-                var image = new WritableLockBitImage(new Bitmap(stream), false);
-                image.Lock();
-                return image;
             }
         }
     }

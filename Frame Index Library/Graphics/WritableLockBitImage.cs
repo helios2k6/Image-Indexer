@@ -80,6 +80,24 @@ namespace FrameIndexLibrary
                 return _height;
             }
         }
+
+        /// <summary>
+        /// Gets the amount of memory this image takes up
+        /// </summary>
+        public long MemorySize
+        {
+            get
+            {
+                if (_disposed)
+                {
+                    throw new ObjectDisposedException("Object already disposed");
+                }
+
+                long bytesPerBit = (_bitDepth / 8);
+                long numberOfPixelsAndPadding = ((long)_bitmapData.Stride) * (Height);
+                return bytesPerBit * numberOfPixelsAndPadding;
+            }
+        }
         #endregion
 
         #region ctor
@@ -199,38 +217,36 @@ namespace FrameIndexLibrary
                 throw new ObjectDisposedException("Object already disposed");
             }
 
-            Color clr = Color.Empty;
-
-            // Get color components count
-            int cCount = _bitDepth / 8;
-
-            // Get start index of the specified pixel
-            int offset = ((y * Width) + x) * cCount;
-            if (offset > _width * _height * (_bitDepth / 8) - cCount)
+            if (x > Width || y > Height || x < 0 || y < 0)
             {
                 throw new IndexOutOfRangeException();
             }
 
             unsafe
             {
+                // Get color components count
+                int cCount = _bitDepth / 8;
+                Color clr = Color.Empty;
+                byte* currentLine = ((byte*)_bitmapData.Scan0) + (y * _bitmapData.Stride);
+                int offsetInBytes = x * cCount;
                 if (_bitDepth == 32) // For 32 bpp get Red, Green, Blue and Alpha
                 {
-                    byte b = *((byte*)_bitmapData.Scan0 + offset);
-                    byte g = *((byte*)_bitmapData.Scan0 + offset + 1);
-                    byte r = *((byte*)_bitmapData.Scan0 + offset + 2);
-                    byte a = *((byte*)_bitmapData.Scan0 + offset + 3);
+                    byte b = *(currentLine + offsetInBytes);
+                    byte g = *(currentLine + offsetInBytes + 1);
+                    byte r = *(currentLine + offsetInBytes + 2);
+                    byte a = *(currentLine + offsetInBytes + 3);
                     clr = Color.FromArgb(a, r, g, b);
                 }
                 else if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
                 {
-                    byte b = *((byte*)_bitmapData.Scan0 + offset);
-                    byte g = *((byte*)_bitmapData.Scan0 + offset + 1);
-                    byte r = *((byte*)_bitmapData.Scan0 + offset + 2);
+                    byte b = *(currentLine + offsetInBytes);
+                    byte g = *(currentLine + offsetInBytes + 1);
+                    byte r = *(currentLine + offsetInBytes + 2);
                     clr = Color.FromArgb(r, g, b);
                 }
                 else if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
                 {
-                    byte b = *((byte*)_bitmapData.Scan0 + offset);
+                    byte b = *(currentLine + offsetInBytes);
                     clr = Color.FromArgb(b, b, b);
                 }
                 return clr;
@@ -255,34 +271,33 @@ namespace FrameIndexLibrary
                 throw new ObjectDisposedException("Object already disposed");
             }
 
-            // Get color components count
-            int cCount = _bitDepth / 8;
-
-            // Get start index of the specified pixel
-            int offset = ((y * Width) + x) * cCount;
-            if (offset > _width * _height * (_bitDepth / 8) - cCount)
+            if (x > Width || y > Height || x < 0 || y < 0)
             {
                 throw new IndexOutOfRangeException();
             }
 
             unsafe
             {
+                // Get color components count
+                int cCount = _bitDepth / 8;
+                byte* currentLine = ((byte*)_bitmapData.Scan0) + (y * _bitmapData.Stride);
+                int offsetInBytes = x * cCount;
                 if (_bitDepth == 32) // For 32 bpp get Red, Green, Blue and Alpha
                 {
-                    *((byte*)_bitmapData.Scan0 + offset) = color.B;
-                    *((byte*)_bitmapData.Scan0 + offset + 1) = color.G;
-                    *((byte*)_bitmapData.Scan0 + offset + 2) = color.R;
-                    *((byte*)_bitmapData.Scan0 + offset + 3) = color.A;
+                    *(currentLine + offsetInBytes) = color.B;
+                    *(currentLine + offsetInBytes + 1) = color.G;
+                    *(currentLine + offsetInBytes + 2) = color.R;
+                    *(currentLine + offsetInBytes + 3) = color.A;
                 }
                 else if (_bitDepth == 24) // For 24 bpp get Red, Green and Blue
                 {
-                    *((byte*)_bitmapData.Scan0 + offset) = color.B;
-                    *((byte*)_bitmapData.Scan0 + offset + 1) = color.G;
-                    *((byte*)_bitmapData.Scan0 + offset + 2) = color.R;
+                    *(currentLine + offsetInBytes) = color.B;
+                    *(currentLine + offsetInBytes + 1) = color.G;
+                    *(currentLine + offsetInBytes + 2) = color.R;
                 }
                 else if (_bitDepth == 8)  // For 8 bpp get color value (Red, Green and Blue values are the same)
                 {
-                    *((byte*)_bitmapData.Scan0 + offset) = color.B;
+                    *(currentLine + offsetInBytes) = color.B;
                 }
             }
         }
@@ -358,9 +373,6 @@ namespace FrameIndexLibrary
 
             _bitmap.Dispose();
         }
-        #endregion
-
-        #region private methods
         #endregion
     }
 }

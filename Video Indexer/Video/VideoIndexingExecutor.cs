@@ -97,7 +97,7 @@ namespace VideoIndexer.Video
                 return;
             }
 
-            Interlocked.Add(ref _currentMemoryLevel, frame.Width * frame.Height * 3);
+            Interlocked.Add(ref _currentMemoryLevel, frame.MemorySize);
 
             _buffer.Add(new WorkItem
             {
@@ -166,7 +166,7 @@ namespace VideoIndexer.Video
                         });
 
                         // Reduce the current memory level
-                        long currentMemoryLevels = Interlocked.Add(ref _currentMemoryLevel, -frame.Width * frame.Height * 3);
+                        long currentMemoryLevels = Interlocked.Add(ref _currentMemoryLevel, -frame.MemorySize);
 
                         // Check capacity
                         if (currentMemoryLevels < _maxCapacity)
