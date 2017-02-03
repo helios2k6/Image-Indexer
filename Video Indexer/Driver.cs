@@ -46,6 +46,7 @@ namespace VideoIndexer
             INDEX,
             SEARCH,
             MERGE,
+            CHECK_DATABASE,
             UNKNOWN,
         }
 
@@ -81,6 +82,11 @@ namespace VideoIndexer
             if (mode == Mode.MERGE)
             {
                 ExecuteMerge(args);
+            }
+
+            if (mode == Mode.CHECK_DATABASE)
+            {
+                ExecuteCheckDatabase(args);
             }
         }
 
@@ -347,6 +353,58 @@ namespace VideoIndexer
             }
         }
 
+        private static void ExecuteCheckDatabase(string[] args)
+        {
+            string maxMemoryArg = GetMaxMemory(args);
+            string databaseMetaTablePath = GetDatabaseMetaTable(args);
+
+            if (string.IsNullOrWhiteSpace(databaseMetaTablePath))
+            {
+                PrintHelp("Database metatable path not provided");
+                return;
+            }
+
+            if (File.Exists(databaseMetaTablePath) == false)
+            {
+                PrintHelp("Database MetaTable does not exist");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(maxMemoryArg))
+            {
+                PrintHelp("--max-memory must be set");
+                return;
+            }
+
+            long maxMemory = 0;
+            if (long.TryParse(maxMemoryArg, out maxMemory) == false)
+            {
+                PrintHelp("--max-memory could not be parsed");
+                return;
+            }
+
+            DatabaseMetaTableWrapper metaTable = DatabaseMetaTableLoader.Load(databaseMetaTablePath);
+            var random = new Random();
+            foreach (string databasePath in metaTable.DatabaseMetaTableEntries.Select(e => e.FileName))
+            {
+                VideoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(databasePath);
+                int videoFingerPrintSampleCount = (int)Math.Round(database.VideoFingerPrints.Length / 3.0);
+                IEnumerable<VideoFingerPrintWrapper> videoFingerPrints = from fingerPrint in database.VideoFingerPrints
+                                                                         where random.Next() % 2 == 0
+                                                                         select fingerPrint;
+
+                foreach (VideoFingerPrintWrapper videoFingerPrint in videoFingerPrints.Take(videoFingerPrintSampleCount))
+                {
+                    VideoFingerPrintWrapper actualVideoFingerPrint = Video.VideoIndexer.IndexVideo(videoFingerPrint.FilePath, PanicButton.Token, maxMemory);
+
+                    if (Equals(videoFingerPrint, actualVideoFingerPrint) == false)
+                    {
+                        Console.WriteLine("{0} Fingerprint does not match", Path.GetFileName(videoFingerPrint.FilePath));
+                    }
+                }
+            }
+        }
+
         private static string GetDatabaseMetaTable(string[] args)
         {
             return GetArgumentTuple(args, "--database-metatable");
@@ -444,6 +502,11 @@ namespace VideoIndexer
                 if (string.Equals(arg, "--merge"))
                 {
                     return Mode.MERGE;
+                }
+
+                if (string.Equals(arg, "--check-database"))
+                {
+                    return Mode.CHECK_DATABASE;
                 }
             }
 

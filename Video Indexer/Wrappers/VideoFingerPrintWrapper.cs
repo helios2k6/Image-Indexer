@@ -39,14 +39,6 @@ namespace VideoIndexer.Wrappers
         /// The fingerprints for all of the frames of this video
         /// </summary>
         public FrameFingerPrintWrapper[] FingerPrints { get; set; }
-
-        /// <summary>
-        /// Gets the size of this video fingerprint wrapper in bytes
-        /// </summary>
-        public ulong MemorySize
-        {
-            get { return (ulong)FingerPrints.LongLength * (96ul); }
-        }
         #endregion
 
         #region public methods
@@ -63,7 +55,7 @@ namespace VideoIndexer.Wrappers
             }
 
             return string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
-                Enumerable.SequenceEqual(FingerPrints, other.FingerPrints);
+                CompareFingerPrint(other.FingerPrints);
         }
 
         /// <summary>
@@ -96,6 +88,48 @@ namespace VideoIndexer.Wrappers
         #endregion
 
         #region private methods
+        private bool CompareFingerPrint(FrameFingerPrintWrapper[] other)
+        {
+            if (FingerPrints == other)
+            {
+                return true;
+            }
+
+            if (FingerPrints == null && other != null)
+            {
+                return false;
+            }
+
+            if (FingerPrints != null && other == null)
+            {
+                return false;
+            }
+
+            if (FingerPrints.Length != other.Length)
+            {
+                return false;
+            }
+
+            FrameFingerPrintWrapper[] sortedFingerPrints = new FrameFingerPrintWrapper[FingerPrints.Length];
+            FrameFingerPrintWrapper[] otherSortedFingerPrints = new FrameFingerPrintWrapper[FingerPrints.Length];
+
+            Array.Copy(FingerPrints, 0, sortedFingerPrints, 0, sortedFingerPrints.Length);
+            Array.Copy(other, 0, otherSortedFingerPrints, 0, otherSortedFingerPrints.Length);
+
+            Array.Sort(sortedFingerPrints, (a, b) => a.FrameNumber - b.FrameNumber);
+            Array.Sort(otherSortedFingerPrints, (a, b) => a.FrameNumber - b.FrameNumber);
+
+            for (int i = 0; i < FingerPrints.Length; i++)
+            {
+                if (Equals(sortedFingerPrints[i], otherSortedFingerPrints[i]) == false)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private bool EqualsPreamble(object other)
         {
             if (ReferenceEquals(null, other)) return false;
