@@ -33,7 +33,7 @@ namespace VideoIndex
     internal sealed class FingerPrintStore : IDisposable
     {
         #region private fields
-        private static readonly ulong MaxDatabaseSize = 8388608; // 800 Mebibyte Database Limit
+        private static readonly ulong MaxDatabaseSize = 838860800; // 800 Mebibyte Database Limit
 
         private bool _disposed;
         private bool _shutdown;
