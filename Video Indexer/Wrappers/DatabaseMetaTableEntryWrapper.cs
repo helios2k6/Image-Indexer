@@ -49,7 +49,7 @@ namespace VideoIndexer.Wrappers
             }
 
             return string.Equals(FileName, other.FileName, StringComparison.Ordinal) &&
-                long.Equals(FileSize, other.FileSize);
+                Equals(FileSize, other.FileSize);
         }
 
         public override bool Equals(object obj)

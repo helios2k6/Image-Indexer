@@ -29,28 +29,31 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using VideoIndex;
+using VideoIndex.Video;
+using VideoIndexer.Merger;
 using VideoIndexer.Serialization;
 using VideoIndexer.Utils;
 using VideoIndexer.Wrappers;
 
-namespace VideoIndexer
+namespace VideoIndexer.Driver
 {
     internal static class Driver
     {
+        #region private fields
         private static readonly CancellationTokenSource PanicButton = new CancellationTokenSource();
         private static int CancelRequestedCount = 0;
-
-        internal enum Mode
+        #endregion
+        #region enums
+        private enum Mode
         {
             INDEX,
             SEARCH,
-            MERGE,
-            CHECK_DATABASE,
+            CHECK,
+            COALESCE,
             UNKNOWN,
         }
-
-        #region public methods
+        #endregion
+        #region driver
         public static void Main(string[] args)
         {
             if (args.Length == 0 || IsHelp(args))
@@ -61,32 +64,23 @@ namespace VideoIndexer
 
             Console.CancelKeyPress += ConsoleCancelKeyPress;
 
-            Mode mode = GetMode(args);
-
-            if (mode == Mode.UNKNOWN)
+            switch (GetMode(args))
             {
-                PrintHelp("Unknown mode.");
-                return;
-            }
-
-            if (mode == Mode.INDEX)
-            {
-                ExecuteIndex(args);
-            }
-
-            if (mode == Mode.SEARCH)
-            {
-                ExecuteSearch(args);
-            }
-
-            if (mode == Mode.MERGE)
-            {
-                ExecuteMerge(args);
-            }
-
-            if (mode == Mode.CHECK_DATABASE)
-            {
-                ExecuteCheckDatabase(args);
+                case Mode.CHECK:
+                    ExecuteCheckDatabase(args);
+                    break;
+                case Mode.COALESCE:
+                    ExecuteCoalesceMetatable(args);
+                    break;
+                case Mode.INDEX:
+                    ExecuteIndex(args);
+                    break;
+                case Mode.SEARCH:
+                    ExecuteSearch(args);
+                    break;
+                case Mode.UNKNOWN:
+                    PrintHelp("Unknown mode.");
+                    break;
             }
         }
 
@@ -106,37 +100,8 @@ namespace VideoIndexer
             }
         }
         #endregion
-
         #region private methods
-        private static void ExecuteMerge(string[] args)
-        {
-            Tuple<string, string, string> databasesToMerge = GetMergeArguments(args);
-            if (string.IsNullOrWhiteSpace(databasesToMerge.Item1) || string.IsNullOrWhiteSpace(databasesToMerge.Item2) || string.IsNullOrWhiteSpace(databasesToMerge.Item3))
-            {
-                Console.WriteLine("Database files not provided");
-                return;
-            }
-
-            if (File.Exists(databasesToMerge.Item1) == false || File.Exists(databasesToMerge.Item2) == false)
-            {
-                Console.WriteLine("Database files cannot be found");
-                return;
-            }
-
-            if (File.Exists(databasesToMerge.Item3))
-            {
-                Console.WriteLine(string.Format("Database {0} exists. Cannot override", databasesToMerge.Item3));
-                return;
-            }
-
-            VideoFingerPrintDatabaseWrapper mergedDatabase = DatabaseMerger.Merge(
-                DatabaseLoader.Load(databasesToMerge.Item1),
-                DatabaseLoader.Load(databasesToMerge.Item2)
-            );
-
-            DatabaseSaver.Save(mergedDatabase, databasesToMerge.Item3);
-        }
-
+        #region index
         private static void ExecuteIndex(string[] args)
         {
             string videoFile = GetVideoPath(args);
@@ -286,7 +251,8 @@ namespace VideoIndexer
                 string.Equals(".ogm", extension, StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(".wmv", extension, StringComparison.OrdinalIgnoreCase);
         }
-
+        #endregion
+        #region search
         private static void ExecuteSearch(string[] args)
         {
             string photoFilePath = GetPhotoPath(args);
@@ -352,7 +318,8 @@ namespace VideoIndexer
                 }
             }
         }
-
+        #endregion
+        #region check database
         private static void ExecuteCheckDatabase(string[] args)
         {
             string maxMemoryArg = GetMaxMemory(args);
@@ -404,7 +371,21 @@ namespace VideoIndexer
                 }
             }
         }
+        #endregion
+        #region coalesce
+        private static void ExecuteCoalesceMetatable(string[] args)
+        {
+            string databaseMetaTablePath = GetDatabaseMetaTable(args);
+            if (string.IsNullOrWhiteSpace(databaseMetaTablePath))
+            {
+                PrintHelp("Database metatable path not provided");
+                return;
+            }
 
+            DatabaseCoalescer.Coalesce(databaseMetaTablePath);
+        }
+        #endregion
+        #region util functions
         private static string GetDatabaseMetaTable(string[] args)
         {
             return GetArgumentTuple(args, "--database-metatable");
@@ -449,42 +430,6 @@ namespace VideoIndexer
             return string.Empty;
         }
 
-        private static Tuple<string, string, string> GetMergeArguments(string[] args)
-        {
-            string first = null, second = null, output = null;
-            bool collectStrings = false;
-            foreach (string arg in args)
-            {
-                if (string.Equals("--merge", arg) && collectStrings == false)
-                {
-                    collectStrings = true;
-                }
-                else if (collectStrings)
-                {
-                    if (first == null)
-                    {
-                        first = arg;
-                    }
-                    else if (second == null)
-                    {
-                        second = arg;
-                    }
-                    else if (output == null)
-                    {
-                        output = arg;
-                        break;
-                    }
-                }
-            }
-
-            if (first != null && second != null && output != null)
-            {
-                return Tuple.Create(first, second, output);
-            }
-
-            return Tuple.Create(string.Empty, string.Empty, string.Empty);
-        }
-
         private static Mode GetMode(string[] args)
         {
             foreach (var arg in args)
@@ -499,14 +444,14 @@ namespace VideoIndexer
                     return Mode.SEARCH;
                 }
 
-                if (string.Equals(arg, "--merge"))
-                {
-                    return Mode.MERGE;
-                }
-
                 if (string.Equals(arg, "--check-database"))
                 {
-                    return Mode.CHECK_DATABASE;
+                    return Mode.CHECK;
+                }
+
+                if (string.Equals(arg, "--coalesce-database"))
+                {
+                    return Mode.COALESCE;
                 }
             }
 
@@ -521,7 +466,7 @@ namespace VideoIndexer
         private static void PrintHelp(string messageToPrint)
         {
             var builder = new StringBuilder();
-            builder.AppendLine("Video Indexer v2.0");
+            builder.AppendLine("Video Indexer v2.1");
 
             if (string.IsNullOrWhiteSpace(messageToPrint) == false)
             {
@@ -546,11 +491,12 @@ namespace VideoIndexer
                 .Append('\t').Append("--database-metatable").Append('\t').Append("The path to the database metatable").AppendLine()
                 .AppendLine()
                 .AppendLine("Database Operations")
-                .Append('\t').Append("--merge").Append('\t').Append("Merge two databases into a third database").AppendLine()
-                .Append('\t').Append("--check-database").Append('\t').Append("Check the database for consistency and ensure that the images still hash to the same values stored in the database").AppendLine();
+                .Append('\t').Append("--check-database").Append('\t').Append("Ensure that the images hash to the values in the database").AppendLine()
+                .Append('\t').Append("--coalesce-database").Append('\t').Append("Coalesce databases").AppendLine();
 
             Console.Write(builder.ToString());
         }
+        #endregion
         #endregion
     }
 }

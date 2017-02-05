@@ -36,7 +36,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>VideoIndexer.Driver</StartupObject>
+    <StartupObject>VideoIndexer.Driver.Driver</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DevZH.FlatBuffers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -60,13 +60,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DatabaseMerger.cs" />
-    <Compile Include="Driver.cs" />
-    <Compile Include="EnvironmentTools.cs" />
+    <Compile Include="Merger\DatabaseCoalescer.cs" />
+    <Compile Include="Driver\Driver.cs" />
+    <Compile Include="Utils\EnvironmentTools.cs" />
     <Compile Include="FFMPEG\FFMPEGProcess.cs" />
     <Compile Include="FFMPEG\FFMPEGProcessVideoSettings.cs" />
     <Compile Include="FFMPEG\Ratio.cs" />
-    <Compile Include="FingerPrintStore.cs" />
+    <Compile Include="Video\FingerPrintStore.cs" />
     <Compile Include="Flatbuffer Schemas\VideoIndexer\DatabaseMetaTable.cs" />
     <Compile Include="Flatbuffer Schemas\VideoIndexer\DatabaseMetaTableEntry.cs" />
     <Compile Include="Flatbuffer Schemas\VideoIndexer\FrameFingerPrint.cs" />

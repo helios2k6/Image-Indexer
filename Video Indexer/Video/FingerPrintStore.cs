@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 using VideoIndexer.Serialization;
 using VideoIndexer.Wrappers;
 
-namespace VideoIndex
+namespace VideoIndex.Video
 {
     internal sealed class FingerPrintStore : IDisposable
     {
