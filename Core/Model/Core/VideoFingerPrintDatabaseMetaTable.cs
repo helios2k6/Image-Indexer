@@ -6,7 +6,7 @@ namespace Core
     using System;
     using FlatBuffers;
 
-    public sealed class VideoFingerPrintDatabaseMetaTable : Table
+    internal sealed class VideoFingerPrintDatabaseMetaTable : Table
     {
         public static VideoFingerPrintDatabaseMetaTable GetRootAsVideoFingerPrintDatabaseMetaTable(ByteBuffer _bb) { return GetRootAsVideoFingerPrintDatabaseMetaTable(_bb, new VideoFingerPrintDatabaseMetaTable()); }
         public static VideoFingerPrintDatabaseMetaTable GetRootAsVideoFingerPrintDatabaseMetaTable(ByteBuffer _bb, VideoFingerPrintDatabaseMetaTable obj) { return (obj.__init(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }

@@ -6,7 +6,7 @@ namespace Core
     using System;
     using FlatBuffers;
 
-    public sealed class FrameFingerPrint : Table
+    internal sealed class FrameFingerPrint : Table
     {
         public static FrameFingerPrint GetRootAsFrameFingerPrint(ByteBuffer _bb) { return GetRootAsFrameFingerPrint(_bb, new FrameFingerPrint()); }
         public static FrameFingerPrint GetRootAsFrameFingerPrint(ByteBuffer _bb, FrameFingerPrint obj) { return (obj.__init(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }

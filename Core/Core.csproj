@@ -31,6 +31,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DevZH.FlatBuffers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -40,10 +41,14 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Console\ConsoleUtils.cs" />
     <Compile Include="Environment\EnvironmentTools.cs" />
     <Compile Include="Linq\CommonLinqExtensions.cs" />
+    <Compile Include="Media\SSIMCalculator.cs" />
+    <Compile Include="Media\WritableLockBitImage.cs" />
     <Compile Include="Model\Core\PhotoFingerPrint.cs" />
     <Compile Include="Model\Core\PhotoFingerPrintDatabase.cs" />
     <Compile Include="Model\Core\VideoFingerPrintDatabaseMetaTable.cs" />

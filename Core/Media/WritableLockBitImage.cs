@@ -24,7 +24,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace FrameIndexLibrary
+namespace Core.Media
 {
     /// <summary>
     /// An Image object that allows you to read from it form multiple threads

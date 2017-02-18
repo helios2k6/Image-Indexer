@@ -6,7 +6,7 @@ namespace Core
     using System;
     using FlatBuffers;
 
-    public sealed class PhotoFingerPrintDatabase : Table
+    internal sealed class PhotoFingerPrintDatabase : Table
     {
         public static PhotoFingerPrintDatabase GetRootAsPhotoFingerPrintDatabase(ByteBuffer _bb) { return GetRootAsPhotoFingerPrintDatabase(_bb, new PhotoFingerPrintDatabase()); }
         public static PhotoFingerPrintDatabase GetRootAsPhotoFingerPrintDatabase(ByteBuffer _bb, PhotoFingerPrintDatabase obj) { return (obj.__init(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }

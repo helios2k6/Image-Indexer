@@ -60,7 +60,6 @@
     <Compile Include="Transformations\FastDCTCalculator.cs" />
     <Compile Include="Transformations\GreyScaleTransformation.cs" />
     <Compile Include="Transformations\ResizeTransformation.cs" />
-    <Compile Include="Graphics\WritableLockBitImage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
