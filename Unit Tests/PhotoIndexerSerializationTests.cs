@@ -19,9 +19,9 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Model.Wrappers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PhotoCollectionIndexer.Serialization;
-using PhotoCollectionIndexer.Wrappers;
 using System.IO;
 
 namespace UnitTests
@@ -45,9 +45,9 @@ namespace UnitTests
 
             using (var memoryStream = new MemoryStream())
             {
-                DatabaseSaver.Save(database, memoryStream);
+                PhotoFingerPrintDatabaseSaver.Save(database, memoryStream);
                 byte[] savedDatabase = memoryStream.ToArray();
-                PhotoFingerPrintDatabaseWrapper reloadedDatabase = DatabaseLoader.Load(savedDatabase);
+                PhotoFingerPrintDatabaseWrapper reloadedDatabase = PhotoFingerPrintDatabaseLoader.Load(savedDatabase);
 
                 Assert.AreEqual(database, reloadedDatabase);
             }

@@ -19,12 +19,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using System.Collections.Generic;
-using System.Linq;
-using VideoIndexer.Wrappers;
+using Core.Model;
+using Core.Model.Serialization;
+using Core.Model.Wrappers;
 using System;
-using VideoIndexer.Serialization;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace VideoIndexer.Merger
 {
@@ -34,22 +35,22 @@ namespace VideoIndexer.Merger
         private static readonly ulong FileSizeLimit = 838860800;
         #endregion
         #region public methods
-        public static DatabaseMetaTableWrapper Coalesce(
+        public static VideoFingerPrintDatabaseMetaTableWrapper Coalesce(
             string pathToMetatable
         )
         {
-            DatabaseMetaTableWrapper oldMetatable = DatabaseMetaTableLoader.Load(pathToMetatable);
-            IEnumerable<DatabaseMetaTableEntryWrapper> databasesSelectedForCoalescing = GetDatabasesThatNeedCoalescing(oldMetatable);
-            IEnumerable<DatabaseMetaTableEntryWrapper> remainingDatabases = oldMetatable.DatabaseMetaTableEntries.Except(databasesSelectedForCoalescing);
-            IEnumerable<IEnumerable<DatabaseMetaTableEntryWrapper>> groupedEntries = DetermineGroups(databasesSelectedForCoalescing);
-            IEnumerable<DatabaseMetaTableEntryWrapper> coalescedDatabaseGroups = CoalesceDatabaseGroups(groupedEntries);
+            VideoFingerPrintDatabaseMetaTableWrapper oldMetatable = VideoFingerPrintDatabaseMetaTableLoader.Load(pathToMetatable);
+            IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper> databasesSelectedForCoalescing = GetDatabasesThatNeedCoalescing(oldMetatable);
+            IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper> remainingDatabases = oldMetatable.DatabaseMetaTableEntries.Except(databasesSelectedForCoalescing);
+            IEnumerable<IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper>> groupedEntries = DetermineGroups(databasesSelectedForCoalescing);
+            IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper> coalescedDatabaseGroups = CoalesceDatabaseGroups(groupedEntries);
 
-            DatabaseMetaTableWrapper newMetaTable = new DatabaseMetaTableWrapper
+            VideoFingerPrintDatabaseMetaTableWrapper newMetaTable = new VideoFingerPrintDatabaseMetaTableWrapper
             {
                 DatabaseMetaTableEntries = coalescedDatabaseGroups.Concat(remainingDatabases).ToArray(),
             };
 
-            DatabaseMetaTableSaver.Save(newMetaTable, pathToMetatable);
+            VideoFingerPrintDatabaseMetaTableSaver.Save(newMetaTable, pathToMetatable);
 
             // Delete old databases
             DeleteOldDatabases(databasesSelectedForCoalescing);
@@ -58,9 +59,9 @@ namespace VideoIndexer.Merger
         }
         #endregion
         #region private methods
-        private static void DeleteOldDatabases(IEnumerable<DatabaseMetaTableEntryWrapper> entries)
+        private static void DeleteOldDatabases(IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper> entries)
         {
-            foreach (DatabaseMetaTableEntryWrapper entry in entries)
+            foreach (VideoFingerPrintDatabaseMetaTableEntryWrapper entry in entries)
             {
                 try
                 {
@@ -73,17 +74,17 @@ namespace VideoIndexer.Merger
             }
         }
 
-        private static IEnumerable<DatabaseMetaTableEntryWrapper> CoalesceDatabaseGroups(IEnumerable<IEnumerable<DatabaseMetaTableEntryWrapper>> groupedEntries)
+        private static IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper> CoalesceDatabaseGroups(IEnumerable<IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper>> groupedEntries)
         {
             return from @group in groupedEntries
                    select CoalesceDatabases(@group);
         }
 
-        private static DatabaseMetaTableEntryWrapper CoalesceDatabases(IEnumerable<DatabaseMetaTableEntryWrapper> coalescedEntries)
+        private static VideoFingerPrintDatabaseMetaTableEntryWrapper CoalesceDatabases(IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper> coalescedEntries)
         {
             // Load each database
             IEnumerable<VideoFingerPrintDatabaseWrapper> databases = from entry in coalescedEntries
-                                                                     select DatabaseLoader.Load(entry.FileName);
+                                                                     select VideoFingerPrintDatabaseLoader.Load(entry.FileName);
 
             // Merge fingerprints
             IEnumerable<VideoFingerPrintWrapper> allVideoFingerPrints = from database in databases
@@ -98,26 +99,26 @@ namespace VideoIndexer.Merger
 
             // Save the database
             string databaseFileName = Path.GetRandomFileName() + ".bin";
-            DatabaseSaver.Save(freshDatabase, databaseFileName);
+            VideoFingerPrintDatabaseSaver.Save(freshDatabase, databaseFileName);
             FileInfo databaseFileInfo = new FileInfo(databaseFileName);
-            return new DatabaseMetaTableEntryWrapper
+            return new VideoFingerPrintDatabaseMetaTableEntryWrapper
             {
                 FileName = databaseFileName,
                 FileSize = (ulong)databaseFileInfo.Length,
             };
         }
 
-        private static IEnumerable<IEnumerable<DatabaseMetaTableEntryWrapper>> DetermineGroups(IEnumerable<DatabaseMetaTableEntryWrapper> entries)
+        private static IEnumerable<IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper>> DetermineGroups(IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper> entries)
         {
-            var unusedEntries = new HashSet<DatabaseMetaTableEntryWrapper>(entries);
-            var groupedEntries = new HashSet<IEnumerable<DatabaseMetaTableEntryWrapper>>();
+            var unusedEntries = new HashSet<VideoFingerPrintDatabaseMetaTableEntryWrapper>(entries);
+            var groupedEntries = new HashSet<IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper>>();
             while (unusedEntries.Any())
             {
                 ulong currentGroupSize = 0;
-                var currentGroup = new HashSet<DatabaseMetaTableEntryWrapper>();
+                var currentGroup = new HashSet<VideoFingerPrintDatabaseMetaTableEntryWrapper>();
                 while (currentGroupSize < FileSizeLimit)
                 {
-                    DatabaseMetaTableEntryWrapper currentEntry = unusedEntries.FirstOrDefault();
+                    VideoFingerPrintDatabaseMetaTableEntryWrapper currentEntry = unusedEntries.FirstOrDefault();
                     if (currentEntry == null)
                     {
                         // We didn't hit the limit before exhausting all available entries
@@ -133,7 +134,7 @@ namespace VideoIndexer.Merger
             return groupedEntries;
         }
 
-        private static IEnumerable<DatabaseMetaTableEntryWrapper> GetDatabasesThatNeedCoalescing(DatabaseMetaTableWrapper metatable)
+        private static IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper> GetDatabasesThatNeedCoalescing(VideoFingerPrintDatabaseMetaTableWrapper metatable)
         {
             return from entry in metatable.DatabaseMetaTableEntries
                    where entry.FileSize < (ulong)FileSizeLimit

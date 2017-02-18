@@ -19,6 +19,9 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Model;
+using Core.Model.Serialization;
+using Core.Model.Wrappers;
 using Core.Modes;
 using FrameIndexLibrary;
 using System;
@@ -32,9 +35,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using VideoIndex.Video;
 using VideoIndexer.Merger;
-using VideoIndexer.Serialization;
-using VideoIndexer.Utils;
-using VideoIndexer.Wrappers;
 
 namespace VideoIndexer.Driver
 {
@@ -215,10 +215,10 @@ namespace VideoIndexer.Driver
             }
 
             var knownDatabaseEntries = new HashSet<string>();
-            DatabaseMetaTableWrapper metatable = DatabaseMetaTableLoader.Load(databaseMetaTablePath);
-            foreach (DatabaseMetaTableEntryWrapper entry in metatable.DatabaseMetaTableEntries)
+            VideoFingerPrintDatabaseMetaTableWrapper metatable = VideoFingerPrintDatabaseMetaTableLoader.Load(databaseMetaTablePath);
+            foreach (VideoFingerPrintDatabaseMetaTableEntryWrapper entry in metatable.DatabaseMetaTableEntries)
             {
-                VideoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(entry.FileName);
+                VideoFingerPrintDatabaseWrapper database = VideoFingerPrintDatabaseLoader.Load(entry.FileName);
                 foreach (VideoFingerPrintWrapper fingerprint in database.VideoFingerPrints)
                 {
                     knownDatabaseEntries.Add(fingerprint.FilePath);
@@ -281,10 +281,10 @@ namespace VideoIndexer.Driver
             {
                 lockbitImage.Lock();
                 ulong providedPhotoHash = FrameIndexer.IndexFrame(lockbitImage);
-                DatabaseMetaTableWrapper metaTable = DatabaseMetaTableLoader.Load(databaseMetaTablePath);
+                VideoFingerPrintDatabaseMetaTableWrapper metaTable = VideoFingerPrintDatabaseMetaTableLoader.Load(databaseMetaTablePath);
                 foreach (string databasePath in metaTable.DatabaseMetaTableEntries.Select(e => e.FileName))
                 {
-                    VideoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(databasePath);
+                    VideoFingerPrintDatabaseWrapper database = VideoFingerPrintDatabaseLoader.Load(databasePath);
                     Dictionary<int, HashSet<Tuple<string, int>>> distanceToFingerprints = new Dictionary<int, HashSet<Tuple<string, int>>>();
                     foreach (var video in database.VideoFingerPrints)
                     {
@@ -351,11 +351,11 @@ namespace VideoIndexer.Driver
                 return;
             }
 
-            DatabaseMetaTableWrapper metaTable = DatabaseMetaTableLoader.Load(databaseMetaTablePath);
+            VideoFingerPrintDatabaseMetaTableWrapper metaTable = VideoFingerPrintDatabaseMetaTableLoader.Load(databaseMetaTablePath);
             var random = new Random();
             foreach (string databasePath in metaTable.DatabaseMetaTableEntries.Select(e => e.FileName))
             {
-                VideoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(databasePath);
+                VideoFingerPrintDatabaseWrapper database = VideoFingerPrintDatabaseLoader.Load(databasePath);
                 int videoFingerPrintSampleCount = (int)Math.Round(database.VideoFingerPrints.Length / 3.0);
                 IEnumerable<VideoFingerPrintWrapper> videoFingerPrints = from fingerPrint in database.VideoFingerPrints
                                                                          where random.Next() % 2 == 0

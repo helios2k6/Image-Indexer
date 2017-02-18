@@ -19,10 +19,11 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Model;
+using Core.Model.Serialization;
+using Core.Model.Wrappers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
-using VideoIndexer.Serialization;
-using VideoIndexer.Wrappers;
 
 namespace UnitTests
 {
@@ -51,9 +52,9 @@ namespace UnitTests
 
             using (var memoryStream = new MemoryStream())
             {
-                DatabaseSaver.Save(database, memoryStream);
+                VideoFingerPrintDatabaseSaver.Save(database, memoryStream);
                 byte[] savedDatabase = memoryStream.ToArray();
-                VideoFingerPrintDatabaseWrapper reloadedDatabase = DatabaseLoader.Load(savedDatabase);
+                VideoFingerPrintDatabaseWrapper reloadedDatabase = VideoFingerPrintDatabaseLoader.Load(savedDatabase);
 
                 Assert.AreEqual(database, reloadedDatabase);
             }

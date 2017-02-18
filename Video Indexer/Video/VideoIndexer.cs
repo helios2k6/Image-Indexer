@@ -19,13 +19,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Model.Wrappers;
 using FFMPEGWrapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using VideoIndexer.Media;
-using VideoIndexer.Wrappers;
 
 namespace VideoIndexer.Video
 {

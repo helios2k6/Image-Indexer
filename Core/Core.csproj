@@ -33,6 +33,10 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DevZH.FlatBuffers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DevZH.FlatBuffers.1.4.0\lib\net35\DevZH.FlatBuffers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
@@ -40,9 +44,36 @@
   <ItemGroup>
     <Compile Include="Environment\EnvironmentTools.cs" />
     <Compile Include="Linq\CommonLinqExtensions.cs" />
+    <Compile Include="Model\Core\PhotoFingerPrint.cs" />
+    <Compile Include="Model\Core\PhotoFingerPrintDatabase.cs" />
+    <Compile Include="Model\Core\VideoFingerPrintDatabaseMetaTable.cs" />
+    <Compile Include="Model\Core\VideoFingerPrintDatabaseMetaTableEntry.cs" />
+    <Compile Include="Model\Serialization\PhotoFingerPrintDatabaseLoader.cs" />
+    <Compile Include="Model\Serialization\PhotoFingerPrintDatabaseSaver.cs" />
+    <Compile Include="Model\Serialization\VideoFingerPrintDatabaseLoader.cs" />
+    <Compile Include="Model\Serialization\VideoFingerPrintDatabaseMetaTableLoader.cs" />
+    <Compile Include="Model\Serialization\VideoFingerPrintDatabaseMetaTableSaver.cs" />
+    <Compile Include="Model\Serialization\VideoFingerPrintDatabaseSaver.cs" />
+    <Compile Include="Model\Core\FrameFingerPrint.cs" />
+    <Compile Include="Model\Core\VideoFingerPrint.cs" />
+    <Compile Include="Model\Core\VideoFingerPrintDatabase.cs" />
+    <Compile Include="Model\Wrappers\VideoFingerPrintDatabaseMetaTableEntryWrapper.cs" />
+    <Compile Include="Model\Wrappers\VideoFingerPrintDatabaseMetaTableWrapper.cs" />
+    <Compile Include="Model\Wrappers\FrameFingerPrintWrapper.cs" />
+    <Compile Include="Model\Wrappers\PhotoFingerPrintDatabase.cs" />
+    <Compile Include="Model\Wrappers\PhotoFingerPrintWrapper.cs" />
+    <Compile Include="Model\Wrappers\VideoFingerPrintDatabaseWrapper.cs" />
+    <Compile Include="Model\Wrappers\VideoFingerPrintWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Modes\ChangeErrorMode.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Model\VideoFingerPrintDatabaseMetaTable.fbs" />
+    <None Include="Model\PhotoCollectionDatabase.fbs" />
+    <None Include="Model\VideoFingerPrintDatabase.fbs" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

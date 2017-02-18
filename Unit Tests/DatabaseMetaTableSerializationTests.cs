@@ -19,10 +19,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Model.Serialization;
+using Core.Model.Wrappers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
-using VideoIndexer.Serialization;
-using VideoIndexer.Wrappers;
 
 namespace UnitTests
 {
@@ -32,28 +32,28 @@ namespace UnitTests
         [TestMethod]
         public void TestDatabaseMetaTableSerialization()
         {
-            var entry = new DatabaseMetaTableEntryWrapper
+            var entry = new VideoFingerPrintDatabaseMetaTableEntryWrapper
             {
                 FileName = "test",
                 FileSize = 1,
             };
 
-            var entry2 = new DatabaseMetaTableEntryWrapper
+            var entry2 = new VideoFingerPrintDatabaseMetaTableEntryWrapper
             {
                 FileName = "test 2",
                 FileSize = 2,
             };
 
-            var database = new DatabaseMetaTableWrapper
+            var database = new VideoFingerPrintDatabaseMetaTableWrapper
             {
                 DatabaseMetaTableEntries = new[] { entry, entry2 },
             };
 
             using (var memoryStream = new MemoryStream())
             {
-                DatabaseMetaTableSaver.Save(database, memoryStream);
+                VideoFingerPrintDatabaseMetaTableSaver.Save(database, memoryStream);
                 byte[] savedDatabase = memoryStream.ToArray();
-                DatabaseMetaTableWrapper reloadedDatabase = DatabaseMetaTableLoader.Load(savedDatabase);
+                VideoFingerPrintDatabaseMetaTableWrapper reloadedDatabase = VideoFingerPrintDatabaseMetaTableLoader.Load(savedDatabase);
 
                 Assert.AreEqual(database, reloadedDatabase);
             }

@@ -67,6 +67,14 @@
     <Compile Include="WritableLockBitImageTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{73c93ba6-baeb-4dac-854f-3ccd2575f5a9}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FFMPEGWrapper\FFMPEGWrapper.csproj">
+      <Project>{9dbff663-519c-4cdf-8d22-b524a4da263b}</Project>
+      <Name>FFMPEGWrapper</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Frame Index Library\Frame Index Library.csproj">
       <Project>{3a3a5ea5-81a3-404c-aa78-8ae8ae8ca813}</Project>
       <Name>Frame Index Library</Name>
@@ -74,6 +82,10 @@
     <ProjectReference Include="..\Photo Collection Indexer\Photo Collection Indexer.csproj">
       <Project>{279fc3d2-d799-43b0-891a-b15910959470}</Project>
       <Name>Photo Collection Indexer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ProduceNegativeExamples\ProduceNegativeExamples.csproj">
+      <Project>{8bd7c56b-2e03-4c90-ab89-079a5b2f0add}</Project>
+      <Name>ProduceNegativeExamples</Name>
     </ProjectReference>
     <ProjectReference Include="..\Video Indexer\Video Indexer.csproj">
       <Project>{3f9b585c-0730-447c-8d23-37765cc47243}</Project>

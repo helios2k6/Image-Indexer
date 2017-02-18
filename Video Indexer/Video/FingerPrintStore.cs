@@ -19,14 +19,15 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Model;
+using Core.Model.Serialization;
+using Core.Model.Wrappers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using VideoIndexer.Serialization;
-using VideoIndexer.Wrappers;
 
 namespace VideoIndex.Video
 {
@@ -102,14 +103,14 @@ namespace VideoIndex.Video
         #endregion
 
         #region private methods
-        private static DatabaseMetaTableWrapper CreateOrLoadMetatable(string metatablePath)
+        private static VideoFingerPrintDatabaseMetaTableWrapper CreateOrLoadMetatable(string metatablePath)
         {
             if (File.Exists(metatablePath))
             {
-                return DatabaseMetaTableLoader.Load(metatablePath);
+                return VideoFingerPrintDatabaseMetaTableLoader.Load(metatablePath);
             }
 
-            return new DatabaseMetaTableWrapper();
+            return new VideoFingerPrintDatabaseMetaTableWrapper();
         }
 
         private void RunQueue()
@@ -136,7 +137,7 @@ namespace VideoIndex.Video
                         currentDatabase.VideoFingerPrints = currentDatabase.VideoFingerPrints.Concat(fingerprintBuffer).ToArray();
 
                         // Save entries to disk
-                        DatabaseSaver.Save(currentDatabase, currentDatabasePath);
+                        VideoFingerPrintDatabaseSaver.Save(currentDatabase, currentDatabasePath);
 
                         FileInfo fileInfo = new FileInfo(currentDatabasePath);
                         ulong fileSize = (ulong)fileInfo.Length;
@@ -174,7 +175,7 @@ namespace VideoIndex.Video
                     currentDatabaseTuple.Item1.VideoFingerPrints = currentDatabaseTuple.Item1.VideoFingerPrints.Concat(fingerprintBuffer).ToArray();
 
                     // Save entries to disk
-                    DatabaseSaver.Save(currentDatabaseTuple.Item1, currentDatabaseTuple.Item2);
+                    VideoFingerPrintDatabaseSaver.Save(currentDatabaseTuple.Item1, currentDatabaseTuple.Item2);
                 }
                 catch (Exception e)
                 {
@@ -185,23 +186,23 @@ namespace VideoIndex.Video
 
         private void UpdateMetatable(string databasePath, ulong fileSize)
         {
-            DatabaseMetaTableWrapper metatable = DatabaseMetaTableLoader.Load(_metatablePath);
+            VideoFingerPrintDatabaseMetaTableWrapper metatable = VideoFingerPrintDatabaseMetaTableLoader.Load(_metatablePath);
 
             // Get matching database entry
-            DatabaseMetaTableEntryWrapper databaseEntry = (from entry in metatable.DatabaseMetaTableEntries
+            VideoFingerPrintDatabaseMetaTableEntryWrapper databaseEntry = (from entry in metatable.DatabaseMetaTableEntries
                                                            where string.Equals(entry.FileName, databasePath, StringComparison.Ordinal)
                                                            select entry).SingleOrDefault();
             databaseEntry.FileSize = fileSize;
 
-            DatabaseMetaTableSaver.Save(metatable, _metatablePath);
+            VideoFingerPrintDatabaseMetaTableSaver.Save(metatable, _metatablePath);
         }
 
         private Tuple<VideoFingerPrintDatabaseWrapper, string> GetNextEligibleDatabase()
         {
-            DatabaseMetaTableWrapper metatable = DatabaseMetaTableLoader.Load(_metatablePath);
+            VideoFingerPrintDatabaseMetaTableWrapper metatable = VideoFingerPrintDatabaseMetaTableLoader.Load(_metatablePath);
             Tuple<VideoFingerPrintDatabaseWrapper, string> eligibleDatabase = (from entry in metatable.DatabaseMetaTableEntries
                                                                                where entry.FileSize < MaxDatabaseSize
-                                                                               select Tuple.Create(DatabaseLoader.Load(entry.FileName), entry.FileName)).FirstOrDefault();
+                                                                               select Tuple.Create(VideoFingerPrintDatabaseLoader.Load(entry.FileName), entry.FileName)).FirstOrDefault();
 
             // If we can't find an eligible database, then we need to create one and send it back
             return eligibleDatabase ?? CreateNewDatabaseAndAddToMetatable();
@@ -209,14 +210,14 @@ namespace VideoIndex.Video
 
         private Tuple<VideoFingerPrintDatabaseWrapper, string> CreateNewDatabaseAndAddToMetatable()
         {
-            DatabaseMetaTableWrapper metatable = DatabaseMetaTableLoader.Load(_metatablePath);
+            VideoFingerPrintDatabaseMetaTableWrapper metatable = VideoFingerPrintDatabaseMetaTableLoader.Load(_metatablePath);
             string emptyDatabaseFileName = Path.GetRandomFileName() + ".bin";
             VideoFingerPrintDatabaseWrapper emptyDatabase = new VideoFingerPrintDatabaseWrapper();
-            DatabaseSaver.Save(emptyDatabase, emptyDatabaseFileName);
+            VideoFingerPrintDatabaseSaver.Save(emptyDatabase, emptyDatabaseFileName);
 
             // Add to the metatable
-            var databaseEntries = new List<DatabaseMetaTableEntryWrapper>(metatable.DatabaseMetaTableEntries);
-            databaseEntries.Add(new DatabaseMetaTableEntryWrapper
+            var databaseEntries = new List<VideoFingerPrintDatabaseMetaTableEntryWrapper>(metatable.DatabaseMetaTableEntries);
+            databaseEntries.Add(new VideoFingerPrintDatabaseMetaTableEntryWrapper
             {
                 FileName = emptyDatabaseFileName,
                 FileSize = 0ul,
@@ -224,7 +225,7 @@ namespace VideoIndex.Video
 
             metatable.DatabaseMetaTableEntries = databaseEntries.ToArray();
 
-            DatabaseMetaTableSaver.Save(metatable, _metatablePath);
+            VideoFingerPrintDatabaseMetaTableSaver.Save(metatable, _metatablePath);
 
             return Tuple.Create(emptyDatabase, emptyDatabaseFileName);
         }

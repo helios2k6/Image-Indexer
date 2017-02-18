@@ -19,13 +19,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Model.Wrappers;
 using FrameIndexLibrary;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using VideoIndexer.Wrappers;
 
 namespace VideoIndexer.Video
 {

@@ -1,0 +1,20 @@
+namespace Core;
+
+table FrameFingerPrint
+{
+    frameNumber:int;
+    pHash:ulong;
+}
+
+table VideoFingerPrint
+{
+    filePath:string;
+    frameFingerPrints:[FrameFingerPrint];
+}
+
+table VideoFingerPrintDatabase
+{
+    videoFingerPrints:[VideoFingerPrint];
+}
+
+root_type VideoFingerPrintDatabase;

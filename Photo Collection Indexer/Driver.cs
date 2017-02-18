@@ -19,10 +19,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Model.Wrappers;
 using FrameIndexLibrary;
 using PhotoCollectionIndexer.Executors;
 using PhotoCollectionIndexer.Serialization;
-using PhotoCollectionIndexer.Wrappers;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -97,7 +97,7 @@ namespace PhotoCollectionIndexer
 
             using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false, true))
             {
-                PhotoFingerPrintDatabaseWrapper database = DatabaseLoader.Load(databaseFile);
+                PhotoFingerPrintDatabaseWrapper database = PhotoFingerPrintDatabaseLoader.Load(databaseFile);
                 ulong imageHash = FrameIndexer.IndexFrame(lockbitImage);
 
                 var results = from fingerPrint in database.PhotoFingerPrints.AsParallel()
@@ -129,13 +129,13 @@ namespace PhotoCollectionIndexer
             }
 
             PhotoFingerPrintDatabaseWrapper database = File.Exists(databaseFile)
-                ? DatabaseLoader.Load(databaseFile)
+                ? PhotoFingerPrintDatabaseLoader.Load(databaseFile)
                 : new PhotoFingerPrintDatabaseWrapper();
 
             IEnumerable<PhotoFingerPrintWrapper> fingerPrintBag = IndexPhotosImpl(photoFiles, database);
 
             database.PhotoFingerPrints = fingerPrintBag.ToArray();
-            DatabaseSaver.Save(database, databaseFile);
+            PhotoFingerPrintDatabaseSaver.Save(database, databaseFile);
         }
 
         private static IEnumerable<PhotoFingerPrintWrapper> IndexPhotosImpl(IEnumerable<string> photoFiles, PhotoFingerPrintDatabaseWrapper database)
