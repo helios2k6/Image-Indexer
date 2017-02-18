@@ -62,10 +62,7 @@
   <ItemGroup>
     <Compile Include="Merger\DatabaseCoalescer.cs" />
     <Compile Include="Driver\Driver.cs" />
-    <Compile Include="Utils\EnvironmentTools.cs" />
-    <Compile Include="FFMPEG\FFMPEGProcess.cs" />
-    <Compile Include="FFMPEG\FFMPEGProcessVideoSettings.cs" />
-    <Compile Include="FFMPEG\Ratio.cs" />
+    <Compile Include="Media\Ratio.cs" />
     <Compile Include="Video\FingerPrintStore.cs" />
     <Compile Include="Flatbuffer Schemas\VideoIndexer\DatabaseMetaTable.cs" />
     <Compile Include="Flatbuffer Schemas\VideoIndexer\DatabaseMetaTableEntry.cs" />
@@ -81,8 +78,6 @@
     <Compile Include="Serialization\DatabaseMetaTableLoader.cs" />
     <Compile Include="Serialization\DatabaseMetaTableSaver.cs" />
     <Compile Include="Serialization\DatabaseSaver.cs" />
-    <Compile Include="Utils\ChangeErrorMode.cs" />
-    <Compile Include="Utils\CommonLinqExtensions.cs" />
     <Compile Include="Utils\CommonMaybeExtensions.cs" />
     <Compile Include="Utils\NumericalUtils.cs" />
     <Compile Include="Video\RawByteStore.cs" />
@@ -101,6 +96,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{73c93ba6-baeb-4dac-854f-3ccd2575f5a9}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FFMPEGWrapper\FFMPEGWrapper.csproj">
+      <Project>{9dbff663-519c-4cdf-8d22-b524a4da263b}</Project>
+      <Name>FFMPEGWrapper</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Frame Index Library\Frame Index Library.csproj">
       <Project>{3a3a5ea5-81a3-404c-aa78-8ae8ae8ca813}</Project>
       <Name>Frame Index Library</Name>

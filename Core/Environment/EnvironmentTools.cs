@@ -21,19 +21,19 @@
 
 using System;
 
-namespace VideoIndexer
+namespace Core.Environment
 {
     /// <summary>
     /// This class deduces the process file name given the environment
     /// </summary>
-    internal static class EnvironmentTools
+    public static class EnvironmentTools
     {
         /// <summary>
         /// Deduce the process file name given the root process name
         /// </summary>
         public static string CalculateProcessName(string rootProcessName)
         {
-            switch (Environment.OSVersion.Platform)
+            switch (System.Environment.OSVersion.Platform)
             {
                 case PlatformID.Win32NT:
                 case PlatformID.Win32S:
@@ -45,24 +45,6 @@ namespace VideoIndexer
                     return rootProcessName;
                 case PlatformID.Xbox:
                     throw new InvalidOperationException("Xbox OS not supported");
-                default:
-                    throw new InvalidOperationException("Unknown OS detected");
-            }
-        }
-
-        public static bool NeedsMono()
-        {
-            switch (Environment.OSVersion.Platform)
-            {
-                case PlatformID.Win32NT:
-                case PlatformID.Win32S:
-                case PlatformID.Win32Windows:
-                case PlatformID.WinCE:
-                case PlatformID.Xbox:
-                    return false;
-                case PlatformID.MacOSX:
-                case PlatformID.Unix:
-                    return true;
                 default:
                     throw new InvalidOperationException("Unknown OS detected");
             }

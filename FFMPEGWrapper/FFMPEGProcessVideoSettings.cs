@@ -21,12 +21,12 @@
 
 using System;
 
-namespace VideoIndexer
+namespace FFMPEGWrapper
 {
     /// <summary>
     /// Specifies the settings to use for running the FFMPEG Process
     /// </summary>
-    internal sealed class FFMPEGProcessVideoSettings : IEquatable<FFMPEGProcessVideoSettings>
+    public sealed class FFMPEGProcessVideoSettings : IEquatable<FFMPEGProcessVideoSettings>
     {
         #region public properties
         /// <summary>
@@ -40,9 +40,14 @@ namespace VideoIndexer
         public string OutputDirectory { get; }
 
         /// <summary>
-        /// The frame rate to playback the video
+        /// The frame rate numerator
         /// </summary>
-        public Ratio Framerate { get; }
+        public int FrameRateNumerator { get; }
+
+        /// <summary>
+        /// The frame rate denominator
+        /// </summary>
+        public int FrameRateDenominator { get; }
         #endregion
 
         #region ctor
@@ -51,14 +56,17 @@ namespace VideoIndexer
         /// process
         /// </summary>
         /// <param name="targetMediaFile">The media file to decode</param>
-        /// <param name="framerate">The playback framerate</param>
+        /// <param name="frameRateDenominator">The denominator of the frame rate</param>
+        /// <param name="frameRateNumerator">The numerator of the frame rate</param>
         public FFMPEGProcessVideoSettings(
             string targetMediaFile,
-            Ratio framerate
+            int frameRateNumerator,
+            int frameRateDenominator
         )
         {
             TargetMediaFile = targetMediaFile;
-            Framerate = framerate;
+            FrameRateNumerator = frameRateNumerator;
+            FrameRateDenominator = frameRateDenominator;
         }
         #endregion
 
@@ -71,7 +79,8 @@ namespace VideoIndexer
         public override int GetHashCode()
         {
             return TargetMediaFile.GetHashCode() ^
-                Framerate.GetHashCode();
+                FrameRateNumerator.GetHashCode() ^
+                FrameRateDenominator.GetHashCode();
         }
 
         public bool Equals(FFMPEGProcessVideoSettings other)
@@ -83,7 +92,8 @@ namespace VideoIndexer
 
             return Equals(TargetMediaFile, other.TargetMediaFile) &&
                 Equals(OutputDirectory, other.OutputDirectory) &&
-                Equals(Framerate, other.Framerate);
+                Equals(FrameRateNumerator, other.FrameRateNumerator) &&
+                Equals(FrameRateDenominator, other.FrameRateDenominator);
         }
         #endregion
 

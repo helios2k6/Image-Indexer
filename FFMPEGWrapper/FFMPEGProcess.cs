@@ -19,29 +19,32 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using VideoIndexer.Video;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
+using Core.Environment;
 
-namespace VideoIndexer
+namespace FFMPEGWrapper
 {
     /// <summary>
     /// Represents the FFMPEG Process
     /// </summary>
-    internal sealed class FFMPEGProcess : IDisposable
+    public sealed class FFMPEGProcess : IDisposable
     {
+        #region public static fields
+        public static readonly int DefaultBufferSize = 64000;
+        #endregion
+
         #region private fields
-        private static readonly int DefaultBufferSize = 64000;
         private static readonly string FFMPEGProcName = "ffmpeg";
 
         private readonly Process _process;
         private readonly FFMPEGProcessVideoSettings _settings;
-        private readonly RawByteStore _byteStore;
         private readonly CancellationToken _cancellationToken;
-        private readonly bool _logVerbose;
+        private readonly MemoryStream _stdErrorStream;
+        private readonly Action<byte[], int> _byteChunkCallback;
 
         private bool _isDisposed;
         private bool _hasExecuted;
@@ -54,20 +57,29 @@ namespace VideoIndexer
         /// <param name="settings">The process settings</param>
         public FFMPEGProcess(
             FFMPEGProcessVideoSettings settings,
-            RawByteStore byteStore,
             CancellationToken cancellationToken,
-            bool logVerbose
+            Action<byte[], int> byteChunkCallback
         )
         {
             _settings = settings;
-            _byteStore = byteStore;
             _cancellationToken = cancellationToken;
             _process = new Process();
             _isDisposed = false;
             _hasExecuted = false;
-            _logVerbose = logVerbose;
+            _stdErrorStream = new MemoryStream();
+            _byteChunkCallback = byteChunkCallback;
 
             _cancellationToken.Register(KillProcess);
+        }
+        #endregion
+
+        #region public properties
+        /// <summary>
+        /// Gets the standard error stream
+        /// </summary>
+        public Stream StandardErrorStream
+        {
+            get { return _stdErrorStream; }
         }
         #endregion
 
@@ -81,6 +93,7 @@ namespace VideoIndexer
 
             _isDisposed = true;
             _process.Dispose();
+            _stdErrorStream.Dispose();
         }
 
         /// <summary>Execute the FFMPEG executable</summary>
@@ -100,57 +113,57 @@ namespace VideoIndexer
                 throw new ObjectDisposedException("this");
             }
 
-            // Note: http://stackoverflow.com/questions/15922175/ffmpeg-run-from-shell-runs-properly-but-does-not-when-called-from-within-net
-            _hasExecuted = true;
-            _process.StartInfo.UseShellExecute = false;
-            _process.StartInfo.CreateNoWindow = true;
-            _process.StartInfo.RedirectStandardError = true;
-            _process.StartInfo.RedirectStandardInput = true;
-            _process.StartInfo.RedirectStandardOutput = true;
-            _process.StartInfo.FileName = EnvironmentTools.CalculateProcessName(FFMPEGProcName);
-            _process.StartInfo.Arguments = GetArguments();
-            _process.StartInfo.ErrorDialog = false;
-
-            var processStarted = _process.Start();
-            if (processStarted == false)
+            try
             {
-                throw new Exception("Unable to start the FFMPEG process");
-            }
+                // Note: http://stackoverflow.com/questions/15922175/ffmpeg-run-from-shell-runs-properly-but-does-not-when-called-from-within-net
+                _hasExecuted = true;
+                _process.StartInfo.UseShellExecute = false;
+                _process.StartInfo.CreateNoWindow = true;
+                _process.StartInfo.RedirectStandardError = true;
+                _process.StartInfo.RedirectStandardInput = true;
+                _process.StartInfo.RedirectStandardOutput = true;
+                _process.StartInfo.FileName = EnvironmentTools.CalculateProcessName(FFMPEGProcName);
+                _process.StartInfo.Arguments = GetArguments();
+                _process.StartInfo.ErrorDialog = false;
 
-            Task stderr = Task.Factory.StartNew(() =>
-            {
-                using (FileStream errorLog = File.OpenWrite(Path.GetRandomFileName() + ".log"))
-                using (StreamWriter writer = new StreamWriter(errorLog))
+                var processStarted = _process.Start();
+                if (processStarted == false)
                 {
-                    while (_process.StandardError.EndOfStream == false)
-                    {
-                        string message = _process.StandardError.ReadLine();
-                        if (_logVerbose)
-                        {
-                            Console.Error.WriteLine(message);
-                        }
-
-                        writer.WriteLine(message);
-                    }
+                    throw new Exception("Unable to start the FFMPEG process");
                 }
-            });
 
-            int bytesRead = 0;
-            byte[] stdoutBuffer = new byte[DefaultBufferSize];
-            using (var binaryReader = new BinaryReader(_process.StandardOutput.BaseStream))
-            {
-                do
+                Task stderr = Task.Factory.StartNew(() =>
                 {
-                    bytesRead = binaryReader.Read(stdoutBuffer, 0, DefaultBufferSize);
-                    if (bytesRead > 0)
+                    using (StreamWriter writer = new StreamWriter(_stdErrorStream))
                     {
-                        _byteStore.Submit(stdoutBuffer, bytesRead);
+                        while (_process.StandardError.EndOfStream == false)
+                        {
+                            writer.WriteLine(_process.StandardError.ReadLine());
+                        }
                     }
-                } while (bytesRead > 0);
-            }
+                });
 
-            stderr.Wait(_cancellationToken);
-            _process.WaitForExit();
+                int bytesRead = 0;
+                byte[] stdoutBuffer = new byte[DefaultBufferSize];
+                using (var binaryReader = new BinaryReader(_process.StandardOutput.BaseStream))
+                {
+                    do
+                    {
+                        bytesRead = binaryReader.Read(stdoutBuffer, 0, DefaultBufferSize);
+                        if (bytesRead > 0)
+                        {
+                            _byteChunkCallback.Invoke(stdoutBuffer, bytesRead);
+                        }
+                    } while (bytesRead > 0);
+                }
+
+                stderr.Wait(_cancellationToken);
+                _process.WaitForExit();
+            }
+            finally
+            {
+                _stdErrorStream.Close();
+            }
 
             if (_process.ExitCode != 0 && _cancellationToken.IsCancellationRequested == false)
             {
@@ -170,8 +183,8 @@ namespace VideoIndexer
             return string.Format(
                 "-i \"{0}\" -f rawvideo -pix_fmt bgr24 -vf fps={1}/{2} -",
                 _settings.TargetMediaFile,
-                _settings.Framerate.Numerator,
-                _settings.Framerate.Denominator
+                _settings.FrameRateNumerator,
+                _settings.FrameRateDenominator
             );
         }
         #endregion

@@ -23,7 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace VideoIndexer.Utils
+namespace Core.LinqExtensions
 {
     internal static class CommonLinqExtensions
     {

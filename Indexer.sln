@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Video Indexer", "Video Inde
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Photo Collection Indexer", "Photo Collection Indexer\Photo Collection Indexer.csproj", "{279FC3D2-D799-43B0-891A-B15910959470}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFMPEGWrapper", "FFMPEGWrapper\FFMPEGWrapper.csproj", "{9DBFF663-519C-4CDF-8D22-B524A4DA263B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{73C93BA6-BAEB-4DAC-854F-3CCD2575F5A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{279FC3D2-D799-43B0-891A-B15910959470}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{279FC3D2-D799-43B0-891A-B15910959470}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{279FC3D2-D799-43B0-891A-B15910959470}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DBFF663-519C-4CDF-8D22-B524A4DA263B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DBFF663-519C-4CDF-8D22-B524A4DA263B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DBFF663-519C-4CDF-8D22-B524A4DA263B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DBFF663-519C-4CDF-8D22-B524A4DA263B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73C93BA6-BAEB-4DAC-854F-3CCD2575F5A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73C93BA6-BAEB-4DAC-854F-3CCD2575F5A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73C93BA6-BAEB-4DAC-854F-3CCD2575F5A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73C93BA6-BAEB-4DAC-854F-3CCD2575F5A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

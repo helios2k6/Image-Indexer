@@ -22,10 +22,16 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace VideoIndexer.Utils
+namespace Core.Modes
 {
+    /// <summary>
+    /// Changes the error mode of this program
+    /// </summary>
     public struct ChangeErrorMode : IDisposable
     {
+        /// <summary>
+        /// The different error modes
+        /// </summary>
         [Flags]
         public enum ErrorModes
         {
@@ -38,11 +44,18 @@ namespace VideoIndexer.Utils
 
         private int _oldMode;
 
+        /// <summary>
+        /// Construct a new ChangeErrorMode struct
+        /// </summary>
+        /// <param name="mode">The mode to change this program</param>
         public ChangeErrorMode(ErrorModes mode)
         {
             _oldMode = SetErrorMode((int)mode);
         }
 
+        /// <summary>
+        /// Change the error mode back to the original error mode of the program
+        /// </summary>
         public void Dispose()
         {
             SetErrorMode(_oldMode);

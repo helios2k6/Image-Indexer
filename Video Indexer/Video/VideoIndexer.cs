@@ -19,12 +19,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using FFMPEGWrapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using VideoIndexer.Media;
 using VideoIndexer.Wrappers;
-using System.Threading;
 
 namespace VideoIndexer.Video
 {
@@ -65,23 +66,17 @@ namespace VideoIndexer.Video
         )
         {
             TimeSpan totalDuration = info.GetDuration();
-            var quarterFramerate = new Ratio(
+            var ffmpegProcessSettings = new FFMPEGProcessVideoSettings(
+                videoFile,
                 info.GetFramerate().Numerator,
                 info.GetFramerate().Denominator * 4
             );
 
             using (var indexingPool = new VideoIndexingExecutor(4, cancellationToken, (long)Math.Round((3.0 * maxMemory) / 4.0)))
             using (var byteStore = new RawByteStore(info.GetWidth(), info.GetHeight(), indexingPool, cancellationToken, (long)Math.Round(maxMemory / 4.0)))
+            using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, cancellationToken, (byteArray, bytesToSubmit) => { byteStore.Submit(byteArray, bytesToSubmit); }))
             {
-                var ffmpegProcessSettings = new FFMPEGProcessVideoSettings(
-                    videoFile,
-                    quarterFramerate
-                );
-
-                using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, byteStore, cancellationToken, false))
-                {
-                    ffmpegProcess.Execute();
-                }
+                ffmpegProcess.Execute();
 
                 byteStore.Shutdown();
                 byteStore.Wait();
