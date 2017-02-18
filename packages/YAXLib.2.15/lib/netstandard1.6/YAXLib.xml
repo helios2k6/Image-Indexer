@@ -70,6 +70,12 @@
             Prevents serailization of properties with no setter 
             </summary>
         </member>
+        <member name="F:YAXLib.YAXSerializationOptions.SuppressMetadataAttributes">
+            <summary>
+            Never add YAXLib metadata attributes (e.g., 'yaxlib:realtype') to the serialized XML (even when they would be required for deserialization.)
+            Useful when generating XML intended for another system's consumption.
+            </summary>
+        </member>
         <member name="T:YAXLib.YAXCollectionSerializationTypes">
             <summary>
             Enumerates the possible ways of serializing collection classes
@@ -171,6 +177,14 @@
             </summary>
             <param name="alias">The alias.</param>
             <returns>the real name of the enum member</returns>
+        </member>
+        <member name="T:YAXLib.ICustomDeserializer`1">
+            <summary>
+            Defines the interface to all custom deserializers used with YAXLib.
+            Note that normally you don't need to implement all the methods.
+            </summary>
+            <typeparam name="T">The type of field, property, class, or struct for which custom deserializer
+            is provided</typeparam>
         </member>
         <member name="T:YAXLib.ICustomSerializer`1">
             <summary>
@@ -400,7 +414,7 @@
             Gets a value indicating whether this instance has comments.
             </summary>
             <value>
-            	<c>true</c> if this instance has comments; otherwise, <c>false</c>.
+                <c>true</c> if this instance has comments; otherwise, <c>false</c>.
             </value>
         </member>
         <member name="P:YAXLib.MemberWrapper.HasFormat">
@@ -416,7 +430,7 @@
             Gets a value indicating whether this instance is attributed as dont serialize.
             </summary>
             <value>
-            	<c>true</c> if this instance is attributed as dont serialize; otherwise, <c>false</c>.
+                <c>true</c> if this instance is attributed as dont serialize; otherwise, <c>false</c>.
             </value>
         </member>
         <member name="P:YAXLib.MemberWrapper.IsAttributedAsNotCollection">
@@ -424,7 +438,7 @@
             Gets a value indicating whether this instance is attributed as not-collection.
             </summary>
             <value>
-            	<c>true</c> if this instance is attributed as not-collection; otherwise, <c>false</c>.
+                <c>true</c> if this instance is attributed as not-collection; otherwise, <c>false</c>.
             </value>
         </member>
         <member name="P:YAXLib.MemberWrapper.IsAttributedAsSerializable">
@@ -432,7 +446,7 @@
             Gets a value indicating whether this instance is attributed as serializable.
             </summary>
             <value>
-            	<c>true</c> if this instance is attributed as serializable; otherwise, <c>false</c>.
+                <c>true</c> if this instance is attributed as serializable; otherwise, <c>false</c>.
             </value>
         </member>
         <member name="P:YAXLib.MemberWrapper.IsAttributedAsDontSerializeIfNull">
@@ -440,7 +454,7 @@
             Gets a value indicating whether this instance is attributed as dont serialize when null.
             </summary>
             <value>
-            	<c>true</c> if this instance is attributed as dont serialize when null; otherwise, <c>false</c>.
+                <c>true</c> if this instance is attributed as dont serialize when null; otherwise, <c>false</c>.
             </value>
         </member>
         <member name="P:YAXLib.MemberWrapper.IsSerializedAsAttribute">
@@ -519,7 +533,7 @@
             Gets a value indicating whether this instance is treated as a collection.
             </summary>
             <value>
-            	<c>true</c> if this instance is treated as a collection; otherwise, <c>false</c>.
+                <c>true</c> if this instance is treated as a collection; otherwise, <c>false</c>.
             </value>
         </member>
         <member name="P:YAXLib.MemberWrapper.IsTreatedAsDictionary">
@@ -541,7 +555,7 @@
             Gets a value indicating whether this instance has custom serializer.
             </summary>
             <value>
-            	<c>true</c> if this instance has custom serializer; otherwise, <c>false</c>.
+                <c>true</c> if this instance has custom serializer; otherwise, <c>false</c>.
             </value>
         </member>
         <member name="P:YAXLib.MemberWrapper.HasNamespace">
@@ -630,6 +644,17 @@
             Processes the specified attribute which is an instance of <c>YAXAttribute</c>.
             </summary>
             <param name="attr">The attribute to process.</param>
+        </member>
+        <member name="T:YAXLib.AppDomain">
+            <summary>
+            Implementation of AppDomain for .NetCore
+            </summary>
+        </member>
+        <member name="T:YAXLib.ReflectionBridgeExtensions">
+            <summary>
+            Provides extensions as a bridge for the differences 
+            between .Net Framework "Type" and .Net Core "TypeInfo".
+            </summary>
         </member>
         <member name="T:YAXLib.ReflectionUtils">
             <summary>
@@ -1152,6 +1177,12 @@
         <member name="P:YAXLib.UdtWrapper.DontSerializePropertiesWithNoSetter">
             <summary>
             Determines whether properties with no setters should be serialized
+            </summary>
+        </member>
+        <member name="P:YAXLib.UdtWrapper.SuppressMetadataAttributes">
+            <summary>
+            Never add YAXLib metadata attributes (e.g., 'yaxlib:realtype') to the serialized XML (even when they would be required for deserialization.)
+            Useful when generating XML intended for another system's consumption.
             </summary>
         </member>
         <member name="P:YAXLib.UdtWrapper.IsCollectionType">
