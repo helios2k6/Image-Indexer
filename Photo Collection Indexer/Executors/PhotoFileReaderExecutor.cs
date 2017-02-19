@@ -19,7 +19,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using FrameIndexLibrary;
+using Core.Media;
 using PhotoCollectionIndexer.Utils;
 using System;
 using System.Collections.Concurrent;

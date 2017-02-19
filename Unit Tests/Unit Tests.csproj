@@ -58,6 +58,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="BKTreeTest.cs" />
     <Compile Include="DatabaseMetaTableSerializationTests.cs" />
     <Compile Include="ImageIndexerTests.cs" />
     <Compile Include="PhotoIndexerSerializationTests.cs" />

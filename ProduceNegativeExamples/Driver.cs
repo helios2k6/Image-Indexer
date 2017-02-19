@@ -21,9 +21,7 @@
 
 using Core.Model.Serialization;
 using Core.Model.Wrappers;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ProduceNegativeExamples
 {

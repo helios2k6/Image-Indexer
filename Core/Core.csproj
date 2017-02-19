@@ -45,6 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Console\ConsoleUtils.cs" />
+    <Compile Include="DSA\BKTree.cs" />
+    <Compile Include="DSA\BKTreeNode.cs" />
+    <Compile Include="DSA\IMetric.cs" />
     <Compile Include="Environment\EnvironmentTools.cs" />
     <Compile Include="Linq\CommonLinqExtensions.cs" />
     <Compile Include="Media\SSIMCalculator.cs" />
