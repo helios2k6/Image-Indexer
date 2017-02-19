@@ -19,14 +19,55 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using Core.Model.Serialization;
+using Core.DSA;
 using Core.Model.Wrappers;
 using System.Collections.Generic;
+using Core.Model.Utils;
+using System;
 
 namespace ProduceNegativeExamples
 {
     public static class Driver
     {
+        #region internal classes
+        private sealed class FrameWrapper : IMetric<FrameFingerPrintWrapper>, IMetric<PhotoFingerPrintWrapper>, IMetric<FrameWrapper>
+        {
+            public FrameFingerPrintWrapper Frame { get; set; }
+
+            public VideoFingerPrintWrapper Video { get; set; }
+
+            public int CalculateDistance(FrameWrapper other)
+            {
+                return Frame.CalculateDistance(other.Frame);
+            }
+
+            public int CalculateDistance(PhotoFingerPrintWrapper other)
+            {
+                return Frame.CalculateDistance(other);
+            }
+
+            public int CalculateDistance(FrameFingerPrintWrapper other)
+            {
+                return Frame.CalculateDistance(other);
+            }
+        }
+
+        private sealed class PhotoWrapper : IMetric<FrameWrapper>, IMetric<PhotoWrapper>
+        {
+            public PhotoFingerPrintWrapper Photo { get; set; }
+
+            public int CalculateDistance(PhotoWrapper other)
+            {
+                return Photo.CalculateDistance(other.Photo);
+            }
+
+            public int CalculateDistance(FrameWrapper other)
+            {
+                return Photo.CalculateDistance(other.Frame);
+            }
+        }
+        #endregion
+
         public static void Main(string[] args)
         {
             /* 
@@ -52,43 +93,38 @@ namespace ProduceNegativeExamples
         )
         {
             IDictionary<string, IEnumerable<PhotoFingerPrintWrapper>> resultMap = new Dictionary<string, IEnumerable<PhotoFingerPrintWrapper>>();
-            IDictionary<ulong, IDictionary<string, FrameFingerPrintWrapper>> videoFrameHashesToFileMap = MapVideoFrameHashesTo(metatable);
-            foreach (PhotoFingerPrintWrapper wrapper in photoDatabase.PhotoFingerPrints)
+            BKTree<FrameWrapper> bktree = CreateBKTree(metatable);
+            foreach (PhotoFingerPrintWrapper photo in photoDatabase.PhotoFingerPrints)
             {
                 // 1. Find bucket of possible candidates
                 // 2. If there's only 1 result, assume it's the source video
                 // 3. Otherwise, go through each possible video and run SSIM on it
-
+                bktree.Query(new PhotoWrapper
+                {
+                    Photo = photo,
+                },
+                5);
             }
 
             return null;
         }
 
-        private static IDictionary<ulong, IDictionary<string, FrameFingerPrintWrapper>> MapVideoFrameHashesTo(
-            VideoFingerPrintDatabaseMetaTableWrapper metatable
-        )
+        private static BKTree<FrameWrapper> CreateBKTree(VideoFingerPrintDatabaseMetaTableWrapper metatable)
         {
-            var hashToFileAndFrameMap = new Dictionary<ulong, IDictionary<string, FrameFingerPrintWrapper>>();
-            foreach (VideoFingerPrintDatabaseMetaTableEntryWrapper wrapper in metatable.DatabaseMetaTableEntries)
+            var tree = new BKTree<FrameWrapper>();
+            foreach (VideoFingerPrintWrapper video in MetaTableUtils.EnumerateVideoFingerPrints(metatable))
             {
-                VideoFingerPrintDatabaseWrapper database = VideoFingerPrintDatabaseLoader.Load(wrapper.FileName);
-                foreach (VideoFingerPrintWrapper videoFingerPrint in database.VideoFingerPrints)
+                foreach (FrameFingerPrintWrapper frame in video.FingerPrints)
                 {
-                    foreach (FrameFingerPrintWrapper frameFingerPrint in videoFingerPrint.FingerPrints)
+                    tree.Add(new FrameWrapper
                     {
-                        IDictionary<string, FrameFingerPrintWrapper> bucket;
-                        if (hashToFileAndFrameMap.TryGetValue(frameFingerPrint.PHashCode, out bucket) == false)
-                        {
-                            bucket = new Dictionary<string, FrameFingerPrintWrapper>();
-                            hashToFileAndFrameMap.Add(frameFingerPrint.PHashCode, bucket);
-                        }
-
-                        bucket.Add(videoFingerPrint.FilePath, frameFingerPrint);
-                    }
+                        Frame = frame,
+                        Video = video,
+                    });
                 }
             }
 
-            return hashToFileAndFrameMap;
+            return tree;
         }
     }
 }

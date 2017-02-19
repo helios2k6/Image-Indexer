@@ -47,7 +47,6 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Indexer\DistanceCalculator.cs" />
     <Compile Include="Indexer\FrameIndexer.cs" />
     <Compile Include="SharpFFT\ComplexDoubleFFT.cs" />
     <Compile Include="SharpFFT\ComplexDoubleFFT_Mixed.cs" />

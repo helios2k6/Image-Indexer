@@ -19,6 +19,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.DSA;
 using Core.Media;
 using FrameIndexLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

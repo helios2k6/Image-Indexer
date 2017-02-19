@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Core.DSA
 {
@@ -60,70 +61,40 @@ namespace Core.DSA
             }
         }
 
-        public Tuple<T, int> FindBestMatch(T element, int bestDistance)
+        public Tuple<T, int> FindClosestElement(IMetric<T> metric)
         {
-            T bestElement;
-            int distance = FindBestMatchHelper(element, bestDistance, out bestElement);
-            return Tuple.Create(bestElement, distance);
+            foreach (var e in Query(metric, int.MaxValue).OrderBy(e => e.Value))
+            {
+                return Tuple.Create(e.Key.Data, e.Value);
+            }
+
+            return null;
         }
 
-        public IDictionary<BKTreeNode<T>, int> Query(T element, int threshold)
+        public IDictionary<BKTreeNode<T>, int> Query(IMetric<T> metric, int radius)
         {
             IDictionary<BKTreeNode<T>, int> results = new Dictionary<BKTreeNode<T>, int>();
-            QueryHelper(element, threshold, results);
+            QueryHelper(metric, radius, results);
             return results;
         }
         #endregion
 
         #region private methods
-        private int FindBestMatchHelper(T element, int bestDistance, out T bestElement)
+        private void QueryHelper(IMetric<T> metric, int radius, IDictionary<BKTreeNode<T>, int> acc)
         {
-            int distanceAtNode = _data.CalculateDistance(element);
-
-            bestElement = element;
-
-            if (distanceAtNode < bestDistance)
+            int distanceToTargetElement = metric.CalculateDistance(_data);
+            if (distanceToTargetElement <= radius)
             {
-                bestDistance = distanceAtNode;
-                bestElement = _data;
+                acc.Add(this, distanceToTargetElement);
             }
 
-            int possibleBest = bestDistance;
-
+            int lowerBound = distanceToTargetElement - radius;
+            int upperBound = distanceToTargetElement + radius;
             foreach (int distance in _children.Keys)
             {
-                if (distance < distanceAtNode + bestDistance)
+                if (distance > lowerBound || distance <= upperBound)
                 {
-                    possibleBest = _children[distance].FindBestMatchHelper(element, bestDistance, out bestElement);
-                    if (possibleBest < bestDistance)
-                    {
-                        bestDistance = possibleBest;
-                    }
-                }
-            }
-
-            return bestDistance;
-        }
-
-        private void QueryHelper(T element, int threshold, IDictionary<BKTreeNode<T>, int> acc)
-        {
-            int distanceAtNode = _data.CalculateDistance(element);
-            if (distanceAtNode == threshold)
-            {
-                acc.Add(this, distanceAtNode);
-                return;
-            }
-
-            if (distanceAtNode < threshold)
-            {
-                acc.Add(this, distanceAtNode);
-            }
-
-            for (int distance = (distanceAtNode - threshold); distance <= (threshold + distanceAtNode); distance++)
-            {
-                if (_children.ContainsKey(distance))
-                {
-                    _children[distance].QueryHelper(element, threshold, acc);
+                    _children[distance].QueryHelper(metric, radius, acc);
                 }
             }
         }

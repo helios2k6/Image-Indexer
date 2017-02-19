@@ -55,22 +55,22 @@ namespace Core.DSA
         /// <summary>
         /// Query an element with a given distance threshold
         /// </summary>
-        /// <param name="element">The element</param>
+        /// <param name="metric">The metric to use to query nodes</param>
         /// <param name="threshold">The distance threshold</param>
         /// <returns>A dictionary of results that are within the distance threshold</returns>
-        public IDictionary<T, int> Query(T element, int threshold)
+        public IDictionary<T, int> Query(IMetric<T> metric, int threshold)
         {
-            return _root.Query(element, threshold).ToDictionary(e => e.Key.Data, e => e.Value);
+            return _root.Query(metric, threshold).ToDictionary(e => e.Key.Data, e => e.Value);
         }
 
         /// <summary>
         /// Find the best node that is closest to the given element
         /// </summary>
-        /// <param name="element">The element to use to find the closest neighbor</param>
+        /// <param name="metric">The metric to use to find the closest neighbor</param>
         /// <returns>A tuple with the closest neighbor</returns>
-        public Tuple<T, int> FindBestNodeWithDistance(T element)
+        public Tuple<T, int> FindClosestElement(IMetric<T> metric)
         {
-            return _root.FindBestMatch(element, int.MaxValue);
+            return _root.FindClosestElement(metric);
         }
         #endregion
     }

@@ -69,7 +69,7 @@ namespace UnitTests
             tree.Add(best);
             tree.Add(new ExampleMetric(5, new int[] { 500, 500, 500 }));
 
-            Tuple<ExampleMetric, int> result = tree.FindBestNodeWithDistance(search);
+            Tuple<ExampleMetric, int> result = tree.FindClosestElement(search);
 
             Assert.AreEqual(58, DistanceMetric.CalculateLeeDistance(search.Data, best.Data));
             Assert.AreEqual(58, result.Item2);

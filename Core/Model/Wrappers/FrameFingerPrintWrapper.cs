@@ -19,15 +19,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.DSA;
 using System;
-using System.Linq;
 
 namespace Core.Model.Wrappers
 {
     /// <summary>
     /// The image fingerprint of an image
     /// </summary>
-    public sealed class FrameFingerPrintWrapper : IEquatable<FrameFingerPrintWrapper>
+    public sealed class FrameFingerPrintWrapper :
+        IEquatable<FrameFingerPrintWrapper>,
+        IMetric<FrameFingerPrintWrapper>,
+        IMetric<PhotoFingerPrintWrapper>
     {
         #region public properties
         /// <summary>
@@ -42,6 +45,26 @@ namespace Core.Model.Wrappers
         #endregion
 
         #region public methods
+        /// <summary>
+        /// Calculate the distance from this frame to a picture
+        /// </summary>
+        /// <param name="other">The picture</param>
+        /// <returns>The hamming distance</returns>
+        public int CalculateDistance(PhotoFingerPrintWrapper other)
+        {
+            return DistanceCalculator.CalculateHammingDistance(PHashCode, other.PHash);
+        }
+
+        /// <summary>
+        /// Calculate the distance from this frame to another frame
+        /// </summary>
+        /// <param name="other">The other Frame</param>
+        /// <returns>The hamming distance</returns>
+        public int CalculateDistance(FrameFingerPrintWrapper other)
+        {
+            return DistanceCalculator.CalculateHammingDistance(PHashCode, other.PHashCode);
+        }
+
         /// <summary>
         /// Compares this object with the given object
         /// </summary>
