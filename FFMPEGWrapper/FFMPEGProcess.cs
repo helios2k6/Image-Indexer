@@ -187,6 +187,19 @@ namespace FFMPEGWrapper
                 _settings.FrameRateDenominator
             );
         }
+
+        private string GetFilters()
+        {
+            switch (_settings.Mode)
+            {
+                case FFMPEGMode.PlaybackAtFourX:
+                    return string.Empty;
+                case FFMPEGMode.SeekFrame:
+                    return string.Format(@"-vf ""select = eq(n\, 100)"" -vframes 1");
+                default:
+                    throw new InvalidOperationException("Unknown mode");
+            }
+        }
         #endregion
     }
 }

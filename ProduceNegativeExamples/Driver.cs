@@ -23,12 +23,17 @@ using Core.DSA;
 using Core.Model.Wrappers;
 using System.Collections.Generic;
 using Core.Model.Utils;
+using System.Linq;
 using System;
 
 namespace ProduceNegativeExamples
 {
     public static class Driver
     {
+        #region private static fields
+        private static readonly int DefaultMetricThreshold = 2;
+        #endregion
+
         #region internal classes
         private sealed class FrameWrapper : IMetric<FrameFingerPrintWrapper>, IMetric<PhotoFingerPrintWrapper>, IMetric<FrameWrapper>
         {
@@ -87,26 +92,68 @@ namespace ProduceNegativeExamples
             return null;
         }
 
-        private static IDictionary<string, IEnumerable<PhotoFingerPrintWrapper>> MapPhotosToVideos(
+        private static IDictionary<string, ISet<PhotoFingerPrintWrapper>> MapPhotosToVideos(
             PhotoFingerPrintDatabaseWrapper photoDatabase,
             VideoFingerPrintDatabaseMetaTableWrapper metatable
         )
         {
-            IDictionary<string, IEnumerable<PhotoFingerPrintWrapper>> resultMap = new Dictionary<string, IEnumerable<PhotoFingerPrintWrapper>>();
+            IDictionary<string, ISet<PhotoFingerPrintWrapper>> resultMap = new Dictionary<string, ISet<PhotoFingerPrintWrapper>>();
+            IDictionary<string, VideoFingerPrintWrapper> fileNameToVideoFingerPrintMap = MetaTableUtils.EnumerateVideoFingerPrints(metatable).ToDictionary(e => e.FilePath);
             BKTree<FrameWrapper> bktree = CreateBKTree(metatable);
             foreach (PhotoFingerPrintWrapper photo in photoDatabase.PhotoFingerPrints)
             {
                 // 1. Find bucket of possible candidates
+                IDictionary<FrameWrapper, int> treeResults = bktree.Query(
+                    new PhotoWrapper
+                    {
+                        Photo = photo,
+                    },
+                    DefaultMetricThreshold
+                );
+
                 // 2. If there's only 1 result, assume it's the source video
-                // 3. Otherwise, go through each possible video and run SSIM on it
-                bktree.Query(new PhotoWrapper
+                if (treeResults.Count == 1)
                 {
-                    Photo = photo,
-                },
-                5);
+                    ISet<PhotoFingerPrintWrapper> bucket;
+                    string videoFileName = treeResults.First().Key.Video.FilePath;
+                    if (resultMap.TryGetValue(videoFileName, out bucket) == false)
+                    {
+                        bucket = new HashSet<PhotoFingerPrintWrapper>();
+                        resultMap.Add(videoFileName, bucket);
+                    }
+
+                    bucket.Add(photo);
+                }
+                // 3. Otherwise, go through each possible video and run SSIM on it
+                else if (treeResults.Count > 1)
+                {
+
+                }
             }
 
             return null;
+        }
+
+        private static VideoFingerPrintWrapper FindMostLikelyVideo(
+            PhotoFingerPrintWrapper photo,
+            IDictionary<FrameWrapper, int> treeResults,
+            IDictionary<string, VideoFingerPrintWrapper> nameToVideoMap
+        )
+        {
+            if (treeResults.Count < 1)
+            {
+                throw new ArgumentException("Empty tree results");
+            }
+
+            double currentSSIM = 0.0;
+            VideoFingerPrintWrapper wrapperWithHighestSimilarity = null;
+            foreach (KeyValuePair<FrameWrapper, int> result in treeResults)
+            {
+                // Calculate SSIM
+
+            }
+
+            return wrapperWithHighestSimilarity;
         }
 
         private static BKTree<FrameWrapper> CreateBKTree(VideoFingerPrintDatabaseMetaTableWrapper metatable)

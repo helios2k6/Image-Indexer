@@ -69,7 +69,8 @@ namespace VideoIndexer.Video
             var ffmpegProcessSettings = new FFMPEGProcessVideoSettings(
                 videoFile,
                 info.GetFramerate().Numerator,
-                info.GetFramerate().Denominator * 4
+                info.GetFramerate().Denominator * 4,
+                FFMPEGMode.PlaybackAtFourX
             );
 
             using (var indexingPool = new VideoIndexingExecutor(4, cancellationToken, (long)Math.Round((3.0 * maxMemory) / 4.0)))

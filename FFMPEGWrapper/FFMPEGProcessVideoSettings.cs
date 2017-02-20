@@ -48,6 +48,16 @@ namespace FFMPEGWrapper
         /// The frame rate denominator
         /// </summary>
         public int FrameRateDenominator { get; }
+
+        /// <summary>
+        /// The mode that should be used for FFMPEG
+        /// </summary>
+        public FFMPEGMode Mode { get; }
+
+        /// <summary>
+        /// The frame to target when the FFMPEG process is set to the FFMPEG.SeekFrame mode
+        /// </summary>
+        public int TargetFrame { get; set; }
         #endregion
 
         #region ctor
@@ -58,15 +68,18 @@ namespace FFMPEGWrapper
         /// <param name="targetMediaFile">The media file to decode</param>
         /// <param name="frameRateDenominator">The denominator of the frame rate</param>
         /// <param name="frameRateNumerator">The numerator of the frame rate</param>
+        /// <param name="mode"></param>
         public FFMPEGProcessVideoSettings(
             string targetMediaFile,
             int frameRateNumerator,
-            int frameRateDenominator
+            int frameRateDenominator,
+            FFMPEGMode mode
         )
         {
             TargetMediaFile = targetMediaFile;
             FrameRateNumerator = frameRateNumerator;
             FrameRateDenominator = frameRateDenominator;
+            Mode = mode;
         }
         #endregion
 
@@ -80,7 +93,9 @@ namespace FFMPEGWrapper
         {
             return TargetMediaFile.GetHashCode() ^
                 FrameRateNumerator.GetHashCode() ^
-                FrameRateDenominator.GetHashCode();
+                FrameRateDenominator.GetHashCode() ^
+                Mode.GetHashCode() ^
+                TargetFrame.GetHashCode();
         }
 
         public bool Equals(FFMPEGProcessVideoSettings other)
@@ -93,7 +108,9 @@ namespace FFMPEGWrapper
             return Equals(TargetMediaFile, other.TargetMediaFile) &&
                 Equals(OutputDirectory, other.OutputDirectory) &&
                 Equals(FrameRateNumerator, other.FrameRateNumerator) &&
-                Equals(FrameRateDenominator, other.FrameRateDenominator);
+                Equals(FrameRateDenominator, other.FrameRateDenominator) &&
+                Equals(Mode, other.Mode) &&
+                Equals(TargetFrame, other.TargetFrame);
         }
         #endregion
 

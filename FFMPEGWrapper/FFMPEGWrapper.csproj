@@ -41,6 +41,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FFMPEGMode.cs" />
     <Compile Include="FFMPEGProcess.cs" />
     <Compile Include="FFMPEGProcessVideoSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
