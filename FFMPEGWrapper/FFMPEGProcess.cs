@@ -25,6 +25,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
 using Core.Environment;
+using System.Text;
 
 namespace FFMPEGWrapper
 {
@@ -181,24 +182,29 @@ namespace FFMPEGWrapper
         private string GetArguments()
         {
             return string.Format(
-                "-i \"{0}\" -f rawvideo -pix_fmt bgr24 -vf fps={1}/{2} -",
+                "-i \"{0}\" -f rawvideo -pix_fmt bgr24 -vf {1} -",
                 _settings.TargetMediaFile,
-                _settings.FrameRateNumerator,
-                _settings.FrameRateDenominator
+                GetFilters()
             );
         }
 
         private string GetFilters()
         {
+            var filterString = new StringBuilder();
+            filterString.Append(string.Format(@"""fps={0}/{1}", _settings.FrameRateNumerator, _settings.FrameRateDenominator));
             switch (_settings.Mode)
             {
                 case FFMPEGMode.PlaybackAtFourX:
-                    return string.Empty;
+                    break;
                 case FFMPEGMode.SeekFrame:
-                    return string.Format(@"-vf ""select = eq(n\, 100)"" -vframes 1");
+                    filterString.Append(string.Format(@", select=eq(n\,{0}) -vframes 1", _settings.TargetFrame));
+                    break;
                 default:
                     throw new InvalidOperationException("Unknown mode");
             }
+
+            filterString.Append("\"");
+            return filterString.ToString();
         }
         #endregion
     }
