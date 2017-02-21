@@ -159,7 +159,8 @@ namespace VideoIndexer.Video
                 {
                     using (WritableLockBitImage frame = item.Frame)
                     {
-                        ulong framePHash = FrameIndexer.IndexFrame(item.Frame);
+                        frame.Lock();
+                        ulong framePHash = FrameIndexer.IndexFrame(item.Frame.GetImage());
                         _fingerPrints.Add(new FrameFingerPrintWrapper
                         {
                             PHashCode = framePHash,

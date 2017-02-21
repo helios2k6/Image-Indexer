@@ -97,10 +97,10 @@ namespace PhotoCollectionIndexer
                 return;
             }
 
-            using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFile), false, true))
+            using (Image frame = Image.FromFile(photoFile))
             {
                 PhotoFingerPrintDatabaseWrapper database = PhotoFingerPrintDatabaseLoader.Load(databaseFile);
-                ulong imageHash = FrameIndexer.IndexFrame(lockbitImage);
+                ulong imageHash = FrameIndexer.IndexFrame(frame);
 
                 var results = from fingerPrint in database.PhotoFingerPrints.AsParallel()
                               let distance = DistanceCalculator.CalculateHammingDistance(imageHash, fingerPrint.PHash)

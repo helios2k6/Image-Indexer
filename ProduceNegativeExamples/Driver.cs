@@ -37,8 +37,7 @@ namespace ProduceNegativeExamples
     public static class Driver
     {
         #region private static fields
-        private static readonly int DefaultMetricThreshold = 2;
-        private static readonly double SSIMThreshold = 0.97;
+        private static readonly int DefaultMetricThreshold = 0;
 
         #endregion
 
@@ -83,11 +82,17 @@ namespace ProduceNegativeExamples
 
         public static void Main(string[] args)
         {
+
             /* 
              * 1. Pull all images from the database
              * 2. Determine which anime they're all from
              * 3. Load all frames that are not that in the collection of pictures
              */
+            var k = MapPhotosToVideos(
+                LoadPhotoDatabase(args),
+                LoadMetaTable(args)
+            );
+            Console.WriteLine(k);
         }
 
         private static PhotoFingerPrintDatabaseWrapper LoadPhotoDatabase(string[] args)
@@ -131,10 +136,12 @@ namespace ProduceNegativeExamples
                     DefaultMetricThreshold
                 );
 
+                IDictionary<string, ISet<FrameWrapper>> collapsedTreeResults = CollapseTreeResults(treeResults);
+
                 // 2. Find most likely result and add it to the bucket
                 if (treeResults.Count > 0)
                 {
-                    VideoFingerPrintWrapper mostLikelyVideo = FindMostLikelyVideo(photo, treeResults.Keys, fileNameToVideoFingerPrintMap);
+                    VideoFingerPrintWrapper mostLikelyVideo = FindMostLikelyVideo(photo, collapsedTreeResults, fileNameToVideoFingerPrintMap);
 
                     // In the case where we didn't get any results, we just skip this photo and move alone
                     if (mostLikelyVideo == null)
@@ -155,95 +162,113 @@ namespace ProduceNegativeExamples
             return resultMap;
         }
 
+        /// <summary>
+        /// Collapses results from the same video into one entry
+        /// </summary>
+        /// <param name="treeResults"></param>
+        /// <returns></returns>
+        private static IDictionary<string, ISet<FrameWrapper>> CollapseTreeResults(IDictionary<FrameWrapper, int> treeResults)
+        {
+            var videoGroups = new Dictionary<string, ISet<FrameWrapper>>();
+            foreach (KeyValuePair<FrameWrapper, int> entry in treeResults)
+            {
+                ISet<FrameWrapper> bucket;
+                if (videoGroups.TryGetValue(entry.Key.Video.FilePath, out bucket) == false)
+                {
+                    bucket = new HashSet<FrameWrapper>();
+                    videoGroups.Add(entry.Key.Video.FilePath, bucket);
+                }
+
+                bucket.Add(entry.Key);
+            }
+
+            return videoGroups;
+        }
+
         private static VideoFingerPrintWrapper FindMostLikelyVideo(
             PhotoFingerPrintWrapper photo,
-            IEnumerable<FrameWrapper> treeResults,
+            IDictionary<string, ISet<FrameWrapper>> treeResults,
             IDictionary<string, VideoFingerPrintWrapper> nameToVideoMap
         )
         {
             if (treeResults.Count() == 1)
             {
-                return treeResults.First().Video;
+                return treeResults.First().Value.First().Video;
             }
 
             double currentBestSSIM = 0.0;
             VideoFingerPrintWrapper currentBestVideo = null;
-            foreach (FrameWrapper videoFrameResults in treeResults)
+            using (WritableLockBitImage photoAsLockBitImage = new WritableLockBitImage(Image.FromFile(photo.FilePath), false))
             {
-                // Calculate SSIM
-                // 1. Load photo as lockbit image
-                using (WritableLockBitImage photoAsLockBitImage = new WritableLockBitImage(Image.FromFile(photo.FilePath), false, true))
-                // 2. Load video frame
-                using (WritableLockBitImage videoFrame = GetFrameFromVideo(videoFrameResults.Video, videoFrameResults.Frame.FrameNumber))
+                foreach (KeyValuePair<string, ISet<FrameWrapper>> videoFrameResults in treeResults)
                 {
-                    double possibleBestSSIM = SSIMCalculator.Compute(photoAsLockBitImage, videoFrame);
-                    // SSIM must be at least good enough for us to consider
-                    if (possibleBestSSIM > SSIMThreshold)
+                    foreach (FrameWrapper frameWrapper in videoFrameResults.Value)
                     {
-                        if (possibleBestSSIM > currentBestSSIM)
+                        // Calculate SSIM
+                        using (WritableLockBitImage videoFrame = GetFrameFromVideo(frameWrapper.Video, frameWrapper.Frame.FrameNumber))
                         {
-                            currentBestSSIM = possibleBestSSIM;
-                            currentBestVideo = videoFrameResults.Video;
+                            double possibleBestSSIM = SSIMCalculator.Compute(photoAsLockBitImage, videoFrame);
+                            // SSIM must be at least good enough for us to consider
+                            if (possibleBestSSIM > currentBestSSIM)
+                            {
+                                currentBestSSIM = possibleBestSSIM;
+                                currentBestVideo = frameWrapper.Video;
+                            }
                         }
                     }
                 }
             }
+
 
             return currentBestVideo;
         }
 
         private static WritableLockBitImage GetFrameFromVideo(VideoFingerPrintWrapper video, int frameNumber)
         {
-            try
+            using (MediaInfoProcess mediaInfoProcess = new MediaInfoProcess(video.FilePath))
             {
-                using (MediaInfoProcess mediaInfoProcess = new MediaInfoProcess(video.FilePath))
+                MediaInfo mediaInfo = mediaInfoProcess.Execute();
+                if (mediaInfo.GetFramerate().Numerator == 0)
                 {
-                    MediaInfo mediaInfo = mediaInfoProcess.Execute();
-                    if (mediaInfo.GetFramerate().Numerator == 0)
-                    {
-                        throw new Exception("Did not get valid frame rate");
-                    }
+                    throw new Exception("Did not get valid frame rate");
+                }
 
-                    int width = mediaInfo.GetWidth();
-                    int height = mediaInfo.GetHeight();
-                    var ffmpegProcessSettings = new FFMPEGProcessVideoSettings(
-                        video.FilePath,
-                        mediaInfo.GetFramerate().Numerator,
-                        mediaInfo.GetFramerate().Denominator * 4,
-                        FFMPEGMode.SeekFrame
-                    );
+                int width = mediaInfo.GetWidth();
+                int height = mediaInfo.GetHeight();
+                var ffmpegProcessSettings = new FFMPEGProcessVideoSettings(
+                    video.FilePath,
+                    mediaInfo.GetFramerate().Numerator,
+                    mediaInfo.GetFramerate().Denominator * 4,
+                    FFMPEGMode.SeekFrame
+                );
 
-                    ffmpegProcessSettings.TargetFrame = frameNumber;
-                    byte[] frameBytes = new byte[width * height * 3];
-                    int offset = 0;
-                    using (var ffmpegProcess = new FFMPEGProcess(
+                ffmpegProcessSettings.TargetFrame = frameNumber;
+                byte[] frameBytes = new byte[width * height * 3];
+                int offset = 0;
+                using (
+                    var ffmpegProcess = new FFMPEGProcess(
                         ffmpegProcessSettings,
                         CancellationToken.None,
                         (stdoutBytes, numBytes) =>
                         {
                             Buffer.BlockCopy(stdoutBytes, 0, frameBytes, offset, numBytes);
                             offset += numBytes;
-                        })
+                        },
+                        false
                     )
+                )
+                {
+                    ffmpegProcess.Execute();
+                    if (offset != 3 * width * height)
                     {
-                        ffmpegProcess.Execute();
-                        if (offset != 3 * width * height)
-                        {
-                            throw new Exception("Did not get all bytes to produce valid frame");
-                        }
-
-                        WritableLockBitImage videoFrame = new WritableLockBitImage(width, height, frameBytes);
-                        videoFrame.Lock();
-                        return videoFrame;
+                        throw new Exception("Did not get all bytes to produce valid frame");
                     }
+
+                    WritableLockBitImage videoFrame = new WritableLockBitImage(width, height, frameBytes);
+                    videoFrame.Lock();
+                    return videoFrame;
                 }
             }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine("Exception occured: {0}", e.Message);
-            }
-
-            return null;
         }
 
         private static BKTree<FrameWrapper> CreateBKTree(VideoFingerPrintDatabaseMetaTableWrapper metatable)

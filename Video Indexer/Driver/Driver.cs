@@ -278,10 +278,9 @@ namespace VideoIndexer.Driver
                 return;
             }
 
-            using (WritableLockBitImage lockbitImage = new WritableLockBitImage(Image.FromFile(photoFilePath), false))
+            using (Image frame = Image.FromFile(photoFilePath))
             {
-                lockbitImage.Lock();
-                ulong providedPhotoHash = FrameIndexer.IndexFrame(lockbitImage);
+                ulong providedPhotoHash = FrameIndexer.IndexFrame(frame);
                 VideoFingerPrintDatabaseMetaTableWrapper metaTable = VideoFingerPrintDatabaseMetaTableLoader.Load(databaseMetaTablePath);
                 foreach (string databasePath in metaTable.DatabaseMetaTableEntries.Select(e => e.FileName))
                 {

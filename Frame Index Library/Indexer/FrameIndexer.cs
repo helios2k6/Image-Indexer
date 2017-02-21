@@ -39,9 +39,9 @@ namespace FrameIndexLibrary
         /// </summary>
         /// <param name="frame">The frame to index</param>
         /// <returns>An indexed frame</returns>
-        public static ulong IndexFrame(WritableLockBitImage frame)
+        public static ulong IndexFrame(Image frame)
         {
-            using (Image resizedImage = ResizeTransformation.Transform(frame.GetImage(), FingerPrintWidth, FingerPrintWidth))
+            using (Image resizedImage = ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth))
             using (WritableLockBitImage resizedImageAsLockbit = new WritableLockBitImage(resizedImage, false))
             {
                 GreyScaleTransformation.Transform(resizedImageAsLockbit);

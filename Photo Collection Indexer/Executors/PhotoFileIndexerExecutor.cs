@@ -25,6 +25,7 @@ using FrameIndexLibrary;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -77,7 +78,7 @@ namespace PhotoCollectionIndexer.Executors
         #region private methods
         private void RunIndexer()
         {
-            foreach (Tuple<WritableLockBitImage, string> imageTuple in _fileReader.GetConsumingEnumerable())
+            foreach (Tuple<Image, string> imageTuple in _fileReader.GetConsumingEnumerable())
             {
                 using (imageTuple.Item1)
                 {

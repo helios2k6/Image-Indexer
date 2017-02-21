@@ -34,31 +34,15 @@ namespace UnitTests
         public static readonly string TestPhoto3 = "UnitTests.TestData.TEST_PHOTO_3.png";
 
         /// <summary>
-        /// Get a WritableLockBitImage that is automatically locked for you
-        /// </summary>
-        /// <param name="path">The resource path of the image</param>
-        /// <returns>The locked writable lockbit image</returns>
-        public static WritableLockBitImage GetImage(string path)
-        {
-            return GetImage(path, true);
-        }
-
-        /// <summary>
-        /// Get a WritableLockBitImage that allows you to specify whether or not to lock the image
+        /// Gets an image from an embedded resource
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="lockImage"></param>
         /// <returns></returns>
-        public static WritableLockBitImage GetImage(string path, bool lockImage)
+        public static Image GetImage(string path)
         {
             using (Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path))
             {
-                var image = new WritableLockBitImage(new Bitmap(stream), false);
-                if (lockImage)
-                {
-                    image.Lock();
-                }
-                return image;
+                return new Bitmap(stream);
             }
         }
     }

@@ -44,11 +44,13 @@ namespace FFMPEGWrapper
         private readonly Process _process;
         private readonly FFMPEGProcessVideoSettings _settings;
         private readonly CancellationToken _cancellationToken;
-        private readonly MemoryStream _stdErrorStream;
         private readonly Action<byte[], int> _byteChunkCallback;
+        private readonly StringBuilder _stdErrorStream;
+        private bool _shouldThrowOnErrorCode;
 
         private bool _isDisposed;
-        private bool _hasExecuted;
+        private bool _hasStartedExecuting;
+        private bool _hasFinishedExecuting;
         #endregion
 
         #region ctor
@@ -60,31 +62,79 @@ namespace FFMPEGWrapper
             FFMPEGProcessVideoSettings settings,
             CancellationToken cancellationToken,
             Action<byte[], int> byteChunkCallback
+        ) : this(settings, cancellationToken, byteChunkCallback, true)
+        {
+        }
+
+        /// <summary>
+        /// Constructs a new FFMPEG Process object with the provided settings
+        /// </summary>
+        /// <param name="settings">The process settings</param>
+        /// <param name="byteChunkCallback">The callback to put the raw bytes from ffmpeg</param>
+        /// <param name="cancellationToken">The cancellation token to listen to</param>
+        /// <param name="shouldThrowOnErrorCode">Whether this should throw when the ffmpeg process exits with an error code</param>
+        public FFMPEGProcess(
+            FFMPEGProcessVideoSettings settings,
+            CancellationToken cancellationToken,
+            Action<byte[], int> byteChunkCallback,
+            bool shouldThrowOnErrorCode
         )
         {
             _settings = settings;
             _cancellationToken = cancellationToken;
             _process = new Process();
             _isDisposed = false;
-            _hasExecuted = false;
-            _stdErrorStream = new MemoryStream();
+            _hasStartedExecuting = false;
+            _hasFinishedExecuting = false;
+            _stdErrorStream = new StringBuilder();
             _byteChunkCallback = byteChunkCallback;
+            _shouldThrowOnErrorCode = shouldThrowOnErrorCode;
 
             _cancellationToken.Register(KillProcess);
         }
         #endregion
 
-        #region public properties
-        /// <summary>
-        /// Gets the standard error stream
-        /// </summary>
-        public Stream StandardErrorStream
-        {
-            get { return _stdErrorStream; }
-        }
-        #endregion
-
         #region public methods
+        public int GetErrorCode()
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException("Cannot get error code from disposed object");
+            }
+
+            if (_hasStartedExecuting == false)
+            {
+                throw new InvalidOperationException("Cannot get error code from process that has not started");
+            }
+
+            if (_hasFinishedExecuting == false)
+            {
+                throw new InvalidOperationException("Cannot get error code from unfinished ffmpeg process");
+            }
+
+            return _process.ExitCode;
+        }
+
+        public string GetErrorStreamMessage()
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException("Cannot get message from disposed object");
+            }
+
+            if (_hasStartedExecuting == false)
+            {
+                throw new InvalidOperationException("Cannot get message from process that has not started");
+            }
+
+            if (_hasFinishedExecuting == false)
+            {
+                throw new InvalidOperationException("Cannot get message from unfinished ffmpeg process");
+            }
+
+            return _stdErrorStream.ToString();
+        }
+
         public void Dispose()
         {
             if (_isDisposed)
@@ -94,7 +144,6 @@ namespace FFMPEGWrapper
 
             _isDisposed = true;
             _process.Dispose();
-            _stdErrorStream.Dispose();
         }
 
         /// <summary>Execute the FFMPEG executable</summary>
@@ -104,7 +153,7 @@ namespace FFMPEGWrapper
         /// </remarks>
         public void Execute()
         {
-            if (_hasExecuted)
+            if (_hasStartedExecuting)
             {
                 throw new InvalidOperationException("This process has already executed");
             }
@@ -117,7 +166,7 @@ namespace FFMPEGWrapper
             try
             {
                 // Note: http://stackoverflow.com/questions/15922175/ffmpeg-run-from-shell-runs-properly-but-does-not-when-called-from-within-net
-                _hasExecuted = true;
+                _hasStartedExecuting = true;
                 _process.StartInfo.UseShellExecute = false;
                 _process.StartInfo.CreateNoWindow = true;
                 _process.StartInfo.RedirectStandardError = true;
@@ -135,12 +184,9 @@ namespace FFMPEGWrapper
 
                 Task stderr = Task.Factory.StartNew(() =>
                 {
-                    using (StreamWriter writer = new StreamWriter(_stdErrorStream))
+                    while (_process.StandardError.EndOfStream == false)
                     {
-                        while (_process.StandardError.EndOfStream == false)
-                        {
-                            writer.WriteLine(_process.StandardError.ReadLine());
-                        }
+                        _stdErrorStream.AppendLine(_process.StandardError.ReadLine());
                     }
                 });
 
@@ -163,10 +209,10 @@ namespace FFMPEGWrapper
             }
             finally
             {
-                _stdErrorStream.Close();
+                _hasFinishedExecuting = true;
             }
 
-            if (_process.ExitCode != 0 && _cancellationToken.IsCancellationRequested == false)
+            if (_shouldThrowOnErrorCode && _process.ExitCode != 0 && _cancellationToken.IsCancellationRequested == false)
             {
                 throw new Exception("FFMPEG did not execute properly");
             }
@@ -195,16 +241,12 @@ namespace FFMPEGWrapper
             switch (_settings.Mode)
             {
                 case FFMPEGMode.PlaybackAtFourX:
-                    break;
+                    return filterString.Append("\"").ToString();
                 case FFMPEGMode.SeekFrame:
-                    filterString.Append(string.Format(@", select=eq(n\,{0}) -vframes 1", _settings.TargetFrame));
-                    break;
+                    return filterString.Append(string.Format(@", select=eq(n\,{0})"" -vframes 1", _settings.TargetFrame)).ToString();
                 default:
                     throw new InvalidOperationException("Unknown mode");
             }
-
-            filterString.Append("\"");
-            return filterString.ToString();
         }
         #endregion
     }

@@ -114,22 +114,12 @@ namespace Core.Media
         }
 
         /// <summary>
-        /// Creates a new writable lockbit image with the option to clone the incoming image
-        /// </summary>
-        /// <param name="image">The image to put into this lockbit image</param>
-        /// <param name="shouldClone">Whether to clone the image object</param>
-        public WritableLockBitImage(Image image, bool shouldClone) : this(image, shouldClone, false)
-        {
-        }
-
-        /// <summary>
         /// Creates a new writable lockbit image, but gives the consumer the ability to pass a flag 
         /// specifying whether to clone the input image
         /// </summary>
         /// <param name="image">The image to use for this writable lockbit image</param>
         /// <param name="shouldClone">Whether or not to clone this image</param>
-        /// <param name="locked">Whether to auto-lock this image immediately after construction</param>
-        public WritableLockBitImage(Image image, bool shouldClone, bool locked)
+        public WritableLockBitImage(Image image, bool shouldClone)
         {
             _width = image.Width;
             _height = image.Height;
@@ -154,11 +144,6 @@ namespace Core.Media
             if (_bitDepth != 8 && _bitDepth != 24 && _bitDepth != 32)
             {
                 throw new ArgumentException("Only 8, 24, and 32 bit pixels are supported.");
-            }
-
-            if (locked)
-            {
-                Lock();
             }
         }
 

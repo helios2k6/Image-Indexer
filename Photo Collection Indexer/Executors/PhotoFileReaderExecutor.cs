@@ -39,7 +39,7 @@ namespace PhotoCollectionIndexer.Executors
 
         private readonly IEnumerable<string> _photoPaths;
         private readonly int _numWorkers;
-        private readonly BlockingCollection<Tuple<WritableLockBitImage, string>> _loadedImages;
+        private readonly BlockingCollection<Tuple<Image, string>> _loadedImages;
 
         private bool _started;
         #endregion
@@ -54,7 +54,7 @@ namespace PhotoCollectionIndexer.Executors
         {
             _numWorkers = numWorkers;
             _photoPaths = photoPaths;
-            _loadedImages = new BlockingCollection<Tuple<WritableLockBitImage, string>>();
+            _loadedImages = new BlockingCollection<Tuple<Image, string>>();
             _started = false;
         }
 
@@ -65,7 +65,7 @@ namespace PhotoCollectionIndexer.Executors
         #endregion
 
         #region public methods
-        public IEnumerable<Tuple<WritableLockBitImage, string>> GetConsumingEnumerable()
+        public IEnumerable<Tuple<Image, string>> GetConsumingEnumerable()
         {
             return _loadedImages.GetConsumingEnumerable();
         }
@@ -103,7 +103,7 @@ namespace PhotoCollectionIndexer.Executors
                     {
                         _loadedImages.Add(
                             Tuple.Create(
-                                new WritableLockBitImage(Image.FromStream(fileStream), false, true),
+                                Image.FromStream(fileStream),
                                 path
                             )
                         );

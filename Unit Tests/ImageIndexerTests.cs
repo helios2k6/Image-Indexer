@@ -23,6 +23,7 @@ using Core.DSA;
 using Core.Media;
 using FrameIndexLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Drawing;
 
 namespace UnitTests
 {
@@ -35,7 +36,7 @@ namespace UnitTests
         [TestMethod]
         public void SamePhotoTest()
         {
-            using (WritableLockBitImage testImage = TestUtils.GetImage(TestUtils.TestPhoto1))
+            using (Image testImage = TestUtils.GetImage(TestUtils.TestPhoto1))
             {
                 ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage);
                 ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage);
@@ -47,8 +48,8 @@ namespace UnitTests
         [TestMethod]
         public void VerySimilarPhotoTest()
         {
-            using (WritableLockBitImage testImage1 = TestUtils.GetImage(TestUtils.TestPhoto1))
-            using (WritableLockBitImage testImage2 = TestUtils.GetImage(TestUtils.TestPhoto2))
+            using (Image testImage1 = TestUtils.GetImage(TestUtils.TestPhoto1))
+            using (Image testImage2 = TestUtils.GetImage(TestUtils.TestPhoto2))
             {
                 ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage1);
                 ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
@@ -61,8 +62,8 @@ namespace UnitTests
         [TestMethod]
         public void TotallyDifferentPhotosTest()
         {
-            using (WritableLockBitImage testImage1 = TestUtils.GetImage(TestUtils.TestPhoto1))
-            using (WritableLockBitImage testImage2 = TestUtils.GetImage(TestUtils.TestPhoto3))
+            using (Image testImage1 = TestUtils.GetImage(TestUtils.TestPhoto1))
+            using (Image testImage2 = TestUtils.GetImage(TestUtils.TestPhoto3))
             {
                 ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage1);
                 ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
