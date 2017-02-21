@@ -39,10 +39,20 @@
       <HintPath>..\packages\DevZH.FlatBuffers.1.4.0\lib\net35\DevZH.FlatBuffers.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Functional.Maybe, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Functional.Maybe.1.1.1\lib\portable40-net40+win8\Functional.Maybe.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="YAXLib, Version=2.15.0.0, Culture=neutral, PublicKeyToken=15c43682c986900f, processorArchitecture=MSIL">
+      <HintPath>..\packages\YAXLib.2.15\lib\net4.0\YAXLib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Console\ConsoleUtils.cs" />
@@ -52,7 +62,13 @@
     <Compile Include="DSA\IMetric.cs" />
     <Compile Include="Environment\EnvironmentTools.cs" />
     <Compile Include="Linq\CommonLinqExtensions.cs" />
+    <Compile Include="Maybe\CommonMaybeExtensions.cs" />
+    <Compile Include="Media\FileXMLNode.cs" />
+    <Compile Include="Media\MediaInfo.cs" />
+    <Compile Include="Media\MediaInfoProcess.cs" />
+    <Compile Include="Media\Ratio.cs" />
     <Compile Include="Media\SSIMCalculator.cs" />
+    <Compile Include="Media\Track.cs" />
     <Compile Include="Media\WritableLockBitImage.cs" />
     <Compile Include="Model\Core\PhotoFingerPrint.cs" />
     <Compile Include="Model\Core\PhotoFingerPrintDatabase.cs" />
@@ -75,6 +91,7 @@
     <Compile Include="Model\Wrappers\PhotoFingerPrintWrapper.cs" />
     <Compile Include="Model\Wrappers\VideoFingerPrintDatabaseWrapper.cs" />
     <Compile Include="Model\Wrappers\VideoFingerPrintWrapper.cs" />
+    <Compile Include="Numerics\NumericalUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Modes\ChangeErrorMode.cs" />
   </ItemGroup>

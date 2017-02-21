@@ -24,9 +24,12 @@ using System;
 using System.Diagnostics;
 using YAXLib;
 
-namespace VideoIndexer.Media
+namespace Core.Media
 {
-    internal sealed class MediaInfoProcess : IDisposable
+    /// <summary>
+    /// Represents the mediainfo process
+    /// </summary>
+    public sealed class MediaInfoProcess : IDisposable
     {
         #region private fields
         private static readonly string MEDIAINFO_PROCESS = "mediainfo";
@@ -61,6 +64,11 @@ namespace VideoIndexer.Media
             _process.Dispose();
         }
 
+        /// <summary>
+        /// Execute this process synchronously and return information about the media file
+        /// </summary>
+        /// <returns>A MediaInfo object with all of the media file's information</returns>
+        /// <remarks>This method is synchronous and will only return once the process is finished</remarks>
         public MediaInfo Execute()
         {
             if (_alreadyExecuted)

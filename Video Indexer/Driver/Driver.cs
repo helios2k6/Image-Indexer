@@ -468,7 +468,7 @@ namespace VideoIndexer.Driver
         private static void PrintHelp(string messageToPrint)
         {
             var builder = new StringBuilder();
-            builder.AppendLine("Video Indexer v2.1");
+            builder.AppendLine("Video Indexer v2.2");
 
             if (string.IsNullOrWhiteSpace(messageToPrint) == false)
             {

@@ -22,9 +22,12 @@
 using System;
 using YAXLib;
 
-namespace VideoIndexer.Media
+namespace Core.Media
 {
-    internal sealed class Track : IEquatable<Track>
+    /// <summary>
+    /// Represents a single media track
+    /// </summary>
+    public sealed class Track : IEquatable<Track>
     {
         #region ctor
         public Track()
@@ -35,31 +38,52 @@ namespace VideoIndexer.Media
         #endregion
 
         #region public properties
+        /// <summary>
+        /// The type of media track
+        /// </summary>
         [YAXAttributeForClass]
         [YAXSerializeAs("type")]
         [YAXErrorIfMissed(YAXExceptionTypes.Warning)]
         public string Type { get; set; }
 
+        /// <summary>
+        /// The duration of the media track
+        /// </summary>
         [YAXSerializeAs("Duration")]
         [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
         public string Duration { get; set; }
 
+        /// <summary>
+        /// The track ID number
+        /// </summary>
         [YAXSerializeAs("ID")]
         [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
         public int ID { get; set; }
 
+        /// <summary>
+        /// The complete name of the file, as specified in the General track
+        /// </summary>
         [YAXSerializeAs("Complete_name")]
         [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
         public string CompleteName { get; set; }
 
+        /// <summary>
+        /// The frame rate of the video track
+        /// </summary>
         [YAXSerializeAs("Frame_rate")]
         [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
         public string Framerate { get; set; }
 
+        /// <summary>
+        /// The width of the video track
+        /// </summary>
         [YAXSerializeAs("Width")]
         [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
         public string Width { get; set; }
 
+        /// <summary>
+        /// The height of the video track
+        /// </summary>
         [YAXSerializeAs("Height")]
         [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
         public string Height { get; set; }

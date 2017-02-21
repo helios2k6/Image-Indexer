@@ -25,7 +25,7 @@ using Core.Model.Wrappers;
 using FlatBuffers;
 using System.IO;
 
-namespace PhotoCollectionIndexer.Serialization
+namespace Core.Model.Serialization
 {
     public static class PhotoFingerPrintDatabaseSaver
     {

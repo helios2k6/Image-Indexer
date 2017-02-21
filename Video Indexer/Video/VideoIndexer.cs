@@ -19,13 +19,13 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Media;
 using Core.Model.Wrappers;
 using FFMPEGWrapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using VideoIndexer.Media;
 
 namespace VideoIndexer.Video
 {
@@ -43,17 +43,21 @@ namespace VideoIndexer.Video
         /// <returns></returns>
         public static VideoFingerPrintWrapper IndexVideo(string videoFile, CancellationToken cancellationToken, long maxMemory)
         {
-            MediaInfo info = new MediaInfoProcess(videoFile).Execute();
-            if (info.GetFramerate().Numerator == 0)
+            using (var mediaInfoProcess = new MediaInfoProcess(videoFile))
             {
-                throw new InvalidOperationException("Invalid framerate for: " + videoFile);
+                MediaInfo info = mediaInfoProcess.Execute();
+                if (info.GetFramerate().Numerator == 0)
+                {
+                    throw new InvalidOperationException("Invalid framerate for: " + videoFile);
+                }
+
+                return new VideoFingerPrintWrapper
+                {
+                    FilePath = videoFile,
+                    FingerPrints = IndexVideo(videoFile, info, cancellationToken, maxMemory).ToArray(),
+                };
             }
 
-            return new VideoFingerPrintWrapper
-            {
-                FilePath = videoFile,
-                FingerPrints = IndexVideo(videoFile, info, cancellationToken, maxMemory).ToArray(),
-            };
         }
         #endregion
 

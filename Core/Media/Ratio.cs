@@ -22,12 +22,12 @@
 using Functional.Maybe;
 using System;
 
-namespace VideoIndexer
+namespace Core.Media
 {
     /// <summary>
     /// Represents the frames per second of a media file as a rational number
     /// </summary>
-    internal sealed class Ratio : IEquatable<Ratio>, IComparable<Ratio>
+    public sealed class Ratio : IEquatable<Ratio>, IComparable<Ratio>
     {
         #region public static fields
         /// <summary>

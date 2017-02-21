@@ -22,7 +22,7 @@
 using Functional.Maybe;
 using System;
 
-namespace VideoIndexer.Utils
+namespace Core.Maybe
 {
     /// <summary>
     /// Common Maybe extensions

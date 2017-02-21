@@ -2,6 +2,6 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>
-    <StartArguments>--search --database "D:\anime_snapshots.bin" --photo D:\test.png</StartArguments>
+    <StartArguments>--index --database "D:\anime_snapshots.bin" --photos D:\</StartArguments>
   </PropertyGroup>
 </Project>

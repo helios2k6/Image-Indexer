@@ -21,10 +21,10 @@
 
 using Core.DSA;
 using Core.Media;
+using Core.Model.Serialization;
 using Core.Model.Wrappers;
 using FrameIndexLibrary;
 using PhotoCollectionIndexer.Executors;
-using PhotoCollectionIndexer.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Drawing;

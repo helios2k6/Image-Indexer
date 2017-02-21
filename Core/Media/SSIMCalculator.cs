@@ -19,11 +19,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using Core.Media;
 using System;
 using System.Drawing;
 
-namespace CommonImageModel
+namespace Core.Media
 {
     internal sealed class Grid
     {

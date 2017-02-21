@@ -23,14 +23,14 @@ using System;
 using System.Linq;
 using YAXLib;
 
-namespace VideoIndexer.Media
+namespace Core.Media
 {
     /// <summary>
     /// Represents the File child node
     /// </summary>
     [Serializable]
     [YAXSerializeAs("File")]
-    internal sealed class FileXMLNode : IEquatable<FileXMLNode>
+    public sealed class FileXMLNode : IEquatable<FileXMLNode>
     {
         #region ctor
         public FileXMLNode()
@@ -40,6 +40,9 @@ namespace VideoIndexer.Media
         #endregion
 
         #region public properties
+        /// <summary>
+        /// The media tracks of this media file
+        /// </summary>
         [YAXErrorIfMissed(YAXExceptionTypes.Ignore)]
         [YAXCollection(YAXCollectionSerializationTypes.RecursiveWithNoContainingElement, EachElementName = "track")]
         public Track[] Tracks { get; set; }

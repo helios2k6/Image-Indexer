@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VideoIndexer</RootNamespace>
     <AssemblyName>VideoIndexer</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
@@ -50,23 +50,12 @@
     <Reference Include="System.Numerics" />
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="YAXLib, Version=2.15.0.0, Culture=neutral, PublicKeyToken=15c43682c986900f, processorArchitecture=MSIL">
-      <HintPath>..\packages\YAXLib.2.15\lib\net4.0\YAXLib.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Merger\DatabaseCoalescer.cs" />
     <Compile Include="Driver\Driver.cs" />
-    <Compile Include="Media\Ratio.cs" />
     <Compile Include="Video\FingerPrintStore.cs" />
-    <Compile Include="Media\FileXMLNode.cs" />
-    <Compile Include="Media\MediaInfo.cs" />
-    <Compile Include="Media\MediaInfoProcess.cs" />
-    <Compile Include="Media\Track.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils\CommonMaybeExtensions.cs" />
-    <Compile Include="Utils\NumericalUtils.cs" />
     <Compile Include="Video\RawByteStore.cs" />
     <Compile Include="Video\VideoIndexer.cs" />
     <Compile Include="Video\VideoIndexingExecutor.cs" />

@@ -20,7 +20,6 @@
  */
 
 using Core.Media;
-using FrameIndexLibrary;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;

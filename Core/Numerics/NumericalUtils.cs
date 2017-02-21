@@ -19,9 +19,10 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Media;
 using System;
 
-namespace VideoIndexer.Utils
+namespace Core.Numerics
 {
     internal static class NumericUtils
     {

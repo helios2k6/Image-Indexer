@@ -19,9 +19,9 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Model.Serialization;
 using Core.Model.Wrappers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using PhotoCollectionIndexer.Serialization;
 using System.IO;
 
 namespace UnitTests

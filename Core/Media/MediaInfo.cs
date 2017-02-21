@@ -19,17 +19,20 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Numerics;
 using Functional.Maybe;
 using System;
 using System.Linq;
-using VideoIndexer.Utils;
 using YAXLib;
 
-namespace VideoIndexer.Media
+namespace Core.Media
 {
+    /// <summary>
+    /// Represents the media information of a media file
+    /// </summary>
     [Serializable]
     [YAXSerializeAs("Mediainfo")]
-    internal sealed class MediaInfo : IEquatable<MediaInfo>
+    public sealed class MediaInfo : IEquatable<MediaInfo>
     {
         #region private fields
         private static readonly string GENERAL_TRACK = "General";
@@ -56,6 +59,9 @@ namespace VideoIndexer.Media
         #endregion
 
         #region public properties
+        /// <summary>
+        /// The path to the media file
+        /// </summary>
         [YAXSerializeAs("File")]
         public FileXMLNode File { get; set; }
         #endregion
