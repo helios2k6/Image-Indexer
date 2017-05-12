@@ -79,7 +79,7 @@ namespace FrameIndexLibrary
             {
                 for (int x = 0; x < 8; x++)
                 {
-                    if (dctMatrix[y, x] < averageGreyScaleValue)
+                    if (dctMatrix[y, x] >= averageGreyScaleValue)
                     {
                         ulong shiftedBit = ((ulong)1) << (x * y);
                         currentHashValue = currentHashValue | shiftedBit;

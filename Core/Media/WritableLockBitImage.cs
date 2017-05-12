@@ -102,38 +102,25 @@ namespace Core.Media
 
         #region ctor
         /// <summary>
-        /// Creates a new writable lockbit image
+        /// Copy constructor that clones the other WritableLockbitImage. This will clone all
+        /// of the internal data from the passed in WritableLockBitImage, with the exception
+        /// of whether it was locked.
         /// </summary>
-        /// <remarks>
-        /// This will not hold on to the original reference of the passed in image,
-        /// so it's safe to dispose of any references passed to this object
-        /// </remarks>
-        public WritableLockBitImage(Image image)
-            : this(image, true)
+        public WritableLockBitImage(WritableLockBitImage other) : this(other._bitmap)
         {
         }
 
         /// <summary>
-        /// Creates a new writable lockbit image, but gives the consumer the ability to pass a flag 
-        /// specifying whether to clone the input image
+        /// Creates a new WritableLockBitImage from an existing Image. This will not hold onto the original
+        /// Image reference, and will instead use the Bitmap copy constructor
         /// </summary>
         /// <param name="image">The image to use for this writable lockbit image</param>
-        /// <param name="shouldClone">Whether or not to clone this image</param>
-        public WritableLockBitImage(Image image, bool shouldClone)
+        public WritableLockBitImage(Image image)
         {
             _width = image.Width;
             _height = image.Height;
             _disposed = _locked = false;
-
-            if (shouldClone)
-            {
-                _bitmap = new Bitmap(image.Clone() as Image);
-            }
-            else
-            {
-                _bitmap = new Bitmap(image);
-            }
-
+            _bitmap = new Bitmap(image);
             _bitmapData = _bitmap.LockBits(
                 new Rectangle(0, 0, image.Width, image.Height),
                 ImageLockMode.ReadWrite,
@@ -167,9 +154,9 @@ namespace Core.Media
         /// <summary>
         /// Creats a writable lockbit image with the given frame byte array
         /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <param name="frame"></param>
+        /// <param name="width">The width of the image</param>
+        /// <param name="height">The height of the image</param>
+        /// <param name="frame">The raw frame data, which is expected to be 24-bits, laid out as RGB</param>
         public WritableLockBitImage(int width, int height, byte[] frame)
         {
             _width = width;

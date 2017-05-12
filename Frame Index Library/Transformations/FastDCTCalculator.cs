@@ -76,13 +76,13 @@ namespace FrameIndexLibrary
             }
 
             int length = sourceMatrix.GetLength(0);
-            Complex[][] dft = CalculateDFT2D(CreateYSequence(sourceMatrix));
+            Complex[][] fft = CalculateFFT2D(CreateYSequence(sourceMatrix));
             double[,] dctOutput = new double[length, length];
             for (int row = 0; row < length; row++)
             {
                 for (int col = 0; col < sourceMatrix.GetLength(1); col++)
                 {
-                    Complex dftAsComplex = WFunctionCached(2 * length, row) * WFunctionCached(2 * length, col) * dft[row][col];
+                    Complex dftAsComplex = WFunctionCached(2 * length, row) * WFunctionCached(2 * length, col) * fft[row][col];
                     dctOutput[row, col] = dftAsComplex.Real;
                 }
             }
@@ -92,25 +92,25 @@ namespace FrameIndexLibrary
         #endregion
 
         #region private methods
-        private static Complex[][] CalculateDFT2D(Complex[][] input)
+        private static Complex[][] CalculateFFT2D(Complex[][] input)
         {
-            // Compute 2D DFT
+            // Compute 2D FFT
             Complex[][] output = new Complex[input.Length][];
 
             // Get rows first
             for (int row = 0; row < input.Length; row++)
             {
-                output[row] = CalculateDFTSharp(input[row]);
+                output[row] = CalculateFFTSharp(input[row]);
             }
 
             // Get cols next
             for (int col = 0; col < input[0].Length; col++)
             {
-                Complex[] columnDFT = CalculateDFTSharp(GetColumn(output, col).ToArray());
-                SetColumn(columnDFT, output, col);
+                Complex[] columnFFT = CalculateFFTSharp(GetColumn(output, col).ToArray());
+                SetColumn(columnFFT, output, col);
             }
 
-            return NormalizeDFT(output);
+            return NormalizeMatrix(output);
         }
 
         private static Complex[][] CreateYSequence(byte[,] sourceMatrix)
@@ -148,14 +148,14 @@ namespace FrameIndexLibrary
             return ySequence;
         }
 
-        private static Complex[] CalculateDFTSharp(Complex[] input)
+        private static Complex[] CalculateFFTSharp(Complex[] input)
         {
-            var complexDoubleDFT = new SharpFFTPACK.ComplexDoubleFFT(input.Length);
-            complexDoubleDFT.ft(input);
+            var complexDoubleFFT = new SharpFFTPACK.ComplexDoubleFFT(input.Length);
+            complexDoubleFFT.ft(input);
             return input;
         }
 
-        private static Complex[][] NormalizeDFT(Complex[][] input)
+        private static Complex[][] NormalizeMatrix(Complex[][] input)
         {
             int N = input.Length;
             int M = input[0].Length;
