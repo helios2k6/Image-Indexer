@@ -42,7 +42,7 @@ namespace FrameIndexLibrary
         public static ulong IndexFrame(Image frame)
         {
             using (Image resizedImage = ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth))
-            using (WritableLockBitImage resizedImageAsLockbit = new WritableLockBitImage(resizedImage, false))
+            using (WritableLockBitImage resizedImageAsLockbit = new WritableLockBitImage(resizedImage))
             {
                 GreyScaleTransformation.Transform(resizedImageAsLockbit);
                 double[,] dctMatrix = FastDCTCalculator.Calculate(resizedImageAsLockbit);
