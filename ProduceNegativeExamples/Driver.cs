@@ -22,6 +22,7 @@
 using Core.Console;
 using Core.DSA;
 using Core.Media;
+using Core.Metrics;
 using Core.Model.Serialization;
 using Core.Model.Utils;
 using Core.Model.Wrappers;
@@ -37,47 +38,8 @@ namespace ProduceNegativeExamples
     public static class Driver
     {
         #region private static fields
-        private static readonly int DefaultMetricThreshold = 0;
+        private static readonly int DefaultMetricThreshold = 2;
 
-        #endregion
-
-        #region internal classes
-        private sealed class FrameWrapper : IMetric<FrameFingerPrintWrapper>, IMetric<PhotoFingerPrintWrapper>, IMetric<FrameWrapper>
-        {
-            public FrameFingerPrintWrapper Frame { get; set; }
-
-            public VideoFingerPrintWrapper Video { get; set; }
-
-            public int CalculateDistance(FrameWrapper other)
-            {
-                return Frame.CalculateDistance(other.Frame);
-            }
-
-            public int CalculateDistance(PhotoFingerPrintWrapper other)
-            {
-                return Frame.CalculateDistance(other);
-            }
-
-            public int CalculateDistance(FrameFingerPrintWrapper other)
-            {
-                return Frame.CalculateDistance(other);
-            }
-        }
-
-        private sealed class PhotoWrapper : IMetric<FrameWrapper>, IMetric<PhotoWrapper>
-        {
-            public PhotoFingerPrintWrapper Photo { get; set; }
-
-            public int CalculateDistance(PhotoWrapper other)
-            {
-                return Photo.CalculateDistance(other.Photo);
-            }
-
-            public int CalculateDistance(FrameWrapper other)
-            {
-                return Photo.CalculateDistance(other.Frame);
-            }
-        }
         #endregion
 
         public static void Main(string[] args)
@@ -94,6 +56,7 @@ namespace ProduceNegativeExamples
             Console.WriteLine(k);
         }
 
+        #region private methods
         private static PhotoFingerPrintDatabaseWrapper LoadPhotoDatabase(string[] args)
         {
             IEnumerable<string> databaseFilePath = ConsoleUtils.GetArgumentTuple(args, "--photo-database");
@@ -123,19 +86,19 @@ namespace ProduceNegativeExamples
         {
             IDictionary<string, ISet<PhotoFingerPrintWrapper>> resultMap = new Dictionary<string, ISet<PhotoFingerPrintWrapper>>();
             IDictionary<string, VideoFingerPrintWrapper> fileNameToVideoFingerPrintMap = MetaTableUtils.EnumerateVideoFingerPrints(metatable).ToDictionary(e => e.FilePath);
-            BKTree<FrameWrapper> bktree = CreateBKTree(metatable);
+            BKTree<FrameMetricWrapper> bktree = ModelMetricUtils.CreateBKTree(metatable);
             foreach (PhotoFingerPrintWrapper photo in photoDatabase.PhotoFingerPrints)
             {
                 // 1. Find bucket of possible candidates
-                IDictionary<FrameWrapper, int> treeResults = bktree.Query(
-                    new PhotoWrapper
+                IDictionary<FrameMetricWrapper, int> treeResults = bktree.Query(
+                    new PhotoMetricWrapper
                     {
                         Photo = photo,
                     },
                     DefaultMetricThreshold
                 );
 
-                IDictionary<string, ISet<FrameWrapper>> collapsedTreeResults = CollapseTreeResults(treeResults);
+                IDictionary<string, ISet<FrameMetricWrapper>> collapsedTreeResults = ModelMetricUtils.CollapseTreeResults(treeResults);
 
                 // 2. Find most likely result and add it to the bucket
                 if (treeResults.Count > 0)
@@ -161,32 +124,9 @@ namespace ProduceNegativeExamples
             return resultMap;
         }
 
-        /// <summary>
-        /// Collapses results from the same video into one entry
-        /// </summary>
-        /// <param name="treeResults"></param>
-        /// <returns></returns>
-        private static IDictionary<string, ISet<FrameWrapper>> CollapseTreeResults(IDictionary<FrameWrapper, int> treeResults)
-        {
-            var videoGroups = new Dictionary<string, ISet<FrameWrapper>>();
-            foreach (KeyValuePair<FrameWrapper, int> entry in treeResults)
-            {
-                ISet<FrameWrapper> bucket;
-                if (videoGroups.TryGetValue(entry.Key.Video.FilePath, out bucket) == false)
-                {
-                    bucket = new HashSet<FrameWrapper>();
-                    videoGroups.Add(entry.Key.Video.FilePath, bucket);
-                }
-
-                bucket.Add(entry.Key);
-            }
-
-            return videoGroups;
-        }
-
         private static VideoFingerPrintWrapper FindMostLikelyVideo(
             PhotoFingerPrintWrapper photo,
-            IDictionary<string, ISet<FrameWrapper>> treeResults,
+            IDictionary<string, ISet<FrameMetricWrapper>> treeResults,
             IDictionary<string, VideoFingerPrintWrapper> nameToVideoMap
         )
         {
@@ -197,21 +137,21 @@ namespace ProduceNegativeExamples
 
             double currentBestSSIM = 0.0;
             VideoFingerPrintWrapper currentBestVideo = null;
-            using (WritableLockBitImage photoAsLockBitImage = new WritableLockBitImage(Image.FromFile(photo.FilePath), false))
+            using (WritableLockBitImage photoAsLockBitImage = new WritableLockBitImage(Image.FromFile(photo.FilePath)))
             {
-                foreach (KeyValuePair<string, ISet<FrameWrapper>> videoFrameResults in treeResults)
+                foreach (KeyValuePair<string, ISet<FrameMetricWrapper>> videoFrameResults in treeResults)
                 {
-                    foreach (FrameWrapper frameWrapper in videoFrameResults.Value)
+                    foreach (FrameMetricWrapper FrameMetricWrapper in videoFrameResults.Value)
                     {
                         // Calculate SSIM
-                        using (WritableLockBitImage videoFrame = GetFrameFromVideo(frameWrapper.Video, frameWrapper.Frame.FrameNumber))
+                        using (WritableLockBitImage videoFrame = GetFrameFromVideo(FrameMetricWrapper.Video, FrameMetricWrapper.Frame.FrameNumber))
                         {
                             double possibleBestSSIM = SSIMCalculator.Compute(photoAsLockBitImage, videoFrame);
                             // SSIM must be at least good enough for us to consider
                             if (possibleBestSSIM > currentBestSSIM)
                             {
                                 currentBestSSIM = possibleBestSSIM;
-                                currentBestVideo = frameWrapper.Video;
+                                currentBestVideo = FrameMetricWrapper.Video;
                             }
                         }
                     }
@@ -269,23 +209,6 @@ namespace ProduceNegativeExamples
                 }
             }
         }
-
-        private static BKTree<FrameWrapper> CreateBKTree(VideoFingerPrintDatabaseMetaTableWrapper metatable)
-        {
-            var tree = new BKTree<FrameWrapper>();
-            foreach (VideoFingerPrintWrapper video in MetaTableUtils.EnumerateVideoFingerPrints(metatable))
-            {
-                foreach (FrameFingerPrintWrapper frame in video.FingerPrints)
-                {
-                    tree.Add(new FrameWrapper
-                    {
-                        Frame = frame,
-                        Video = video,
-                    });
-                }
-            }
-
-            return tree;
-        }
+        #endregion
     }
 }

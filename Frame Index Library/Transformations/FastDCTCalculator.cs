@@ -44,7 +44,7 @@ namespace FrameIndexLibrary
         /// </summary>
         /// <param name="sourceImage">The source image to find the DCT of</param>
         /// <returns>The DCT coefficients</returns>
-        public static double[,] Calculate(WritableLockBitImage sourceImage)
+        public static double[,] Transform(WritableLockBitImage sourceImage)
         {
             if (sourceImage.Width != sourceImage.Height)
             {
@@ -56,7 +56,7 @@ namespace FrameIndexLibrary
             {
                 for (int x = 0; x < sourceImage.Width; x++)
                 {
-                    // We only need the greyscale 
+                    // We only need the greyscale (luminance)
                     sourceMatrix[y, x] = sourceImage.GetPixel(x, y).R;
                 }
             }

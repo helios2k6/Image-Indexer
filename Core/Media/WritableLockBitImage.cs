@@ -58,10 +58,7 @@ namespace Core.Media
         {
             get
             {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException("Object already disposed");
-                }
+                ThrowIfDisposed();
                 return _width;
             }
         }
@@ -73,11 +70,32 @@ namespace Core.Media
         {
             get
             {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException("Object already disposed");
-                }
+                ThrowIfDisposed();
                 return _height;
+            }
+        }
+
+        /// <summary>
+        /// The horizontal resolution
+        /// </summary>
+        public float HorizontalResolution
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _bitmap.HorizontalResolution;
+            }
+        }
+
+        /// <summary>
+        /// The vertical resolution
+        /// </summary>
+        public float VerticalResolution
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _bitmap.VerticalResolution;
             }
         }
 
@@ -88,14 +106,23 @@ namespace Core.Media
         {
             get
             {
-                if (_disposed)
-                {
-                    throw new ObjectDisposedException("Object already disposed");
-                }
+                ThrowIfDisposed();
 
                 long bytesPerBit = (_bitDepth / 8);
                 long numberOfPixelsAndPadding = ((long)_bitmapData.Stride) * (Height);
                 return bytesPerBit * numberOfPixelsAndPadding;
+            }
+        }
+
+        /// <summary>
+        /// Get the pixel format of the image
+        /// </summary>
+        public PixelFormat PixelFormat
+        {
+            get
+            {
+                ThrowIfDisposed();
+                return _bitmap.PixelFormat;
             }
         }
         #endregion
@@ -106,8 +133,30 @@ namespace Core.Media
         /// of the internal data from the passed in WritableLockBitImage, with the exception
         /// of whether it was locked.
         /// </summary>
-        public WritableLockBitImage(WritableLockBitImage other) : this(other._bitmap)
+        public WritableLockBitImage(WritableLockBitImage other)
         {
+            _bitDepth = Image.GetPixelFormatSize(other.PixelFormat);
+            if (_bitDepth != 8 && _bitDepth != 24 && _bitDepth != 32)
+            {
+                throw new ArgumentException("Only 8, 24, and 32 bit pixels are supported.");
+            }
+            _width = other.Width;
+            _height = other.Height;
+            _disposed = _locked = false;
+            _bitmap = new Bitmap(Width, Height);
+            _bitmapData = _bitmap.LockBits(new Rectangle(0, 0, Width, Height),
+                ImageLockMode.ReadWrite,
+                other.PixelFormat
+            );
+
+            // Copy over bitmap data manually
+            for (int row = 0; row < Height; row++)
+            {
+                for (int col = 0; col < Width; col++)
+                {
+                    SetPixel(col, row, other.GetPixel(col, row));
+                }
+            }
         }
 
         /// <summary>
@@ -117,6 +166,11 @@ namespace Core.Media
         /// <param name="image">The image to use for this writable lockbit image</param>
         public WritableLockBitImage(Image image)
         {
+            _bitDepth = Image.GetPixelFormatSize(image.PixelFormat);
+            if (_bitDepth != 8 && _bitDepth != 24 && _bitDepth != 32)
+            {
+                throw new ArgumentException("Only 8, 24, and 32 bit pixels are supported.");
+            }
             _width = image.Width;
             _height = image.Height;
             _disposed = _locked = false;
@@ -126,12 +180,6 @@ namespace Core.Media
                 ImageLockMode.ReadWrite,
                 image.PixelFormat
             );
-
-            _bitDepth = Image.GetPixelFormatSize(image.PixelFormat);
-            if (_bitDepth != 8 && _bitDepth != 24 && _bitDepth != 32)
-            {
-                throw new ArgumentException("Only 8, 24, and 32 bit pixels are supported.");
-            }
         }
 
         /// <summary>
@@ -184,10 +232,7 @@ namespace Core.Media
         /// <returns>A color representing this pixel</returns>
         public Color GetPixel(int x, int y)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException("Object already disposed");
-            }
+            ThrowIfDisposed();
 
             if (x > Width || y > Height || x < 0 || y < 0)
             {
@@ -233,15 +278,8 @@ namespace Core.Media
         /// <param name="color"></param>
         public void SetPixel(int x, int y, Color color)
         {
-            if (_locked)
-            {
-                throw new InvalidOperationException("Cannot modify a locked image");
-            }
-
-            if (_disposed)
-            {
-                throw new ObjectDisposedException("Object already disposed");
-            }
+            ThrowIfLocked();
+            ThrowIfDisposed();
 
             if (x > Width || y > Height || x < 0 || y < 0)
             {
@@ -280,15 +318,8 @@ namespace Core.Media
         /// <param name="frameBuffer"></param>
         public void SetFrame(byte[] frameBuffer)
         {
-            if (_locked)
-            {
-                throw new InvalidOperationException("Cannote modify a locked image");
-            }
-
-            if (_disposed)
-            {
-                throw new ObjectDisposedException("Object already disposed");
-            }
+            ThrowIfLocked();
+            ThrowIfDisposed();
 
             if (_width * _height * (_bitDepth / 8) != frameBuffer.Length)
             {
@@ -307,6 +338,7 @@ namespace Core.Media
             {
                 return;
             }
+
             _locked = true;
             _bitmap.UnlockBits(_bitmapData);
         }
@@ -344,6 +376,24 @@ namespace Core.Media
             _disposed = true;
 
             _bitmap.Dispose();
+        }
+        #endregion
+
+        #region private methods
+        private void ThrowIfLocked()
+        {
+            if (_locked)
+            {
+                throw new InvalidOperationException("Object is locked");
+            }
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("Object is already disposed");
+            }
         }
         #endregion
     }

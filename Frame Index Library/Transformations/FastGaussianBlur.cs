@@ -21,38 +21,38 @@
 
 using Core.Media;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Numerics;
 
 namespace FrameIndexLibrary
 {
     internal static class FastGaussianBlur
     {
         #region public methods
-        public static WritableLockBitImage Calculate(
+        public static WritableLockBitImage Transform(
             WritableLockBitImage sourceImage,
             int radius = 3
         )
         {
-            return null;
+            using (var copyOfSourceImage = new WritableLockBitImage(sourceImage))
+            {
+                return PerformSplitBoxBlurAcc(copyOfSourceImage, radius);
+            }
         }
         #endregion
         #region private methods
-        private static void PerformSplitBoxBlurAcc(
+        private static WritableLockBitImage PerformSplitBoxBlurAcc(
             WritableLockBitImage sourceImage,
-            WritableLockBitImage outputImage,
             int radius
         )
         {
-            // Copy pixels from source to output
-            CopyPixels(sourceImage, outputImage);
+            WritableLockBitImage outputImage = new WritableLockBitImage(sourceImage);
 
             // The switching of outputImage and souceImage is INTENTIONAL!
             PerformHorizontalBoxBlurAcc(outputImage, sourceImage, radius);
             PerformTotalBoxBlurAcc(sourceImage, outputImage, radius);
+
+            return outputImage;
         }
 
         private static void PerformHorizontalBoxBlurAcc(WritableLockBitImage sourceImage, WritableLockBitImage outputImage, int radius)
@@ -159,17 +159,6 @@ namespace FrameIndexLibrary
             for (int index = 0; index < numBoxes; index++)
             {
                 yield return index < roundedIdealBoxLength ? widthL : widthU;
-            }
-        }
-
-        private static void CopyPixels(WritableLockBitImage sourceImage, WritableLockBitImage destImage)
-        {
-            for (int row = 0; row < sourceImage.Height; row++)
-            {
-                for (int col = 0; col < sourceImage.Width; col++)
-                {
-                    destImage.SetPixel(col, row, sourceImage.GetPixel(col, row));
-                }
             }
         }
 

@@ -20,6 +20,7 @@
  */
 
 using Core.Media;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace FrameIndexLibrary
@@ -41,35 +42,31 @@ namespace FrameIndexLibrary
         /// <returns>An indexed frame</returns>
         public static ulong IndexFrame(Image frame)
         {
-            using (Image resizedImage = ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth))
-            using (WritableLockBitImage resizedImageAsLockbit = new WritableLockBitImage(resizedImage))
+            using (WritableLockBitImage resizedImage = new WritableLockBitImage(ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth)))
+            using (WritableLockBitImage grayscaleImage = GreyScaleTransformation.TransformInPlace(resizedImage))
+            using (WritableLockBitImage blurredImage = FastGaussianBlur.Transform(grayscaleImage))
             {
-                GreyScaleTransformation.Transform(resizedImageAsLockbit);
-                double[,] dctMatrix = FastDCTCalculator.Calculate(resizedImageAsLockbit);
-                double averageGreyScaleValue = CalculateAverageOfDCT(dctMatrix);
-                return ConstructHashCode(dctMatrix, averageGreyScaleValue);
+                double[,] dctMatrix = FastDCTCalculator.Transform(blurredImage);
+                double medianOfDCTValue = CalculateMedianDCTValue(dctMatrix);
+                return ConstructHashCode(dctMatrix, medianOfDCTValue);
             }
         }
         #endregion
 
         #region private methods
-        private static double CalculateAverageOfDCT(double[,] dctMatrix)
+        private static double CalculateMedianDCTValue(double[,] dctMatrix)
         {
-            double runningSum = 0.0;
-            for (int y = 0; y < 8; y++)
+            var listOfDoubles = new List<double>(64);
+            for (int row = 0; row < 8; row++)
             {
-                for (int x = 0; x < 8; x++)
+                for (int col = 0; col < 8; col++)
                 {
-                    // Ignore the DC coefficient
-                    if (x == 0 && y == 0)
-                    {
-                        continue;
-                    }
-                    runningSum += dctMatrix[y, x];
+                    listOfDoubles.Add(dctMatrix[row, col]);
                 }
             }
 
-            return runningSum / 63.0;
+            listOfDoubles.Sort();
+            return listOfDoubles[32];
         }
 
         private static ulong ConstructHashCode(double[,] dctMatrix, double averageGreyScaleValue)

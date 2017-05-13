@@ -35,10 +35,11 @@ namespace FrameIndexLibrary
         /// Transform this image to a greyscale version in-place
         /// </summary>
         /// <remarks>This will transform the image INPLACE</remarks>
-        /// <returns>A black and white image</returns>
-        public static void Transform(WritableLockBitImage image)
+        /// <returns>A black and white image. This reference is equal to the input</returns>
+        public static WritableLockBitImage TransformInPlace(WritableLockBitImage image)
         {
             Transform(image, image);
+            return image;
         }
 
         /// <summary>
@@ -66,8 +67,8 @@ namespace FrameIndexLibrary
 
                     Color greyScale = Color.FromArgb(
                         greyColor,
-                        0,
-                        0
+                        greyColor,
+                        greyColor
                     );
                     output.SetPixel(x, y, greyScale);
                 }

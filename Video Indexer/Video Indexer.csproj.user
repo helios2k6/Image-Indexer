@@ -2,11 +2,10 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>
-    <StartArguments>--index --video "D:\Media\Videos" --database-metatable metatable.bin --threads 1 --max-memory 6291456</StartArguments>
+    <StartArguments>--search --photo "D:\photos\Danna %285%29.mkv_snapshot_01.48_[2017.05.13_15.18.05].png" --database-metatable metatable.bin</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>
-    <StartArguments>
-    </StartArguments>
+    <StartArguments>--index --video "D:\videos" --database-metatable metatable.bin --threads 1 --max-memory 6291456</StartArguments>
   </PropertyGroup>
 </Project>

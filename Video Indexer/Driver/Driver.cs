@@ -21,6 +21,7 @@
 
 using Core.DSA;
 using Core.Media;
+using Core.Metrics;
 using Core.Model.Serialization;
 using Core.Model.Wrappers;
 using Core.Modes;
@@ -282,40 +283,24 @@ namespace VideoIndexer.Driver
             {
                 ulong providedPhotoHash = FrameIndexer.IndexFrame(frame);
                 VideoFingerPrintDatabaseMetaTableWrapper metaTable = VideoFingerPrintDatabaseMetaTableLoader.Load(databaseMetaTablePath);
-                foreach (string databasePath in metaTable.DatabaseMetaTableEntries.Select(e => e.FileName))
+                BKTree<FrameMetricWrapper> bktree = ModelMetricUtils.CreateBKTree(metaTable);
+                IDictionary<FrameMetricWrapper, int> treeResults = bktree.Query(
+                    new PhotoMetricWrapper
+                    {
+                        Photo = new PhotoFingerPrintWrapper
+                        {
+                            FilePath = photoFilePath,
+                            PHash = providedPhotoHash,
+                        },
+                    },
+                    2
+                );
+
+                foreach (KeyValuePair<FrameMetricWrapper, int> kvp in treeResults.OrderBy(e => e.Value))
                 {
-                    VideoFingerPrintDatabaseWrapper database = VideoFingerPrintDatabaseLoader.Load(databasePath);
-                    Dictionary<int, HashSet<Tuple<string, int>>> distanceToFingerprints = new Dictionary<int, HashSet<Tuple<string, int>>>();
-                    foreach (var video in database.VideoFingerPrints)
-                    {
-                        foreach (var fingerPrint in video.FingerPrints)
-                        {
-                            int distance = DistanceCalculator.CalculateHammingDistance(providedPhotoHash, fingerPrint.PHashCode);
-
-                            HashSet<Tuple<string, int>> bucket;
-                            if (distanceToFingerprints.TryGetValue(distance, out bucket) == false)
-                            {
-                                bucket = new HashSet<Tuple<string, int>>();
-                                distanceToFingerprints.Add(distance, bucket);
-                            }
-
-                            bucket.Add(Tuple.Create(video.FilePath, fingerPrint.FrameNumber));
-                        }
-                    }
-
-                    var filteredDistances = from distanceToBucket in distanceToFingerprints
-                                            where distanceToBucket.Key <= 4
-                                            orderby distanceToBucket.Key
-                                            select distanceToBucket;
-
-                    foreach (KeyValuePair<int, HashSet<Tuple<string, int>>> kvp in filteredDistances)
-                    {
-                        int distance = kvp.Key;
-                        foreach (Tuple<string, int> entry in kvp.Value)
-                        {
-                            Console.WriteLine(string.Format("Distance {0} for {1} at Frame {2}", distance, entry.Item1, entry.Item2));
-                        }
-                    }
+                    FrameMetricWrapper frameWrapper = kvp.Key;
+                    int distance = kvp.Value;
+                    Console.WriteLine(string.Format("Distance {0} for {1} at Frame {2}", distance, frameWrapper.Video.FilePath, frameWrapper.Frame.FrameNumber));
                 }
             }
         }

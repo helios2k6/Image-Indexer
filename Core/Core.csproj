@@ -70,6 +70,9 @@
     <Compile Include="Media\SSIMCalculator.cs" />
     <Compile Include="Media\Track.cs" />
     <Compile Include="Media\WritableLockBitImage.cs" />
+    <Compile Include="Metrics\ModelMetricUtils.cs" />
+    <Compile Include="Metrics\PhotoMetricWrapper.cs" />
+    <Compile Include="Metrics\FrameMetricWrapper.cs" />
     <Compile Include="Model\Core\PhotoFingerPrint.cs" />
     <Compile Include="Model\Core\PhotoFingerPrintDatabase.cs" />
     <Compile Include="Model\Core\VideoFingerPrintDatabaseMetaTable.cs" />

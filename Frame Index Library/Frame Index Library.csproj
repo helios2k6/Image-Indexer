@@ -57,6 +57,7 @@
     <Compile Include="SharpFFT\RealDoubleFFT_Odd.cs" />
     <Compile Include="SharpFFT\RealDoubleFFT_Odd_Odd.cs" />
     <Compile Include="Transformations\FastDCTCalculator.cs" />
+    <Compile Include="Transformations\FastGaussianBlur.cs" />
     <Compile Include="Transformations\GreyScaleTransformation.cs" />
     <Compile Include="Transformations\ResizeTransformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
