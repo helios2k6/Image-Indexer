@@ -82,7 +82,6 @@ namespace ProduceNegativeExamples
 
         public static void Main(string[] args)
         {
-
             /* 
              * 1. Pull all images from the database
              * 2. Determine which anime they're all from
