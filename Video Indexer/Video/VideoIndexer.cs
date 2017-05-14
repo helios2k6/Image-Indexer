@@ -41,7 +41,7 @@ namespace VideoIndexer.Video
         /// </summary>
         /// <param name="videoFile"></param>
         /// <returns></returns>
-        public static VideoFingerPrintWrapper IndexVideo(string videoFile, CancellationToken cancellationToken, long maxMemory)
+        public static VideoFingerPrintWrapper IndexVideo(string videoFile, long maxMemory)
         {
             using (var mediaInfoProcess = new MediaInfoProcess(videoFile))
             {
@@ -54,7 +54,7 @@ namespace VideoIndexer.Video
                 return new VideoFingerPrintWrapper
                 {
                     FilePath = videoFile,
-                    FingerPrints = IndexVideo(videoFile, info, cancellationToken, maxMemory).ToArray(),
+                    FingerPrints = IndexVideo(videoFile, info, maxMemory).ToArray(),
                 };
             }
 
@@ -65,7 +65,6 @@ namespace VideoIndexer.Video
         private static IEnumerable<FrameFingerPrintWrapper> IndexVideo(
             string videoFile,
             MediaInfo info,
-            CancellationToken cancellationToken,
             long maxMemory
         )
         {
@@ -77,9 +76,9 @@ namespace VideoIndexer.Video
                 FFMPEGMode.PlaybackAtFourX
             );
 
-            using (var indexingPool = new VideoIndexingExecutor(4, cancellationToken, (long)Math.Round((3.0 * maxMemory) / 4.0)))
-            using (var byteStore = new RawByteStore(info.GetWidth(), info.GetHeight(), indexingPool, cancellationToken, (long)Math.Round(maxMemory / 4.0)))
-            using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, cancellationToken, (byteArray, bytesToSubmit) => { byteStore.Submit(byteArray, bytesToSubmit); }))
+            using (var indexingPool = new VideoIndexingExecutor(4, (long)Math.Round((3.0 * maxMemory) / 4.0)))
+            using (var byteStore = new RawByteStore(info.GetWidth(), info.GetHeight(), indexingPool, (long)Math.Round(maxMemory / 4.0)))
+            using (var ffmpegProcess = new FFMPEGProcess(ffmpegProcessSettings, (byteArray, bytesToSubmit) => { byteStore.Submit(byteArray, bytesToSubmit); }))
             {
                 ffmpegProcess.Execute();
 

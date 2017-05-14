@@ -43,7 +43,6 @@ namespace FFMPEGWrapper
 
         private readonly Process _process;
         private readonly FFMPEGProcessVideoSettings _settings;
-        private readonly CancellationToken _cancellationToken;
         private readonly Action<byte[], int> _byteChunkCallback;
         private readonly StringBuilder _stdErrorStream;
         private bool _shouldThrowOnErrorCode;
@@ -60,9 +59,8 @@ namespace FFMPEGWrapper
         /// <param name="settings">The process settings</param>
         public FFMPEGProcess(
             FFMPEGProcessVideoSettings settings,
-            CancellationToken cancellationToken,
             Action<byte[], int> byteChunkCallback
-        ) : this(settings, cancellationToken, byteChunkCallback, true)
+        ) : this(settings, byteChunkCallback, true)
         {
         }
 
@@ -75,13 +73,11 @@ namespace FFMPEGWrapper
         /// <param name="shouldThrowOnErrorCode">Whether this should throw when the ffmpeg process exits with an error code</param>
         public FFMPEGProcess(
             FFMPEGProcessVideoSettings settings,
-            CancellationToken cancellationToken,
             Action<byte[], int> byteChunkCallback,
             bool shouldThrowOnErrorCode
         )
         {
             _settings = settings;
-            _cancellationToken = cancellationToken;
             _process = new Process();
             _isDisposed = false;
             _hasStartedExecuting = false;
@@ -89,8 +85,6 @@ namespace FFMPEGWrapper
             _stdErrorStream = new StringBuilder();
             _byteChunkCallback = byteChunkCallback;
             _shouldThrowOnErrorCode = shouldThrowOnErrorCode;
-
-            _cancellationToken.Register(KillProcess);
         }
         #endregion
 
@@ -204,7 +198,7 @@ namespace FFMPEGWrapper
                     } while (bytesRead > 0);
                 }
 
-                stderr.Wait(_cancellationToken);
+                stderr.Wait();
                 _process.WaitForExit();
             }
             finally
@@ -212,7 +206,7 @@ namespace FFMPEGWrapper
                 _hasFinishedExecuting = true;
             }
 
-            if (_shouldThrowOnErrorCode && _process.ExitCode != 0 && _cancellationToken.IsCancellationRequested == false)
+            if (_shouldThrowOnErrorCode && _process.ExitCode != 0)
             {
                 throw new Exception("FFMPEG did not execute properly");
             }

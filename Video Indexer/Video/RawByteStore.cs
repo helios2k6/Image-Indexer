@@ -38,7 +38,6 @@ namespace VideoIndexer.Video
         private readonly BlockingCollection<byte[]> _rawByteQueue;
         private readonly VideoIndexingExecutor _videoIndexer;
         private readonly Task _queueTask;
-        private readonly CancellationToken _cancellationToken;
         private readonly long _maxCapacity;
         private readonly ManualResetEventSlim _capacityBarrier;
         #endregion
@@ -47,13 +46,12 @@ namespace VideoIndexer.Video
         #endregion
 
         #region ctor
-        public RawByteStore(int width, int height, VideoIndexingExecutor videoIndexer, CancellationToken cancellationToken, long maxCapacity)
+        public RawByteStore(int width, int height, VideoIndexingExecutor videoIndexer, long maxCapacity)
         {
             _disposed = false;
             _currentMemoryLevel = 0;
             _width = width;
             _height = height;
-            _cancellationToken = cancellationToken;
             _rawByteQueue = new BlockingCollection<byte[]>();
             _videoIndexer = videoIndexer;
             _queueTask = Task.Factory.StartNew(RunQueue);
@@ -83,15 +81,7 @@ namespace VideoIndexer.Video
             }
 
             // Wait until capacity is available or until the user hits the cancellation button
-            _capacityBarrier.Wait(_cancellationToken);
-
-            if (_cancellationToken.IsCancellationRequested)
-            {
-                // It's possible that someone cancelled this operation, but hasn't 
-                // shutdown producer threads. In that case, we'll forgive them and
-                // simply stop accepting bytes instead of throw an exception
-                return;
-            }
+            _capacityBarrier.Wait();
 
             byte[] copy = new byte[bytesToCopy];
             Buffer.BlockCopy(rawBytes, 0, copy, 0, bytesToCopy);
@@ -129,7 +119,7 @@ namespace VideoIndexer.Video
             int currentIndex = 0;
             try
             {
-                foreach (byte[] rawBytes in _rawByteQueue.GetConsumingEnumerable(_cancellationToken))
+                foreach (byte[] rawBytes in _rawByteQueue.GetConsumingEnumerable())
                 {
                     // Raw bytes don't overflow frame
                     if (rawBytes.Length < frameSize - currentIndex)

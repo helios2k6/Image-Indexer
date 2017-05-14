@@ -46,7 +46,6 @@ namespace VideoIndexer.Video
 
         private readonly BlockingCollection<WorkItem> _buffer;
         private readonly ConcurrentBag<FrameFingerPrintWrapper> _fingerPrints;
-        private readonly CancellationToken _cancellationToken;
         private readonly Task[] _workerThreads;
         private readonly int _numThreads;
         private readonly long _maxCapacity;
@@ -57,11 +56,10 @@ namespace VideoIndexer.Video
         #endregion
 
         #region ctor
-        public VideoIndexingExecutor(int numThreads, CancellationToken cancellationToken, long maxCapacity)
+        public VideoIndexingExecutor(int numThreads, long maxCapacity)
         {
             _disposed = false;
             _numThreads = numThreads;
-            _cancellationToken = cancellationToken;
             _buffer = new BlockingCollection<WorkItem>();
             _fingerPrints = new ConcurrentBag<FrameFingerPrintWrapper>();
             _workerThreads = new Task[_numThreads];
@@ -75,7 +73,7 @@ namespace VideoIndexer.Video
             }
         }
 
-        public VideoIndexingExecutor(CancellationToken cancellationToken, long maxCapacity) : this(DefaultWorkerCapacity, cancellationToken, maxCapacity)
+        public VideoIndexingExecutor(long maxCapacity) : this(DefaultWorkerCapacity, maxCapacity)
         {
         }
         #endregion
@@ -90,13 +88,7 @@ namespace VideoIndexer.Video
             }
 
             // Wait until capacity is available or until the user hits the cancellation button
-            _capacityBarrier.Wait(_cancellationToken);
-
-            if (_cancellationToken.IsCancellationRequested)
-            {
-                // Give slack to actors catching up
-                return;
-            }
+            _capacityBarrier.Wait();
 
             Interlocked.Add(ref _currentMemoryLevel, frame.MemorySize);
 
@@ -155,7 +147,7 @@ namespace VideoIndexer.Video
         {
             try
             {
-                foreach (WorkItem item in _buffer.GetConsumingEnumerable(_cancellationToken))
+                foreach (WorkItem item in _buffer.GetConsumingEnumerable())
                 {
                     using (WritableLockBitImage frame = item.Frame)
                     {

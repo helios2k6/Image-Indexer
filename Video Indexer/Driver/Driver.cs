@@ -20,7 +20,6 @@
  */
 
 using Core.DSA;
-using Core.Media;
 using Core.Metrics;
 using Core.Model.Serialization;
 using Core.Model.Wrappers;
@@ -33,7 +32,6 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using VideoIndex.Video;
 using VideoIndexer.Merger;
@@ -42,10 +40,6 @@ namespace VideoIndexer.Driver
 {
     internal static class Driver
     {
-        #region private fields
-        private static readonly CancellationTokenSource PanicButton = new CancellationTokenSource();
-        private static int CancelRequestedCount = 0;
-        #endregion
         #region enums
         private enum Mode
         {
@@ -65,8 +59,6 @@ namespace VideoIndexer.Driver
                 return;
             }
 
-            Console.CancelKeyPress += ConsoleCancelKeyPress;
-
             switch (GetMode(args))
             {
                 case Mode.CHECK:
@@ -84,22 +76,6 @@ namespace VideoIndexer.Driver
                 case Mode.UNKNOWN:
                     PrintHelp("Unknown mode.");
                     break;
-            }
-        }
-
-        private static void ConsoleCancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-            int incrementedValue = Interlocked.Increment(ref CancelRequestedCount);
-
-            if (incrementedValue < 1)
-            {
-                e.Cancel = true;
-                Console.WriteLine("Cancellation requested. Shutting down systems cleanly");
-                PanicButton.Cancel();
-            }
-            else
-            {
-                Console.WriteLine("Cancellation forced! Shutting down systems immediately");
             }
         }
         #endregion
@@ -160,11 +136,6 @@ namespace VideoIndexer.Driver
                     new ParallelOptions { MaxDegreeOfParallelism = numThreads },
                     videoPath =>
                     {
-                        if (PanicButton.IsCancellationRequested)
-                        {
-                            return;
-                        }
-
                         string fileName = Path.GetFileName(videoPath);
                         try
                         {
@@ -174,7 +145,7 @@ namespace VideoIndexer.Driver
                                 return;
                             }
 
-                            VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, PanicButton.Token, maxMemoryPerIndexJob);
+                            VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(videoPath, maxMemoryPerIndexJob);
                             store.AddFingerPrint(videoFingerPrint);
                         }
                         catch (InvalidOperationException e)
@@ -195,7 +166,7 @@ namespace VideoIndexer.Driver
                     Console.WriteLine("Attempting to hash skipped file: " + skippedFile);
                     try
                     {
-                        VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(skippedFile, PanicButton.Token, maxMemory);
+                        VideoFingerPrintWrapper videoFingerPrint = Video.VideoIndexer.IndexVideo(skippedFile, maxMemory);
                         store.AddFingerPrint(videoFingerPrint);
                     }
                     catch (InvalidOperationException)
@@ -348,7 +319,7 @@ namespace VideoIndexer.Driver
 
                 foreach (VideoFingerPrintWrapper videoFingerPrint in videoFingerPrints.Take(videoFingerPrintSampleCount))
                 {
-                    VideoFingerPrintWrapper actualVideoFingerPrint = Video.VideoIndexer.IndexVideo(videoFingerPrint.FilePath, PanicButton.Token, maxMemory);
+                    VideoFingerPrintWrapper actualVideoFingerPrint = Video.VideoIndexer.IndexVideo(videoFingerPrint.FilePath, maxMemory);
 
                     if (Equals(videoFingerPrint, actualVideoFingerPrint) == false)
                     {

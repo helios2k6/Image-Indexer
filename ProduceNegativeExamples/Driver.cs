@@ -31,7 +31,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Threading;
 
 namespace ProduceNegativeExamples
 {
@@ -187,7 +186,6 @@ namespace ProduceNegativeExamples
                 using (
                     var ffmpegProcess = new FFMPEGProcess(
                         ffmpegProcessSettings,
-                        CancellationToken.None,
                         (stdoutBytes, numBytes) =>
                         {
                             Buffer.BlockCopy(stdoutBytes, 0, frameBytes, offset, numBytes);
