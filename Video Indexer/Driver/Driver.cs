@@ -22,6 +22,7 @@
 using Core.DSA;
 using Core.Metrics;
 using Core.Model.Serialization;
+using Core.Model.Utils;
 using Core.Model.Wrappers;
 using Core.Modes;
 using FrameIndexLibrary;
@@ -49,6 +50,9 @@ namespace VideoIndexer.Driver
             COALESCE,
             UNKNOWN,
         }
+        #endregion
+        #region private fields
+        private const long DefaultMaxMemory = 4294967296; // 4 Gibibytes
         #endregion
         #region driver
         public static void Main(string[] args)
@@ -100,17 +104,10 @@ namespace VideoIndexer.Driver
                 int.TryParse(numThreadsArg, out numThreads);
             }
 
-            if (string.IsNullOrWhiteSpace(maxMemoryArg))
-            {
-                PrintHelp("--max-memory must be set");
-                return;
-            }
-
             long maxMemory = 0;
             if (long.TryParse(maxMemoryArg, out maxMemory) == false)
             {
-                PrintHelp("--max-memory could not be parsed");
-                return;
+                maxMemory = DefaultMaxMemory;
             }
 
             if (maxMemory <= 0)

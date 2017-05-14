@@ -36,11 +36,33 @@ namespace FrameIndexLibrary
 
         #region public methods
         /// <summary>
-        /// Convienece method for indexing just 1 frame
+        /// Indexes a single frame
         /// </summary>
         /// <param name="frame">The frame to index</param>
         /// <returns>An indexed frame</returns>
         public static ulong IndexFrame(Image frame)
+        {
+            return IndexFrameMethodOne(frame);
+        }
+        #endregion
+
+        #region private methods
+        private static ulong IndexFrameMethodTwo(Image frame)
+        {
+            using (WritableLockBitImage grayscaleImage = GreyScaleTransformation.TransformInPlace(new WritableLockBitImage(frame)))
+            using (WritableLockBitImage blurredImage = BoxBlur.Transform(grayscaleImage, 3))
+            {
+                blurredImage.Lock();
+                using (WritableLockBitImage resizedImage = new WritableLockBitImage(ResizeTransformation.Transform(blurredImage.GetImage(), FingerPrintWidth, FingerPrintWidth)))
+                {
+                    double[,] dctMatrix = FastDCTCalculator.Transform(resizedImage);
+                    double medianOfDCTValue = CalculateMedianDCTValue(dctMatrix);
+                    return ConstructHashCode(dctMatrix, medianOfDCTValue);
+                }
+            }
+        }
+
+        private static ulong IndexFrameMethodOne(Image frame)
         {
             using (WritableLockBitImage resizedImage = new WritableLockBitImage(ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth)))
             using (WritableLockBitImage grayscaleImage = GreyScaleTransformation.TransformInPlace(resizedImage))
@@ -51,9 +73,7 @@ namespace FrameIndexLibrary
                 return ConstructHashCode(dctMatrix, medianOfDCTValue);
             }
         }
-        #endregion
 
-        #region private methods
         private static double CalculateMedianDCTValue(double[,] dctMatrix)
         {
             var listOfDoubles = new List<double>(64);

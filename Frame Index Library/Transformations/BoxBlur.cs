@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  * Copyright (c) 2015 Andrew Johnson
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,74 +21,29 @@
 
 using Core.Media;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 
 namespace FrameIndexLibrary
 {
-    internal static class FastGaussianBlur
+    internal static class BoxBlur
     {
         #region public methods
         public static WritableLockBitImage Transform(
             WritableLockBitImage sourceImage,
-            int radius = 3
+            int windowSize
         )
         {
-            using (var copyOfSourceImage = new WritableLockBitImage(sourceImage))
-            {
-                WritableLockBitImage outputImage = new WritableLockBitImage(sourceImage.Width, sourceImage.Height);
-                int index = 0;
-                foreach (int boxWidth in EnumerateBoxesForGauss(radius, 3))
-                {
-                    if (index % 2 == 0)
-                    {
-                        PerformSplitBoxBlurAcc(copyOfSourceImage, outputImage, (boxWidth - 1) / 2);
-                    }
-                    else
-                    {
-                        // Switching of outputImage and copyOfSourceImage is INTENTIONAL!
-                        PerformSplitBoxBlurAcc(outputImage, copyOfSourceImage, (boxWidth - 1) / 2);
-                    }
-                    index++;
-                }
-
-                return outputImage;
-            }
+            return PerformSplitBoxBlurAcc(sourceImage, windowSize / 2);
         }
         #endregion
+
         #region private methods
-        /// <summary>
-        /// Calculates the boxes needed for a gaussian blur. Taken from: http://blog.ivank.net/fastest-gaussian-blur.html
-        /// Based off of: http://www.peterkovesi.com/papers/FastGaussianSmoothing.pdf 
-        /// </summary>
-        private static IEnumerable<int> EnumerateBoxesForGauss(int stdDeviation, int numBoxes)
-        {
-            double widthIdeal = Math.Sqrt((12 * stdDeviation * stdDeviation / numBoxes) + 1);  // Ideal averaging filter width 
-            int widthL = (int)Math.Floor(widthIdeal);
-
-            if (widthL % 2 == 0)
-            {
-                widthL--;
-            };
-
-            int widthU = widthL + 2;
-            double mIdeal = (12 * stdDeviation * stdDeviation - numBoxes * widthL * widthL - 4 * numBoxes * widthL - 3 * numBoxes)
-                / (-4 * widthL - 4);
-            int roundedIdealBoxLength = (int)Math.Round(mIdeal);
-            for (int index = 0; index < numBoxes; index++)
-            {
-                yield return index < roundedIdealBoxLength ? widthL : widthU;
-            }
-        }
-
         private static WritableLockBitImage PerformSplitBoxBlurAcc(
             WritableLockBitImage sourceImage,
-            WritableLockBitImage outputImage,
             int radius
         )
         {
-            // Must copy pixels from source to output
-            CopyPixels(sourceImage, outputImage);
+            var outputImage = new WritableLockBitImage(sourceImage);
 
             // The switching of outputImage and souceImage is INTENTIONAL!
             PerformHorizontalBoxBlurAcc(outputImage, sourceImage, radius);
@@ -253,17 +208,6 @@ namespace FrameIndexLibrary
                             (int)Math.Round(cumBlueValue * iarr)
                         )
                     );
-                }
-            }
-        }
-
-        private static void CopyPixels(WritableLockBitImage sourceImage, WritableLockBitImage destImage)
-        {
-            for (int row = 0; row < sourceImage.Height; row++)
-            {
-                for (int col = 0; col < sourceImage.Width; col++)
-                {
-                    destImage.SetPixel(col, row, sourceImage.GetPixel(col, row));
                 }
             }
         }

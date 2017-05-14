@@ -87,7 +87,7 @@ namespace VideoIndexer.Video
                 throw new ObjectDisposedException("this");
             }
 
-            // Wait until capacity is available or until the user hits the cancellation button
+            // Wait until capacity is available
             _capacityBarrier.Wait();
 
             Interlocked.Add(ref _currentMemoryLevel, frame.MemorySize);
