@@ -47,7 +47,8 @@ namespace FrameIndexLibrary
         /// </summary>
         /// <param name="source">The source image</param>
         /// <param name="output">The image to write to</param>
-        public static void Transform(WritableLockBitImage source, WritableLockBitImage output)
+        /// <returns>The output writable lockbit image</returns>
+        public static WritableLockBitImage Transform(WritableLockBitImage source, WritableLockBitImage output)
         {
             if (source.Locked || output.Locked)
             {
@@ -73,6 +74,8 @@ namespace FrameIndexLibrary
                     output.SetPixel(x, y, greyScale);
                 }
             }
+
+            return output;
         }
         #endregion
     }

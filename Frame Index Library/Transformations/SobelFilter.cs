@@ -21,44 +21,141 @@
 
 using Core.Media;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 
 namespace FrameIndexLibrary
 {
+    /// <summary>
+    /// Performs the Sobel Filter on a given image
+    /// </summary>
+    /// <remarks>
+    /// Implementation from https://en.wikipedia.org/wiki/Sobel_operator with tips from 
+    /// https://github.com/petermlm/SobelFilter/blob/master/src/sobel.c
+    /// </remarks>
     internal static class SobelFilter
     {
         #region private fields
+        private static int[] HorizontalMatrixStep1 = { 1, 0, -1 };
+
+        private static int[] HorizontalMatrixStep2 = { 1, 2, 1 };
+
+        private static int[] VerticalMatrixStep1 = { 1, 2, 1 };
+
+        private static int[] VerticalMatrixStep2 = { 1, 0, -1 };
         #endregion
 
         #region public methods
-        public static WritableLockBitImage Transform(WritableLockBitImage sourceImage)
+        /// <summary>
+        /// Performs the Sobel Filter on the given gray scale image
+        /// </summary>
+        /// <param name="grayScaleImage"></param>
+        /// <returns></returns>
+        public static WritableLockBitImage TransformWithGrayScaleImage(WritableLockBitImage grayScaleImage)
         {
-            return null;
+            return ApplySobelFilter(grayScaleImage);
         }
         #endregion
 
         #region private methods
-        private static int Convolute(int[,] sourceMatrix, int[,] filter)
+        private static WritableLockBitImage ApplySobelFilter(WritableLockBitImage sourceImage)
         {
-            if (sourceMatrix.GetLength(0) != filter.GetLength(0) || sourceMatrix.GetLength(1) != filter.GetLength(1))
-            {
-                throw new ArgumentException("Cannot convolute two matrices if they are not the same width and height");
-            }
+            return CalculateContour(
+                CalculateHorizontalSobelMatrix(sourceImage),
+                CalculateVerticalSobelMatrix(sourceImage),
+                sourceImage.Width,
+                sourceImage.Height
+             );
+        }
 
-            int numRows = sourceMatrix.GetLength(0);
-            int numCols = sourceMatrix.GetLength(1);
-            int sum = 0;
-            // Reference: https://en.wikipedia.org/wiki/Kernel_(image_processing)#Convolution
-            for (int row = 0; row < numRows; row++)
+        private static WritableLockBitImage CalculateContour(int[] horizontalMatrix, int[] verticalMatrix, int width, int height)
+        {
+            WritableLockBitImage outputImage = new WritableLockBitImage(width, height);
+            for (int row = 0; row < height; row++)
             {
-                for (int col = 0; col < numCols; col++)
+                for (int col = 0; col < width; col++)
                 {
-                    sum += sourceMatrix[row, col] * filter[numRows - row - 1, numCols - col - 1];
+                    int horizontalValue = horizontalMatrix[row * width + col];
+                    int verticalValue = verticalMatrix[row * width + col];
+                    byte pixelValue = (byte)Math.Round(Math.Sqrt(
+                        (horizontalValue * horizontalValue) +
+                        (verticalValue * verticalValue)
+                    ));
+
+                    outputImage.SetPixel(col, row, Color.FromArgb(pixelValue, pixelValue, pixelValue));
+                }
+            }
+            return outputImage;
+        }
+
+        private static int[] CalculateHorizontalSobelMatrix(WritableLockBitImage sourceImage)
+        {
+            return CoreCalculateSobelMatrix(sourceImage, HorizontalMatrixStep1, HorizontalMatrixStep2);
+        }
+
+        private static int[] CalculateVerticalSobelMatrix(WritableLockBitImage sourceImage)
+        {
+            return CoreCalculateSobelMatrix(sourceImage, VerticalMatrixStep1, VerticalMatrixStep2);
+        }
+
+        private static int[] CoreCalculateSobelMatrix(WritableLockBitImage sourceImage, int[] firstKernel, int[] secondKernel)
+        {
+            // Go through each pixel in the source image
+            int[] intermediateResult = new int[sourceImage.Height * sourceImage.Width];
+            int[] inputBuffer = new int[3];
+            int width = sourceImage.Width;
+            for (int row = 0; row < sourceImage.Height; row++)
+            {
+                for (int col = 0; col < sourceImage.Width; col++)
+                {
+                    // Set the input buffer
+                    inputBuffer[0] = col > 0 ? sourceImage.GetPixel(col - 1, row).R : 0;
+                    inputBuffer[1] = sourceImage.GetPixel(col, row).R;
+                    inputBuffer[2] = col < sourceImage.Width - 1 ? sourceImage.GetPixel(col + 1, row).R : 0;
+
+                    // Convolute it with the horizontal vector
+                    intermediateResult[row * width + col] = ConvoluteOneDimensionalVector(inputBuffer, firstKernel);
                 }
             }
 
-            return sum;
+            // Go through each result in the intermediate result
+            int[] finalMatrix = new int[sourceImage.Height * sourceImage.Width];
+            for (int row = 0; row < sourceImage.Height; row++)
+            {
+                for (int col = 0; col < sourceImage.Width; col++)
+                {
+                    // Set input buffer
+                    inputBuffer[0] = row > 0 ? intermediateResult[((row - 1) * width) + col] : 0;
+                    inputBuffer[1] = intermediateResult[row * width + col];
+                    inputBuffer[2] = row < sourceImage.Height - 1 ? intermediateResult[((row + 1) * width) + col] : 0;
+
+                    // Convolute it with the second horizontal vector
+                    finalMatrix[row * width + col] = ConvoluteOneDimensionalVector(inputBuffer, secondKernel);
+                }
+            }
+
+            return finalMatrix;
+        }
+
+        /// <summary>
+        /// Convolutes the two 1-dimensional vectors, assuming that the kernel matrix is centered on top of the input matrix
+        /// </summary>
+        /// <param name="inputMatrix"></param>
+        /// <param name="kernel"></param>
+        /// <returns></returns>
+        private static int ConvoluteOneDimensionalVector(int[] inputMatrix, int[] kernel)
+        {
+            if (inputMatrix.Length != kernel.Length)
+            {
+                throw new ArgumentException("Dimensions of input matrix and kernel matrix are not equal");
+            }
+
+            int acc = 0;
+            for (int pixel = 0; pixel < inputMatrix.Length; pixel++)
+            {
+                acc += inputMatrix[pixel] * kernel[kernel.Length - pixel - 1];
+            }
+
+            return acc;
         }
         #endregion
     }
