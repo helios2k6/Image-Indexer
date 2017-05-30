@@ -112,7 +112,7 @@ namespace FrameIndexLibrary
                     inputBuffer[1] = sourceImage.GetPixel(col, row).R;
                     inputBuffer[2] = col < sourceImage.Width - 1 ? sourceImage.GetPixel(col + 1, row).R : 0;
 
-                    // Convolute it with the horizontal vector
+                    // Convolute it with the vector
                     intermediateResult[row * width + col] = ConvoluteOneDimensionalVector(inputBuffer, firstKernel);
                 }
             }
@@ -128,7 +128,7 @@ namespace FrameIndexLibrary
                     inputBuffer[1] = intermediateResult[row * width + col];
                     inputBuffer[2] = row < sourceImage.Height - 1 ? intermediateResult[((row + 1) * width) + col] : 0;
 
-                    // Convolute it with the second horizontal vector
+                    // Convolute it with the second vector
                     finalMatrix[row * width + col] = ConvoluteOneDimensionalVector(inputBuffer, secondKernel);
                 }
             }
