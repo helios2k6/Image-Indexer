@@ -35,13 +35,13 @@ namespace FrameIndexLibrary
     internal static class SobelFilter
     {
         #region private fields
-        private static int[] HorizontalMatrixStep1 = { 1, 0, -1 };
+        private static readonly int[] HorizontalMatrixStep1 = { 1, 0, -1 };
 
-        private static int[] HorizontalMatrixStep2 = { 1, 2, 1 };
+        private static readonly int[] HorizontalMatrixStep2 = { 1, 2, 1 };
 
-        private static int[] VerticalMatrixStep1 = { 1, 2, 1 };
+        private static readonly int[] VerticalMatrixStep1 = { 1, 2, 1 };
 
-        private static int[] VerticalMatrixStep2 = { 1, 0, -1 };
+        private static readonly int[] VerticalMatrixStep2 = { 1, 0, -1 };
         #endregion
 
         #region public methods
