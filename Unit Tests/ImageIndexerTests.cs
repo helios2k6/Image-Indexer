@@ -20,7 +20,6 @@
  */
 
 using Core.DSA;
-using Core.Media;
 using FrameIndexLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Drawing;
