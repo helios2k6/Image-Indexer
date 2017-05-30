@@ -55,7 +55,7 @@ namespace UnitTests
                 ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
                 int distance = DistanceCalculator.CalculateHammingDistance(fingerPrint1, fingerPrint2);
 
-                Assert.AreEqual(3, distance);
+                Assert.AreEqual(0, distance);
             }
         }
 
@@ -69,7 +69,7 @@ namespace UnitTests
                 ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
                 int distance = DistanceCalculator.CalculateHammingDistance(fingerPrint1, fingerPrint2);
 
-                Assert.AreEqual(8, distance);
+                Assert.AreEqual(10, distance);
             }
         }
     }

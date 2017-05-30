@@ -232,6 +232,7 @@ namespace Core.Media
         /// <returns>A color representing this pixel</returns>
         public Color GetPixel(int x, int y)
         {
+            ThrowIfLocked();
             ThrowIfDisposed();
 
             if (x > Width || y > Height || x < 0 || y < 0)
