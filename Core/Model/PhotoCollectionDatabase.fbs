@@ -4,6 +4,7 @@ table PhotoFingerPrint
 {
     filePath:string;
     phash:ulong;
+    edgeGrayScaleThumb:[byte];
 }
 
 table PhotoFingerPrintDatabase

@@ -21,6 +21,7 @@
 
 using Core;
 using Core.Model.Wrappers;
+using Core.Utils;
 using FlatBuffers;
 using System;
 using System.Collections.Generic;
@@ -80,7 +81,7 @@ namespace Core.Model.Serialization
         private static PhotoFingerPrintDatabaseWrapper Convert(PhotoFingerPrintDatabase database)
         {
             IEnumerable<PhotoFingerPrintWrapper> fingerPrints = from i in Enumerable.Range(0, database.FingerPrintsLength)
-                                                                select Convert(database.GetFingerPrints(i));
+                                                                select Convert(database.FingerPrints(i));
 
             return new PhotoFingerPrintDatabaseWrapper
             {
@@ -88,12 +89,13 @@ namespace Core.Model.Serialization
             };
         }
 
-        private static PhotoFingerPrintWrapper Convert(PhotoFingerPrint fingerPrint)
+        private static PhotoFingerPrintWrapper Convert(PhotoFingerPrint? fingerPrint)
         {
+            PhotoFingerPrint fingerPrintNotNull = TypeUtils.NullThrows(fingerPrint);
             return new PhotoFingerPrintWrapper
             {
-                FilePath = fingerPrint.FilePath,
-                PHash = fingerPrint.Phash,
+                FilePath = fingerPrintNotNull.FilePath,
+                PHash = fingerPrintNotNull.Phash,
             };
         }
         #endregion

@@ -6,29 +6,40 @@ namespace Core
     using System;
     using FlatBuffers;
 
-    internal sealed class PhotoFingerPrint : Table
+    internal struct PhotoFingerPrint : IFlatbufferObject
     {
+        private Table __p;
+        public ByteBuffer ByteBuffer { get { return __p.bb; } }
         public static PhotoFingerPrint GetRootAsPhotoFingerPrint(ByteBuffer _bb) { return GetRootAsPhotoFingerPrint(_bb, new PhotoFingerPrint()); }
-        public static PhotoFingerPrint GetRootAsPhotoFingerPrint(ByteBuffer _bb, PhotoFingerPrint obj) { return (obj.__init(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-        public PhotoFingerPrint __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; return this; }
+        public static PhotoFingerPrint GetRootAsPhotoFingerPrint(ByteBuffer _bb, PhotoFingerPrint obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+        public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+        public PhotoFingerPrint __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-        public string FilePath { get { int o = __offset(4); return o != 0 ? __string(o + bb_pos) : null; } }
-        public ArraySegment<byte>? GetFilePathBytes() { return __vector_as_arraysegment(4); }
-        public ulong Phash { get { int o = __offset(6); return o != 0 ? bb.GetUlong(o + bb_pos) : (ulong)0; } }
+        public string FilePath { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+        public ArraySegment<byte>? GetFilePathBytes() { return __p.__vector_as_arraysegment(4); }
+        public ulong Phash { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+        public sbyte EdgeGrayScaleThumb(int j) { int o = __p.__offset(8); return o != 0 ? __p.bb.GetSbyte(__p.__vector(o) + j * 1) : (sbyte)0; }
+        public int EdgeGrayScaleThumbLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
+        public ArraySegment<byte>? GetEdgeGrayScaleThumbBytes() { return __p.__vector_as_arraysegment(8); }
 
         public static Offset<PhotoFingerPrint> CreatePhotoFingerPrint(FlatBufferBuilder builder,
             StringOffset filePathOffset = default(StringOffset),
-            ulong phash = 0)
+            ulong phash = 0,
+            VectorOffset edgeGrayScaleThumbOffset = default(VectorOffset))
         {
-            builder.StartObject(2);
+            builder.StartObject(3);
             PhotoFingerPrint.AddPhash(builder, phash);
+            PhotoFingerPrint.AddEdgeGrayScaleThumb(builder, edgeGrayScaleThumbOffset);
             PhotoFingerPrint.AddFilePath(builder, filePathOffset);
             return PhotoFingerPrint.EndPhotoFingerPrint(builder);
         }
 
-        public static void StartPhotoFingerPrint(FlatBufferBuilder builder) { builder.StartObject(2); }
+        public static void StartPhotoFingerPrint(FlatBufferBuilder builder) { builder.StartObject(3); }
         public static void AddFilePath(FlatBufferBuilder builder, StringOffset filePathOffset) { builder.AddOffset(0, filePathOffset.Value, 0); }
         public static void AddPhash(FlatBufferBuilder builder, ulong phash) { builder.AddUlong(1, phash, 0); }
+        public static void AddEdgeGrayScaleThumb(FlatBufferBuilder builder, VectorOffset edgeGrayScaleThumbOffset) { builder.AddOffset(2, edgeGrayScaleThumbOffset.Value, 0); }
+        public static VectorOffset CreateEdgeGrayScaleThumbVector(FlatBufferBuilder builder, sbyte[] data) { builder.StartVector(1, data.Length, 1); for (int i = data.Length - 1; i >= 0; i--) builder.AddSbyte(data[i]); return builder.EndVector(); }
+        public static void StartEdgeGrayScaleThumbVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(1, numElems, 1); }
         public static Offset<PhotoFingerPrint> EndPhotoFingerPrint(FlatBufferBuilder builder)
         {
             int o = builder.EndObject();

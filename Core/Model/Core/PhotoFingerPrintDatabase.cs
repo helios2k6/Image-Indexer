@@ -6,15 +6,17 @@ namespace Core
     using System;
     using FlatBuffers;
 
-    internal sealed class PhotoFingerPrintDatabase : Table
+    internal struct PhotoFingerPrintDatabase : IFlatbufferObject
     {
+        private Table __p;
+        public ByteBuffer ByteBuffer { get { return __p.bb; } }
         public static PhotoFingerPrintDatabase GetRootAsPhotoFingerPrintDatabase(ByteBuffer _bb) { return GetRootAsPhotoFingerPrintDatabase(_bb, new PhotoFingerPrintDatabase()); }
-        public static PhotoFingerPrintDatabase GetRootAsPhotoFingerPrintDatabase(ByteBuffer _bb, PhotoFingerPrintDatabase obj) { return (obj.__init(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-        public PhotoFingerPrintDatabase __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; return this; }
+        public static PhotoFingerPrintDatabase GetRootAsPhotoFingerPrintDatabase(ByteBuffer _bb, PhotoFingerPrintDatabase obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+        public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+        public PhotoFingerPrintDatabase __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-        public PhotoFingerPrint GetFingerPrints(int j) { return GetFingerPrints(new PhotoFingerPrint(), j); }
-        public PhotoFingerPrint GetFingerPrints(PhotoFingerPrint obj, int j) { int o = __offset(4); return o != 0 ? obj.__init(__indirect(__vector(o) + j * 4), bb) : null; }
-        public int FingerPrintsLength { get { int o = __offset(4); return o != 0 ? __vector_len(o) : 0; } }
+        public PhotoFingerPrint? FingerPrints(int j) { int o = __p.__offset(4); return o != 0 ? (PhotoFingerPrint?)(new PhotoFingerPrint()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+        public int FingerPrintsLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
 
         public static Offset<PhotoFingerPrintDatabase> CreatePhotoFingerPrintDatabase(FlatBufferBuilder builder,
             VectorOffset FingerPrintsOffset = default(VectorOffset))

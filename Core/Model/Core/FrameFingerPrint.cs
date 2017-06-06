@@ -6,28 +6,39 @@ namespace Core
     using System;
     using FlatBuffers;
 
-    internal sealed class FrameFingerPrint : Table
+    internal struct FrameFingerPrint : IFlatbufferObject
     {
+        private Table __p;
+        public ByteBuffer ByteBuffer { get { return __p.bb; } }
         public static FrameFingerPrint GetRootAsFrameFingerPrint(ByteBuffer _bb) { return GetRootAsFrameFingerPrint(_bb, new FrameFingerPrint()); }
-        public static FrameFingerPrint GetRootAsFrameFingerPrint(ByteBuffer _bb, FrameFingerPrint obj) { return (obj.__init(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-        public FrameFingerPrint __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; return this; }
+        public static FrameFingerPrint GetRootAsFrameFingerPrint(ByteBuffer _bb, FrameFingerPrint obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+        public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+        public FrameFingerPrint __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-        public int FrameNumber { get { int o = __offset(4); return o != 0 ? bb.GetInt(o + bb_pos) : (int)0; } }
-        public ulong PHash { get { int o = __offset(6); return o != 0 ? bb.GetUlong(o + bb_pos) : (ulong)0; } }
+        public int FrameNumber { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+        public ulong PHash { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
+        public byte EdgeGrayScaleThumb(int j) { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(__p.__vector(o) + j * 1) : (byte)0; }
+        public int EdgeGrayScaleThumbLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
+        public ArraySegment<byte>? GetEdgeGrayScaleThumbBytes() { return __p.__vector_as_arraysegment(8); }
 
         public static Offset<FrameFingerPrint> CreateFrameFingerPrint(FlatBufferBuilder builder,
             int frameNumber = 0,
-            ulong pHash = 0)
+            ulong pHash = 0,
+            VectorOffset edgeGrayScaleThumbOffset = default(VectorOffset))
         {
-            builder.StartObject(2);
+            builder.StartObject(3);
             FrameFingerPrint.AddPHash(builder, pHash);
+            FrameFingerPrint.AddEdgeGrayScaleThumb(builder, edgeGrayScaleThumbOffset);
             FrameFingerPrint.AddFrameNumber(builder, frameNumber);
             return FrameFingerPrint.EndFrameFingerPrint(builder);
         }
 
-        public static void StartFrameFingerPrint(FlatBufferBuilder builder) { builder.StartObject(2); }
+        public static void StartFrameFingerPrint(FlatBufferBuilder builder) { builder.StartObject(3); }
         public static void AddFrameNumber(FlatBufferBuilder builder, int frameNumber) { builder.AddInt(0, frameNumber, 0); }
         public static void AddPHash(FlatBufferBuilder builder, ulong pHash) { builder.AddUlong(1, pHash, 0); }
+        public static void AddEdgeGrayScaleThumb(FlatBufferBuilder builder, VectorOffset edgeGrayScaleThumbOffset) { builder.AddOffset(2, edgeGrayScaleThumbOffset.Value, 0); }
+        public static VectorOffset CreateEdgeGrayScaleThumbVector(FlatBufferBuilder builder, byte[] data) { builder.StartVector(1, data.Length, 1); for (int i = data.Length - 1; i >= 0; i--) builder.AddByte(data[i]); return builder.EndVector(); }
+        public static void StartEdgeGrayScaleThumbVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(1, numElems, 1); }
         public static Offset<FrameFingerPrint> EndFrameFingerPrint(FlatBufferBuilder builder)
         {
             int o = builder.EndObject();

@@ -6,15 +6,17 @@ namespace Core
     using System;
     using FlatBuffers;
 
-    internal sealed class VideoFingerPrintDatabase : Table
+    internal struct VideoFingerPrintDatabase : IFlatbufferObject
     {
+        private Table __p;
+        public ByteBuffer ByteBuffer { get { return __p.bb; } }
         public static VideoFingerPrintDatabase GetRootAsVideoFingerPrintDatabase(ByteBuffer _bb) { return GetRootAsVideoFingerPrintDatabase(_bb, new VideoFingerPrintDatabase()); }
-        public static VideoFingerPrintDatabase GetRootAsVideoFingerPrintDatabase(ByteBuffer _bb, VideoFingerPrintDatabase obj) { return (obj.__init(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-        public VideoFingerPrintDatabase __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; return this; }
+        public static VideoFingerPrintDatabase GetRootAsVideoFingerPrintDatabase(ByteBuffer _bb, VideoFingerPrintDatabase obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+        public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+        public VideoFingerPrintDatabase __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-        public VideoFingerPrint GetVideoFingerPrints(int j) { return GetVideoFingerPrints(new VideoFingerPrint(), j); }
-        public VideoFingerPrint GetVideoFingerPrints(VideoFingerPrint obj, int j) { int o = __offset(4); return o != 0 ? obj.__init(__indirect(__vector(o) + j * 4), bb) : null; }
-        public int VideoFingerPrintsLength { get { int o = __offset(4); return o != 0 ? __vector_len(o) : 0; } }
+        public VideoFingerPrint? VideoFingerPrints(int j) { int o = __p.__offset(4); return o != 0 ? (VideoFingerPrint?)(new VideoFingerPrint()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+        public int VideoFingerPrintsLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
 
         public static Offset<VideoFingerPrintDatabase> CreateVideoFingerPrintDatabase(FlatBufferBuilder builder,
             VectorOffset videoFingerPrintsOffset = default(VectorOffset))

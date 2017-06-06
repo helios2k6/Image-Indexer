@@ -20,6 +20,7 @@
  */
 
 using Core.Model.Wrappers;
+using Core.Utils;
 using FlatBuffers;
 using System;
 using System.Collections.Generic;
@@ -80,30 +81,32 @@ namespace Core.Model.Serialization
         private static VideoFingerPrintDatabaseWrapper Convert(VideoFingerPrintDatabase database)
         {
             IEnumerable<VideoFingerPrintWrapper> videoFingerPrints = from i in Enumerable.Range(0, database.VideoFingerPrintsLength)
-                                                                     select Convert(database.GetVideoFingerPrints(i));
+                                                                     select Convert(database.VideoFingerPrints(i));
             return new VideoFingerPrintDatabaseWrapper
             {
                 VideoFingerPrints = videoFingerPrints.ToArray(),
             };
         }
 
-        private static VideoFingerPrintWrapper Convert(VideoFingerPrint videoFingerPrint)
+        private static VideoFingerPrintWrapper Convert(VideoFingerPrint? videoFingerPrint)
         {
-            IEnumerable<FrameFingerPrintWrapper> frameFingerPrints = from i in Enumerable.Range(0, videoFingerPrint.FrameFingerPrintsLength)
-                                                                     select Convert(videoFingerPrint.GetFrameFingerPrints(i));
+            VideoFingerPrint videoFingerPrintNotNull = TypeUtils.NullThrows(videoFingerPrint);
+            IEnumerable<FrameFingerPrintWrapper> frameFingerPrints = from i in Enumerable.Range(0, videoFingerPrintNotNull.FrameFingerPrintsLength)
+                                                                     select Convert(videoFingerPrintNotNull.FrameFingerPrints(i));
             return new VideoFingerPrintWrapper
             {
-                FilePath = videoFingerPrint.FilePath,
+                FilePath = videoFingerPrintNotNull.FilePath,
                 FingerPrints = frameFingerPrints.ToArray(),
             };
         }
 
-        private static FrameFingerPrintWrapper Convert(FrameFingerPrint frameFingerPrint)
+        private static FrameFingerPrintWrapper Convert(FrameFingerPrint? frameFingerPrint)
         {
+            FrameFingerPrint frameFingerPrintNotNull = TypeUtils.NullThrows(frameFingerPrint);
             return new FrameFingerPrintWrapper
             {
-                FrameNumber = frameFingerPrint.FrameNumber,
-                PHashCode = frameFingerPrint.PHash,
+                FrameNumber = frameFingerPrintNotNull.FrameNumber,
+                PHashCode = frameFingerPrintNotNull.PHash,
             };
         }
         #endregion

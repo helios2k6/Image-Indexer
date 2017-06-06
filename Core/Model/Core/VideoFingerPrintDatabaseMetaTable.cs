@@ -6,15 +6,17 @@ namespace Core
     using System;
     using FlatBuffers;
 
-    internal sealed class VideoFingerPrintDatabaseMetaTable : Table
+    internal struct VideoFingerPrintDatabaseMetaTable : IFlatbufferObject
     {
+        private Table __p;
+        public ByteBuffer ByteBuffer { get { return __p.bb; } }
         public static VideoFingerPrintDatabaseMetaTable GetRootAsVideoFingerPrintDatabaseMetaTable(ByteBuffer _bb) { return GetRootAsVideoFingerPrintDatabaseMetaTable(_bb, new VideoFingerPrintDatabaseMetaTable()); }
-        public static VideoFingerPrintDatabaseMetaTable GetRootAsVideoFingerPrintDatabaseMetaTable(ByteBuffer _bb, VideoFingerPrintDatabaseMetaTable obj) { return (obj.__init(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-        public VideoFingerPrintDatabaseMetaTable __init(int _i, ByteBuffer _bb) { bb_pos = _i; bb = _bb; return this; }
+        public static VideoFingerPrintDatabaseMetaTable GetRootAsVideoFingerPrintDatabaseMetaTable(ByteBuffer _bb, VideoFingerPrintDatabaseMetaTable obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+        public void __init(int _i, ByteBuffer _bb) { __p.bb_pos = _i; __p.bb = _bb; }
+        public VideoFingerPrintDatabaseMetaTable __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-        public VideoFingerPrintDatabaseMetaTableEntry GetDatabaseMetaTableEntries(int j) { return GetDatabaseMetaTableEntries(new VideoFingerPrintDatabaseMetaTableEntry(), j); }
-        public VideoFingerPrintDatabaseMetaTableEntry GetDatabaseMetaTableEntries(VideoFingerPrintDatabaseMetaTableEntry obj, int j) { int o = __offset(4); return o != 0 ? obj.__init(__indirect(__vector(o) + j * 4), bb) : null; }
-        public int DatabaseMetaTableEntriesLength { get { int o = __offset(4); return o != 0 ? __vector_len(o) : 0; } }
+        public VideoFingerPrintDatabaseMetaTableEntry? DatabaseMetaTableEntries(int j) { int o = __p.__offset(4); return o != 0 ? (VideoFingerPrintDatabaseMetaTableEntry?)(new VideoFingerPrintDatabaseMetaTableEntry()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+        public int DatabaseMetaTableEntriesLength { get { int o = __p.__offset(4); return o != 0 ? __p.__vector_len(o) : 0; } }
 
         public static Offset<VideoFingerPrintDatabaseMetaTable> CreateVideoFingerPrintDatabaseMetaTable(FlatBufferBuilder builder,
             VectorOffset databaseMetaTableEntriesOffset = default(VectorOffset))

@@ -4,6 +4,7 @@ table FrameFingerPrint
 {
     frameNumber:int;
     pHash:ulong;
+    edgeGrayScaleThumb:[ubyte];
 }
 
 table VideoFingerPrint

@@ -35,10 +35,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DevZH.FlatBuffers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DevZH.FlatBuffers.1.4.0\lib\net35\DevZH.FlatBuffers.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Functional.Maybe, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Functional.Maybe.1.1.1\lib\portable40-net40+win8\Functional.Maybe.dll</HintPath>
       <Private>True</Private>
@@ -61,6 +57,13 @@
     <Compile Include="DSA\DistanceCalculator.cs" />
     <Compile Include="DSA\IMetric.cs" />
     <Compile Include="Environment\EnvironmentTools.cs" />
+    <Compile Include="FlatBuffers\ByteBuffer.cs" />
+    <Compile Include="FlatBuffers\FlatBufferBuilder.cs" />
+    <Compile Include="FlatBuffers\FlatBufferConstants.cs" />
+    <Compile Include="FlatBuffers\IFlatbufferObject.cs" />
+    <Compile Include="FlatBuffers\Offset.cs" />
+    <Compile Include="FlatBuffers\Struct.cs" />
+    <Compile Include="FlatBuffers\Table.cs" />
     <Compile Include="Linq\CommonLinqExtensions.cs" />
     <Compile Include="Maybe\CommonMaybeExtensions.cs" />
     <Compile Include="Media\FileXMLNode.cs" />
@@ -87,6 +90,7 @@
     <Compile Include="Model\Core\VideoFingerPrint.cs" />
     <Compile Include="Model\Core\VideoFingerPrintDatabase.cs" />
     <Compile Include="Model\Utils\MetaTableUtils.cs" />
+    <Compile Include="Model\Utils\TypeUtils.cs" />
     <Compile Include="Model\Wrappers\VideoFingerPrintDatabaseMetaTableEntryWrapper.cs" />
     <Compile Include="Model\Wrappers\VideoFingerPrintDatabaseMetaTableWrapper.cs" />
     <Compile Include="Model\Wrappers\FrameFingerPrintWrapper.cs" />

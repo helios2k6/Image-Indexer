@@ -20,6 +20,7 @@
  */
 
 using Core.Model.Wrappers;
+using Core.Utils;
 using FlatBuffers;
 using System;
 using System.Collections.Generic;
@@ -82,19 +83,20 @@ namespace Core.Model.Serialization
         private static VideoFingerPrintDatabaseMetaTableWrapper Convert(VideoFingerPrintDatabaseMetaTable databaseMetaTable)
         {
             IEnumerable<VideoFingerPrintDatabaseMetaTableEntryWrapper> metaTableEntries = from i in Enumerable.Range(0, databaseMetaTable.DatabaseMetaTableEntriesLength)
-                                                                                          select Convert(databaseMetaTable.GetDatabaseMetaTableEntries(i));
+                                                                                          select Convert(databaseMetaTable.DatabaseMetaTableEntries(i));
             return new VideoFingerPrintDatabaseMetaTableWrapper
             {
                 DatabaseMetaTableEntries = metaTableEntries.ToArray(),
             };
         }
 
-        private static VideoFingerPrintDatabaseMetaTableEntryWrapper Convert(VideoFingerPrintDatabaseMetaTableEntry entry)
+        private static VideoFingerPrintDatabaseMetaTableEntryWrapper Convert(VideoFingerPrintDatabaseMetaTableEntry? entry)
         {
+            VideoFingerPrintDatabaseMetaTableEntry entryNotNull = TypeUtils.NullThrows(entry);
             return new VideoFingerPrintDatabaseMetaTableEntryWrapper
             {
-                FileName = entry.FileName,
-                FileSize = entry.FileSize,
+                FileName = entryNotNull.FileName,
+                FileSize = entryNotNull.FileSize,
             };
         }
         #endregion
