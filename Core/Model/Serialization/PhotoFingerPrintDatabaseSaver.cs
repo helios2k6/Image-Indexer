@@ -86,10 +86,12 @@ namespace Core.Model.Serialization
             foreach (PhotoFingerPrintWrapper fingerPrint in database.PhotoFingerPrints)
             {
                 StringOffset filePathOffset = builder.CreateString(fingerPrint.FilePath);
+                VectorOffset grayScaleImageOffset = PhotoFingerPrint.CreateEdgeGrayScaleThumbVector(builder, fingerPrint.EdgeGrayScaleThumb);
 
                 PhotoFingerPrint.StartPhotoFingerPrint(builder);
                 PhotoFingerPrint.AddFilePath(builder, filePathOffset);
                 PhotoFingerPrint.AddPhash(builder, fingerPrint.PHash);
+                PhotoFingerPrint.AddEdgeGrayScaleThumb(builder, grayScaleImageOffset);
 
                 photoFingerPrintArray[photoFingerPrintCounter] = PhotoFingerPrint.EndPhotoFingerPrint(builder);
                 photoFingerPrintCounter++;

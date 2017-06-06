@@ -21,6 +21,7 @@
 
 using Core.DSA;
 using System;
+using System.Linq;
 
 namespace Core.Model.Wrappers
 {
@@ -42,6 +43,11 @@ namespace Core.Model.Wrappers
         /// The hashcode of this photo
         /// </summary>
         public ulong PHash { get; set; }
+
+        /// <summary>
+        /// The gray-scale thumbnail of the image
+        /// </summary>
+        public byte[] EdgeGrayScaleThumb { get; set; }
         #endregion
 
         #region public methods
@@ -73,7 +79,8 @@ namespace Core.Model.Wrappers
             }
 
             return string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
-                PHash == other.PHash;
+                PHash == other.PHash &&
+                Enumerable.SequenceEqual(EdgeGrayScaleThumb, other.EdgeGrayScaleThumb);
         }
 
         public override bool Equals(object obj)

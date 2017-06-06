@@ -21,6 +21,7 @@
 
 using Core.DSA;
 using System;
+using System.Linq;
 
 namespace Core.Model.Wrappers
 {
@@ -42,6 +43,11 @@ namespace Core.Model.Wrappers
         /// The pHash code of this frame
         /// </summary>
         public ulong PHashCode { get; set; }
+
+        /// <summary>
+        /// The gray-scale thumbnail of the image
+        /// </summary>
+        public byte[] EdgeGrayScaleThumb { get; set; }
         #endregion
 
         #region public methods
@@ -78,7 +84,8 @@ namespace Core.Model.Wrappers
             }
 
             return FrameNumber == other.FrameNumber &&
-                PHashCode == other.PHashCode;
+                PHashCode == other.PHashCode &&
+                Enumerable.SequenceEqual(EdgeGrayScaleThumb, other.EdgeGrayScaleThumb);
         }
 
         /// <summary>
