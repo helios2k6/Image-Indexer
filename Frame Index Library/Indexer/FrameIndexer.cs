@@ -22,6 +22,7 @@
 using Core.Media;
 using System.Collections.Generic;
 using System.Drawing;
+using System;
 
 namespace FrameIndexLibrary
 {
@@ -40,29 +41,14 @@ namespace FrameIndexLibrary
         /// </summary>
         /// <param name="frame">The frame to index</param>
         /// <returns>An indexed frame</returns>
-        public static ulong IndexFrame(Image frame)
+        public static Tuple<ulong, byte[]> IndexFrame(Image frame)
         {
-            return IndexFrameMethodOne(frame);
+            return CalculateFrameHash(frame);
         }
         #endregion
 
         #region private methods
-        private static ulong IndexFrameMethodTwo(Image frame)
-        {
-            using (WritableLockBitImage grayscaleImage = GreyScaleTransformation.TransformInPlace(new WritableLockBitImage(frame)))
-            using (WritableLockBitImage blurredImage = BoxBlur.Transform(grayscaleImage, 3))
-            {
-                blurredImage.Lock();
-                using (WritableLockBitImage resizedImage = new WritableLockBitImage(ResizeTransformation.Transform(blurredImage.GetImage(), FingerPrintWidth, FingerPrintWidth)))
-                {
-                    double[,] dctMatrix = FastDCTCalculator.Transform(resizedImage);
-                    double medianOfDCTValue = CalculateMedianDCTValue(dctMatrix);
-                    return ConstructHashCode(dctMatrix, medianOfDCTValue);
-                }
-            }
-        }
-
-        private static ulong IndexFrameMethodOne(Image frame)
+        private static Tuple<ulong, byte[]> CalculateFrameHash(Image frame)
         {
             using (WritableLockBitImage resizedImage = new WritableLockBitImage(ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth)))
             using (WritableLockBitImage grayscaleImage = GreyScaleTransformation.TransformInPlace(resizedImage))
@@ -70,8 +56,27 @@ namespace FrameIndexLibrary
             {
                 double[,] dctMatrix = FastDCTCalculator.Transform(blurredImage);
                 double medianOfDCTValue = CalculateMedianDCTValue(dctMatrix);
-                return ConstructHashCode(dctMatrix, medianOfDCTValue);
+                ulong hashCode = ConstructHashCode(dctMatrix, medianOfDCTValue);
+                using (WritableLockBitImage sobelImage = SobelFilter.TransformWithGrayScaleImage(grayscaleImage))
+                using (WritableLockBitImage quantisizedImage = QuantisizingFilter.TransformInPlace(sobelImage))
+                {
+                    return Tuple.Create(hashCode, ConvertGrayScaleImageToBytes(quantisizedImage));
+                }
             }
+        }
+
+        private static byte[] ConvertGrayScaleImageToBytes(WritableLockBitImage image)
+        {
+            byte[] buffer = new byte[image.Width * image.Height];
+            for (int row = 0; row < image.Height; row++)
+            {
+                for (int col = 0; col < image.Width; col++)
+                {
+                    buffer[row * image.Width + col] = image.GetPixel(col, row).R;
+                }
+            }
+
+            return buffer;
         }
 
         private static double CalculateMedianDCTValue(double[,] dctMatrix)

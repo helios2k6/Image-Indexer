@@ -152,11 +152,12 @@ namespace VideoIndexer.Video
                     using (WritableLockBitImage frame = item.Frame)
                     {
                         frame.Lock();
-                        ulong framePHash = FrameIndexer.IndexFrame(item.Frame.GetImage());
+                        Tuple<ulong, byte[]> fingerPrintHashTuple = FrameIndexer.IndexFrame(item.Frame.GetImage());
                         _fingerPrints.Add(new FrameFingerPrintWrapper
                         {
-                            PHashCode = framePHash,
+                            PHashCode = fingerPrintHashTuple.Item1,
                             FrameNumber = item.FrameNumber,
+                            EdgeGrayScaleThumb = fingerPrintHashTuple.Item2,
                         });
 
                         // Reduce the current memory level

@@ -81,10 +81,12 @@ namespace PhotoCollectionIndexer.Executors
             {
                 using (imageTuple.Item1)
                 {
+                    Tuple<ulong, byte[]> fingerPrintHashTuple = FrameIndexer.IndexFrame(imageTuple.Item1);
                     PhotoFingerPrintWrapper fingerPrint = new PhotoFingerPrintWrapper
                     {
                         FilePath = Path.GetFullPath(imageTuple.Item2),
-                        PHash = FrameIndexer.IndexFrame(imageTuple.Item1),
+                        PHash = fingerPrintHashTuple.Item1,
+                        EdgeGrayScaleThumb = fingerPrintHashTuple.Item2,
                     };
 
                     _fingerPrints.Add(fingerPrint);
