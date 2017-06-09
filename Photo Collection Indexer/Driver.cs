@@ -309,7 +309,7 @@ namespace PhotoCollectionIndexer
                 .Append('\t').Append("--help").Append('\t').Append('\t').Append("Show this help text").AppendLine()
                 .AppendLine()
                 .AppendLine("Index Related Commands")
-                .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a video").AppendLine()
+                .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a photo or a set of photos").AppendLine()
                 .Append('\t').Append("--photos").Append('\t').Append('\t').Append("The photos to index. Can use globbing for this or --recursive to search sub-directories").AppendLine()
                 .Append('\t').Append("--recursive").Append('\t').Append('\t').Append("If the supplied --photos argument is a directory, this switch allows you to search recursively for photo files")
                 .Append('\t').Append("--database").Append('\t').Append("The path to save the database to. This will update existing databases").AppendLine()
