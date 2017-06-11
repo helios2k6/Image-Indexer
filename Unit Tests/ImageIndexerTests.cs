@@ -24,6 +24,7 @@ using FrameIndexLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Drawing;
+using System.Linq;
 
 namespace UnitTests
 {
@@ -41,7 +42,8 @@ namespace UnitTests
                 Tuple<ulong, byte[]> fingerPrint1 = FrameIndexer.IndexFrame(testImage);
                 Tuple<ulong, byte[]> fingerPrint2 = FrameIndexer.IndexFrame(testImage);
 
-                Assert.AreEqual(fingerPrint1, fingerPrint2);
+                Assert.AreEqual(fingerPrint1.Item1, fingerPrint2.Item1);
+                Assert.IsTrue(Enumerable.SequenceEqual(fingerPrint1.Item2, fingerPrint2.Item2));
             }
         }
 

@@ -37,6 +37,7 @@ namespace UnitTests
             {
                 FrameNumber = 0,
                 PHashCode = 0x1010,
+                EdgeGrayScaleThumb = new byte[] { 0, 1, 0 },
             };
 
             var videoFingerPrint = new VideoFingerPrintWrapper

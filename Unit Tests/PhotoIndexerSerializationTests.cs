@@ -36,6 +36,7 @@ namespace UnitTests
             {
                 FilePath = "test.png",
                 PHash = 0x0A,
+                EdgeGrayScaleThumb = new byte[] { 0, 1, 1 },
             };
 
             var database = new PhotoFingerPrintDatabaseWrapper

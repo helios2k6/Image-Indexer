@@ -92,10 +92,13 @@ namespace Core.Model.Serialization
         private static PhotoFingerPrintWrapper Convert(PhotoFingerPrint? fingerPrint)
         {
             PhotoFingerPrint fingerPrintNotNull = TypeUtils.NullThrows(fingerPrint);
+            byte[] edgeGrayScaleThumb = (from i in Enumerable.Range(0, fingerPrintNotNull.EdgeGrayScaleThumbLength)
+                                         select fingerPrintNotNull.EdgeGrayScaleThumb(i)).ToArray();
             return new PhotoFingerPrintWrapper
             {
                 FilePath = fingerPrintNotNull.FilePath,
                 PHash = fingerPrintNotNull.Phash,
+                EdgeGrayScaleThumb = edgeGrayScaleThumb,
             };
         }
         #endregion
