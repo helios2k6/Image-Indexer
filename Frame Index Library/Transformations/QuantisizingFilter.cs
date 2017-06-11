@@ -23,6 +23,7 @@ using Core.Media;
 using System;
 using System.Drawing;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FrameIndexLibrary
 {
@@ -32,6 +33,12 @@ namespace FrameIndexLibrary
     /// </summary>
     internal static class QuantisizingFilter
     {
+        /// <summary>
+        /// Quantisize a photo by ceiling or flooring each value depending one whether it's above or below the median value
+        /// </summary>
+        /// <param name="sourceImage"></param>
+        /// <param name="outputImage"></param>
+        /// <returns></returns>
         public static WritableLockBitImage Transform(WritableLockBitImage sourceImage, WritableLockBitImage outputImage)
         {
             Color medianColor = GetMedianColorValue(sourceImage);
@@ -39,7 +46,7 @@ namespace FrameIndexLibrary
             {
                 for (int col = 0; col < sourceImage.Width; col++)
                 {
-                     // Quantisize the individual channels
+                    // Quantisize the individual channels
                     Color currentColor = sourceImage.GetPixel(col, row);
                     byte outputRed, outputGreen, outputBlue;
                     if (currentColor.R < medianColor.R)
@@ -83,20 +90,24 @@ namespace FrameIndexLibrary
 
         private static Color GetMedianColorValue(WritableLockBitImage sourceImage)
         {
-            var listOfRedColorValues = new List<int>();
-            var listOfGreenColorValues = new List<int>();
-            var listOfBlueColorValues = new List<int>();
+            var setOfRedColorValues = new HashSet<int>();
+            var setOfGreenColorValues = new HashSet<int>();
+            var setOfBlueColorValues = new HashSet<int>();
 
             for (int row = 0; row < sourceImage.Height; row++)
             {
                 for (int col = 0; col < sourceImage.Width; col++)
                 {
                     Color color = sourceImage.GetPixel(col, row);
-                    listOfRedColorValues.Add(color.R);
-                    listOfGreenColorValues.Add(color.G);
-                    listOfBlueColorValues.Add(color.B);
+                    setOfRedColorValues.Add(color.R);
+                    setOfGreenColorValues.Add(color.G);
+                    setOfBlueColorValues.Add(color.B);
                 }
             }
+
+            List<int> listOfRedColorValues = setOfRedColorValues.ToList();
+            List<int> listOfGreenColorValues = setOfRedColorValues.ToList();
+            List<int> listOfBlueColorValues = setOfRedColorValues.ToList();
 
             listOfRedColorValues.Sort();
             listOfGreenColorValues.Sort();
