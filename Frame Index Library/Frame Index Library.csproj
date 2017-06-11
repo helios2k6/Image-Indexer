@@ -64,7 +64,6 @@
     <Compile Include="Transformations\SobelFilter.cs" />
     <Compile Include="Transformations\QuantisizingFilter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Transformations\SobelFilter.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

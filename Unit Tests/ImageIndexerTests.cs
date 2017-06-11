@@ -22,6 +22,7 @@
 using Core.DSA;
 using FrameIndexLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Drawing;
 
 namespace UnitTests
@@ -37,8 +38,8 @@ namespace UnitTests
         {
             using (Image testImage = TestUtils.GetImage(TestUtils.TestPhoto1))
             {
-                ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage);
-                ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage);
+                Tuple<ulong, byte[]> fingerPrint1 = FrameIndexer.IndexFrame(testImage);
+                Tuple<ulong, byte[]> fingerPrint2 = FrameIndexer.IndexFrame(testImage);
 
                 Assert.AreEqual(fingerPrint1, fingerPrint2);
             }
@@ -50,9 +51,9 @@ namespace UnitTests
             using (Image testImage1 = TestUtils.GetImage(TestUtils.TestPhoto1))
             using (Image testImage2 = TestUtils.GetImage(TestUtils.TestPhoto2))
             {
-                ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage1);
-                ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
-                int distance = DistanceCalculator.CalculateHammingDistance(fingerPrint1, fingerPrint2);
+                Tuple<ulong, byte[]> fingerPrint1 = FrameIndexer.IndexFrame(testImage1);
+                Tuple<ulong, byte[]> fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
+                int distance = DistanceCalculator.CalculateHammingDistance(fingerPrint1.Item1, fingerPrint2.Item1);
 
                 Assert.AreEqual(0, distance);
             }
@@ -64,9 +65,9 @@ namespace UnitTests
             using (Image testImage1 = TestUtils.GetImage(TestUtils.TestPhoto1))
             using (Image testImage2 = TestUtils.GetImage(TestUtils.TestPhoto3))
             {
-                ulong fingerPrint1 = FrameIndexer.IndexFrame(testImage1);
-                ulong fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
-                int distance = DistanceCalculator.CalculateHammingDistance(fingerPrint1, fingerPrint2);
+                Tuple<ulong, byte[]> fingerPrint1 = FrameIndexer.IndexFrame(testImage1);
+                Tuple<ulong, byte[]> fingerPrint2 = FrameIndexer.IndexFrame(testImage2);
+                int distance = DistanceCalculator.CalculateHammingDistance(fingerPrint1.Item1, fingerPrint2.Item1);
 
                 Assert.AreEqual(10, distance);
             }
