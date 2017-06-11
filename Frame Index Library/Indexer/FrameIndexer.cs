@@ -59,13 +59,14 @@ namespace FrameIndexLibrary
                 ulong hashCode = ConstructHashCode(dctMatrix, medianOfDCTValue);
                 using (WritableLockBitImage sobelImage = SobelFilter.TransformWithGrayScaleImage(grayscaleImage))
                 using (WritableLockBitImage quantisizedImage = QuantisizingFilter.TransformInPlace(sobelImage))
+                using (WritableLockBitImage resizedQuantisizedImage = ResizeTransformation.Transform(quantisizedImage, 16, 16))
                 {
-                    return Tuple.Create(hashCode, ConvertGrayScaleImageToBytes(quantisizedImage));
+                    return Tuple.Create(hashCode, CalculateGrayScaleThumbnail(resizedQuantisizedImage));
                 }
             }
         }
 
-        private static byte[] ConvertGrayScaleImageToBytes(WritableLockBitImage image)
+        private static byte[] CalculateGrayScaleThumbnail(WritableLockBitImage image)
         {
             byte[] buffer = new byte[image.Width * image.Height];
             for (int row = 0; row < image.Height; row++)

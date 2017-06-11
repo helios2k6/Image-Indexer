@@ -33,6 +33,18 @@ namespace FrameIndexLibrary
     internal static class ResizeTransformation
     {
         /// <summary>
+        /// Resize the image to the destination width and height
+        /// </summary>
+        public static WritableLockBitImage Transform(WritableLockBitImage sourceImage, int width, int height)
+        {
+            using (WritableLockBitImage copyOfSourceImage = new WritableLockBitImage(sourceImage))
+            {
+                copyOfSourceImage.Lock();
+                return new WritableLockBitImage(Transform(copyOfSourceImage.GetImage(), width, height));
+            }
+        }
+
+        /// <summary>rn 
         /// Transform the image
         /// </summary>
         /// <returns>A transformed image</returns>
