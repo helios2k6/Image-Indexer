@@ -139,20 +139,20 @@ namespace FrameIndexLibrary
         /// <summary>
         /// Convolutes the two 1-dimensional vectors, assuming that the kernel matrix is centered on top of the input matrix
         /// </summary>
-        /// <param name="inputMatrix"></param>
-        /// <param name="kernel"></param>
+        /// <param name="inputVector">The input vector that represents the window to convolude</param>
+        /// <param name="kernel">The convolution kernel</param>
         /// <returns></returns>
-        private static int ConvoluteOneDimensionalVector(int[] inputMatrix, int[] kernel)
+        private static int ConvoluteOneDimensionalVector(int[] inputVector, int[] kernel)
         {
-            if (inputMatrix.Length != kernel.Length)
+            if (inputVector.Length != kernel.Length)
             {
                 throw new ArgumentException("Dimensions of input matrix and kernel matrix are not equal");
             }
 
             int acc = 0;
-            for (int pixel = 0; pixel < inputMatrix.Length; pixel++)
+            for (int pixel = 0; pixel < inputVector.Length; pixel++)
             {
-                acc += inputMatrix[pixel] * kernel[kernel.Length - pixel - 1];
+                acc += inputVector[pixel] * kernel[kernel.Length - pixel - 1];
             }
 
             return acc;
