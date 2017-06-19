@@ -36,10 +36,11 @@ namespace FrameIndexLibrary
         /// <summary>
         /// Quantisize a photo by ceiling or flooring each value depending one whether it's above or below the median value
         /// </summary>
-        /// <param name="sourceImage"></param>
-        /// <param name="outputImage"></param>
-        /// <returns></returns>
-        public static WritableLockBitImage Transform(WritableLockBitImage sourceImage, WritableLockBitImage outputImage)
+        /// <param name="sourceImage">The source image</param>
+        /// <param name="outputImage">The image to write to</param>
+        /// <param name="maxValue">The value to quantize the maximum value to</param>
+        /// <returns>The output image, but returned for convenience</returns>
+        public static WritableLockBitImage Transform(WritableLockBitImage sourceImage, WritableLockBitImage outputImage, byte maxValue = byte.MaxValue)
         {
             Color medianColor = GetMedianColorValue(sourceImage);
             for (int row = 0; row < sourceImage.Height; row++)
@@ -55,7 +56,7 @@ namespace FrameIndexLibrary
                     }
                     else
                     {
-                        outputRed = byte.MaxValue;
+                        outputRed = maxValue;
                     }
 
                     if (currentColor.G < medianColor.G)
@@ -64,7 +65,7 @@ namespace FrameIndexLibrary
                     }
                     else
                     {
-                        outputGreen = byte.MaxValue;
+                        outputGreen = maxValue;
                     }
 
                     if (currentColor.B < medianColor.B)
@@ -73,7 +74,7 @@ namespace FrameIndexLibrary
                     }
                     else
                     {
-                        outputBlue = byte.MaxValue;
+                        outputBlue = maxValue;
                     }
 
                     outputImage.SetPixel(col, row, Color.FromArgb(outputRed, outputGreen, outputBlue));
@@ -83,9 +84,9 @@ namespace FrameIndexLibrary
             return outputImage;
         }
 
-        public static WritableLockBitImage TransformInPlace(WritableLockBitImage sourceImage)
+        public static WritableLockBitImage TransformInPlace(WritableLockBitImage sourceImage, byte maxValue = byte.MaxValue)
         {
-            return Transform(sourceImage, sourceImage);
+            return Transform(sourceImage, sourceImage, maxValue);
         }
 
         private static Color GetMedianColorValue(WritableLockBitImage sourceImage)

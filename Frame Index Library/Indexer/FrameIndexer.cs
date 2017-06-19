@@ -43,12 +43,12 @@ namespace FrameIndexLibrary
         /// <returns>An indexed frame</returns>
         public static Tuple<ulong, byte[]> IndexFrame(Image frame)
         {
-            return CalculateFrameHash(frame);
+            return CalcluateFramePerceptionHash(frame);
         }
         #endregion
 
         #region private methods
-        private static Tuple<ulong, byte[]> CalculateFrameHash(Image frame)
+        private static Tuple<ulong, byte[]> CalcluateFramePerceptionHash(Image frame)
         {
             using (WritableLockBitImage resizedImage = new WritableLockBitImage(ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth)))
             using (WritableLockBitImage grayscaleImage = GreyScaleTransformation.TransformInPlace(resizedImage))
@@ -58,7 +58,7 @@ namespace FrameIndexLibrary
                 double medianOfDCTValue = CalculateMedianDCTValue(dctMatrix);
                 ulong hashCode = ConstructHashCode(dctMatrix, medianOfDCTValue);
                 using (WritableLockBitImage sobelImage = SobelFilter.TransformWithGrayScaleImage(grayscaleImage))
-                using (WritableLockBitImage quantisizedImage = QuantisizingFilter.TransformInPlace(sobelImage))
+                using (WritableLockBitImage quantisizedImage = QuantisizingFilter.TransformInPlace(sobelImage, 1))
                 using (WritableLockBitImage resizedQuantisizedImage = ResizeTransformation.Transform(quantisizedImage, 16, 16))
                 {
                     return Tuple.Create(hashCode, CalculateGrayScaleThumbnail(resizedQuantisizedImage));
