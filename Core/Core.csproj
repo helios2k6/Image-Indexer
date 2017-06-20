@@ -51,6 +51,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compression\ArithmeticCoder.cs" />
+    <Compile Include="Compression\ArithmeticEncoding.cs" />
     <Compile Include="Console\ConsoleUtils.cs" />
     <Compile Include="DSA\BKTree.cs" />
     <Compile Include="DSA\BKTreeNode.cs" />
