@@ -19,6 +19,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using Core.Compression;
 using Core.Media;
 using System.Collections.Generic;
 using System.Drawing;
@@ -77,7 +78,7 @@ namespace FrameIndexLibrary
                 }
             }
 
-            return buffer;
+            return ByteCompressor.Compress(buffer);
         }
 
         private static double CalculateMedianDCTValue(double[,] dctMatrix)

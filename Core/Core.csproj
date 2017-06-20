@@ -52,7 +52,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compression\ArithmeticCoder.cs" />
-    <Compile Include="Compression\ArithmeticEncoding.cs" />
+    <Compile Include="Compression\ArithmeticCoderExtensions.cs" />
+    <Compile Include="Compression\ArithmeticDelegateTypes.cs" />
+    <Compile Include="Compression\ArithmeticStream.cs" />
+    <Compile Include="Compression\ByteCompressor.cs" />
+    <Compile Include="Compression\IModel.cs" />
+    <Compile Include="Compression\NewCharacterByteModel.cs" />
+    <Compile Include="Compression\PartialSumTreeFixedSize.cs" />
+    <Compile Include="Compression\Range.cs" />
+    <Compile Include="Compression\RangeExtensions.cs" />
+    <Compile Include="Compression\RangeSymbol.cs" />
+    <Compile Include="Compression\ZeroOrderAdaptiveByteModel.cs" />
     <Compile Include="Console\ConsoleUtils.cs" />
     <Compile Include="DSA\BKTree.cs" />
     <Compile Include="DSA\BKTreeNode.cs" />
@@ -66,6 +76,19 @@
     <Compile Include="FlatBuffers\Offset.cs" />
     <Compile Include="FlatBuffers\Struct.cs" />
     <Compile Include="FlatBuffers\Table.cs" />
+    <Compile Include="IO\BitBinaryReader.cs" />
+    <Compile Include="IO\BitBinaryWriter.cs" />
+    <Compile Include="IO\BitRingBuffer.cs" />
+    <Compile Include="IO\BitStream.cs" />
+    <Compile Include="IO\BitStreamReader.cs" />
+    <Compile Include="IO\BitStreamWriter.cs" />
+    <Compile Include="IO\Converters\EndianConverter.cs" />
+    <Compile Include="IO\Converters\ZigZagConverter.cs" />
+    <Compile Include="IO\Endian.cs" />
+    <Compile Include="IO\EndianMarker.cs" />
+    <Compile Include="IO\EndianReader.cs" />
+    <Compile Include="IO\EndianWriter.cs" />
+    <Compile Include="IO\VarInt.cs" />
     <Compile Include="Linq\CommonLinqExtensions.cs" />
     <Compile Include="Maybe\CommonMaybeExtensions.cs" />
     <Compile Include="Media\FileXMLNode.cs" />
