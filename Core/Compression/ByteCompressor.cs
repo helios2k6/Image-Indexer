@@ -38,6 +38,7 @@ namespace Core.Compression
             var buffer = new List<byte>();
             byte currentByteIndex = 0;
             byte currentByte = 0;
+            bool addFinalByte = true;
             foreach (byte inputByte in input)
             {
                 if (inputByte != 0)
@@ -53,7 +54,17 @@ namespace Core.Compression
                     buffer.Add(currentByte);
                     currentByte = 0;
                     currentByteIndex = 0;
+                    addFinalByte = false;
                 }
+                else
+                {
+                    addFinalByte = true;
+                }
+            }
+
+            if (addFinalByte)
+            {
+                buffer.Add(currentByte);
             }
 
             return buffer.ToArray();
