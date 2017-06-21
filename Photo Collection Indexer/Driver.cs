@@ -295,7 +295,7 @@ namespace PhotoCollectionIndexer
         private static void PrintHelp(string messageToPrint)
         {
             var builder = new StringBuilder();
-            builder.AppendLine("Photo Indexer v1.0");
+            builder.AppendLine("Photo Indexer v2.0");
 
             if (string.IsNullOrWhiteSpace(messageToPrint) == false)
             {
@@ -309,8 +309,8 @@ namespace PhotoCollectionIndexer
                 .AppendLine()
                 .AppendLine("Index Related Commands")
                 .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a photo or a set of photos").AppendLine()
-                .Append('\t').Append("--photos").Append('\t').Append('\t').Append("The photos to index. Can use globbing for this or --recursive to search sub-directories").AppendLine()
-                .Append('\t').Append("--recursive").Append('\t').Append('\t').Append("If the supplied --photos argument is a directory, this switch allows you to search recursively for photo files")
+                .Append('\t').Append("--photos").Append('\t').Append("The photos to index. Can use globbing for this or --recursive to search sub-directories").AppendLine()
+                .Append('\t').Append("--recursive").Append('\t').Append("If the supplied --photos argument is a directory, this switch allows you to search recursively for photo files").AppendLine()
                 .Append('\t').Append("--database").Append('\t').Append("The path to save the database to. This will update existing databases").AppendLine()
                 .AppendLine()
                 .AppendLine("Search Related Commands")

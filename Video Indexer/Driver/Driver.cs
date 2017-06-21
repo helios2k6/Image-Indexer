@@ -341,7 +341,7 @@ namespace VideoIndexer.Driver
         #region util functions
         private static string GetDatabaseMetaTable(string[] args)
         {
-            return GetArgumentTuple(args, "--database-metatable");
+            return GetArgumentTuple(args, "--metatable");
         }
 
         private static string GetVideoPath(string[] args)
@@ -419,7 +419,7 @@ namespace VideoIndexer.Driver
         private static void PrintHelp(string messageToPrint)
         {
             var builder = new StringBuilder();
-            builder.AppendLine("Video Indexer v2.2");
+            builder.AppendLine("Video Indexer v3.0");
 
             if (string.IsNullOrWhiteSpace(messageToPrint) == false)
             {
@@ -429,19 +429,19 @@ namespace VideoIndexer.Driver
             builder.AppendLine("Usage: <this program> [options]")
                 .AppendLine()
                 .AppendLine("Options:")
-                .Append('\t').Append("--help").Append('\t').Append('\t').Append("Show this help text").AppendLine()
+                .Append('\t').Append("--help").Append('\t').Append('\t').Append('\t').Append("Show this help text").AppendLine()
                 .AppendLine()
                 .AppendLine("Index Related Commands")
-                .Append('\t').Append("--index").Append('\t').Append('\t').Append("Index a video").AppendLine()
-                .Append('\t').Append("--video").Append('\t').Append('\t').Append("The video to index. If a directory is specified, the entire directory will be recursively indexed").AppendLine()
-                .Append('\t').Append("--database-metatable").Append('\t').Append("The path to save the database metatable to. This will update existing database metatables").AppendLine()
-                .Append('\t').Append("--threads").Append('\t').Append("The number of threads to use when indexing. Default is 1").AppendLine()
-                .Append('\t').Append("--max-memory").Append('\t').Append("The maximum number of bytes to take up in the frame buffer").AppendLine()
+                .Append('\t').Append("--index").Append('\t').Append('\t').Append('\t').Append("Index a video").AppendLine()
+                .Append('\t').Append("--video").Append('\t').Append('\t').Append('\t').Append("The video to index. If a directory is specified, the entire directory will be recursively indexed").AppendLine()
+                .Append('\t').Append("--metatable").Append('\t').Append('\t').Append("The path to save the database metatable to. This will update existing database metatables").AppendLine()
+                .Append('\t').Append("--threads").Append('\t').Append('\t').Append("The number of threads to use when indexing. Default is 1").AppendLine()
+                .Append('\t').Append("--max-memory").Append('\t').Append('\t').Append("The maximum number of bytes to take up in the frame buffer").AppendLine()
                 .AppendLine()
                 .AppendLine("Search Related Commands")
-                .Append('\t').Append("--search").Append('\t').Append("Search for similar frames using an image").AppendLine()
-                .Append('\t').Append("--photo").Append('\t').Append('\t').Append("The path to the photo you want to search for").AppendLine()
-                .Append('\t').Append("--database-metatable").Append('\t').Append("The path to the database metatable").AppendLine()
+                .Append('\t').Append("--search").Append('\t').Append('\t').Append("Search for similar frames using an image").AppendLine()
+                .Append('\t').Append("--photo").Append('\t').Append('\t').Append('\t').Append("The path to the photo you want to search for").AppendLine()
+                .Append('\t').Append("--metatable").Append('\t').Append('\t').Append("The path to the database metatable").AppendLine()
                 .AppendLine()
                 .AppendLine("Database Operations")
                 .Append('\t').Append("--check-database").Append('\t').Append("Ensure that the images hash to the values in the database").AppendLine()

@@ -90,6 +90,7 @@ namespace PhotoCollectionIndexer.Executors
                     };
 
                     _fingerPrints.Add(fingerPrint);
+                    Console.WriteLine("Indexed photo {0}", Path.GetFileName(imageTuple.Item2));
                 }
             }
         }
