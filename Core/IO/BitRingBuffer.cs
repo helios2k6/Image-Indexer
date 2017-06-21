@@ -1,16 +1,16 @@
 /*	Copyright 2012 Brent Scriver
 
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-		http://www.apache.org/licenses/LICENSE-2.0
+        http://www.apache.org/licenses/LICENSE-2.0
 
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 using System;
@@ -50,16 +50,16 @@ namespace Core.IO
 
         private bool this[int i]
         {
-            get { return (_buffer[i >> 3] & (1 << (7 - (i%8)))) != 0; }
+            get { return (_buffer[i >> 3] & (1 << (7 - (i % 8)))) != 0; }
             set
             {
                 if (value)
                 {
-                    _buffer[i >> 3] |= (byte) (1 << (7 - (i%8)));
+                    _buffer[i >> 3] |= (byte)(1 << (7 - (i % 8)));
                 }
                 else
                 {
-                    _buffer[i >> 3] &= (byte) ~(1 << (7 - (i%8)));
+                    _buffer[i >> 3] &= (byte)~(1 << (7 - (i % 8)));
                 }
             }
         }
@@ -72,9 +72,9 @@ namespace Core.IO
             get
             {
                 return _full
-                           ? _buffer.Length*8
+                           ? _buffer.Length * 8
                            : (_bitWritePosition < _bitReadPosition
-                                  ? _bitWritePosition + (_buffer.Length*8) - _bitReadPosition
+                                  ? _bitWritePosition + (_buffer.Length * 8) - _bitReadPosition
                                   : _bitWritePosition - _bitReadPosition);
             }
         }
@@ -92,7 +92,7 @@ namespace Core.IO
         /// </summary>
         public int AvailableBits
         {
-            get { return _buffer.Length*8 - LengthBits; }
+            get { return _buffer.Length * 8 - LengthBits; }
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Core.IO
                 throw new IndexOutOfRangeException("Buffer is full!");
             }
             this[_bitWritePosition] = value;
-            _bitWritePosition = (_bitWritePosition + 1)%(_buffer.Length*8);
+            _bitWritePosition = (_bitWritePosition + 1) % (_buffer.Length * 8);
             _full = _bitWritePosition == _bitReadPosition;
         }
 
@@ -176,7 +176,7 @@ namespace Core.IO
             }
             _full = false;
             bool result = this[_bitReadPosition];
-            _bitReadPosition = (_bitReadPosition + 1)%(_buffer.Length*8);
+            _bitReadPosition = (_bitReadPosition + 1) % (_buffer.Length * 8);
             return result;
         }
 
@@ -188,7 +188,7 @@ namespace Core.IO
             byte result = 0;
             for (int i = 7; i >= 0; --i)
             {
-                result |= (byte) (ReadBoolean() ? (1 << i) : 0);
+                result |= (byte)(ReadBoolean() ? (1 << i) : 0);
             }
             return result;
         }

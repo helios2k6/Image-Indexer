@@ -1,16 +1,16 @@
 /*	Copyright 2012 Brent Scriver
 
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-		http://www.apache.org/licenses/LICENSE-2.0
+        http://www.apache.org/licenses/LICENSE-2.0
 
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 using System;
@@ -70,10 +70,10 @@ namespace Core.IO
         /// </summary>
         public void ToBytes(char data, byte[] destination, int index)
         {
-            var src = (byte*) &data;
+            var src = (byte*)&data;
             fixed (byte* dst = &destination[index])
             {
-                SafeCopier(dst, destination.Length - index, src, sizeof (char), sizeof (char));
+                SafeCopier(dst, destination.Length - index, src, sizeof(char), sizeof(char));
             }
         }
 
@@ -84,10 +84,10 @@ namespace Core.IO
         /// </summary>
         public void ToBytes(double data, byte[] destination, int index)
         {
-            var src = (byte*) &data;
+            var src = (byte*)&data;
             fixed (byte* dst = &destination[index])
             {
-                SafeCopier(dst, destination.Length - index, src, sizeof (double), sizeof (double));
+                SafeCopier(dst, destination.Length - index, src, sizeof(double), sizeof(double));
             }
         }
 
@@ -98,10 +98,10 @@ namespace Core.IO
         /// </summary>
         public void ToBytes(float data, byte[] destination, int index)
         {
-            var src = (byte*) &data;
+            var src = (byte*)&data;
             fixed (byte* dst = &destination[index])
             {
-                SafeCopier(dst, destination.Length - index, src, sizeof (float), sizeof (float));
+                SafeCopier(dst, destination.Length - index, src, sizeof(float), sizeof(float));
             }
         }
 
@@ -112,10 +112,10 @@ namespace Core.IO
         /// </summary>
         public void ToBytes(short data, byte[] destination, int index)
         {
-            var src = (byte*) &data;
+            var src = (byte*)&data;
             fixed (byte* dst = &destination[index])
             {
-                SafeCopier(dst, destination.Length - index, src, sizeof (short), sizeof (short));
+                SafeCopier(dst, destination.Length - index, src, sizeof(short), sizeof(short));
             }
         }
 
@@ -126,10 +126,10 @@ namespace Core.IO
         /// </summary>
         public void ToBytes(int data, byte[] destination, int index)
         {
-            var src = (byte*) &data;
+            var src = (byte*)&data;
             fixed (byte* dst = &destination[index])
             {
-                SafeCopier(dst, destination.Length - index, src, sizeof (int), sizeof (int));
+                SafeCopier(dst, destination.Length - index, src, sizeof(int), sizeof(int));
             }
         }
 
@@ -140,10 +140,10 @@ namespace Core.IO
         /// </summary>
         public void ToBytes(long data, byte[] destination, int index)
         {
-            var src = (byte*) &data;
+            var src = (byte*)&data;
             fixed (byte* dst = &destination[index])
             {
-                SafeCopier(dst, destination.Length - index, src, sizeof (long), sizeof (long));
+                SafeCopier(dst, destination.Length - index, src, sizeof(long), sizeof(long));
             }
         }
 
@@ -154,10 +154,10 @@ namespace Core.IO
         /// </summary>
         public void ToBytes(ushort data, byte[] destination, int index)
         {
-            var src = (byte*) &data;
+            var src = (byte*)&data;
             fixed (byte* dst = &destination[index])
             {
-                SafeCopier(dst, destination.Length - index, src, sizeof (ushort), sizeof (ushort));
+                SafeCopier(dst, destination.Length - index, src, sizeof(ushort), sizeof(ushort));
             }
         }
 
@@ -168,10 +168,10 @@ namespace Core.IO
         /// </summary>
         public void ToBytes(uint data, byte[] destination, int index)
         {
-            var src = (byte*) &data;
+            var src = (byte*)&data;
             fixed (byte* dst = &destination[index])
             {
-                SafeCopier(dst, destination.Length - index, src, sizeof (uint), sizeof (uint));
+                SafeCopier(dst, destination.Length - index, src, sizeof(uint), sizeof(uint));
             }
         }
 
@@ -182,10 +182,10 @@ namespace Core.IO
         /// </summary>
         public void ToBytes(ulong data, byte[] destination, int index)
         {
-            var src = (byte*) &data;
+            var src = (byte*)&data;
             fixed (byte* dst = &destination[index])
             {
-                SafeCopier(dst, destination.Length - index, src, sizeof (ulong), sizeof (ulong));
+                SafeCopier(dst, destination.Length - index, src, sizeof(ulong), sizeof(ulong));
             }
         }
 
@@ -196,10 +196,10 @@ namespace Core.IO
         public char ToChar(byte[] data, int index)
         {
             char result;
-            var dst = (byte*) &result;
+            var dst = (byte*)&result;
             fixed (byte* src = &data[index])
             {
-                SafeCopier(dst, sizeof (char), src, data.Length - index, sizeof (char));
+                SafeCopier(dst, sizeof(char), src, data.Length - index, sizeof(char));
             }
             return result;
         }
@@ -211,10 +211,10 @@ namespace Core.IO
         public double ToDouble(byte[] data, int index)
         {
             double result;
-            var dst = (byte*) &result;
+            var dst = (byte*)&result;
             fixed (byte* src = &data[index])
             {
-                SafeCopier(dst, sizeof (double), src, data.Length - index, sizeof (double));
+                SafeCopier(dst, sizeof(double), src, data.Length - index, sizeof(double));
             }
             return result;
         }
@@ -226,10 +226,10 @@ namespace Core.IO
         public float ToSingle(byte[] data, int index)
         {
             float result;
-            var dst = (byte*) &result;
+            var dst = (byte*)&result;
             fixed (byte* src = &data[index])
             {
-                SafeCopier(dst, sizeof (float), src, data.Length - index, sizeof (float));
+                SafeCopier(dst, sizeof(float), src, data.Length - index, sizeof(float));
             }
             return result;
         }
@@ -241,10 +241,10 @@ namespace Core.IO
         public short ToInt16(byte[] data, int index)
         {
             short result;
-            var dst = (byte*) &result;
+            var dst = (byte*)&result;
             fixed (byte* src = &data[index])
             {
-                SafeCopier(dst, sizeof (short), src, data.Length - index, sizeof (short));
+                SafeCopier(dst, sizeof(short), src, data.Length - index, sizeof(short));
             }
             return result;
         }
@@ -256,10 +256,10 @@ namespace Core.IO
         public int ToInt32(byte[] data, int index)
         {
             int result;
-            var dst = (byte*) &result;
+            var dst = (byte*)&result;
             fixed (byte* src = &data[index])
             {
-                SafeCopier(dst, sizeof (int), src, data.Length - index, sizeof (int));
+                SafeCopier(dst, sizeof(int), src, data.Length - index, sizeof(int));
             }
             return result;
         }
@@ -271,10 +271,10 @@ namespace Core.IO
         public long ToInt64(byte[] data, int index)
         {
             long result;
-            var dst = (byte*) &result;
+            var dst = (byte*)&result;
             fixed (byte* src = &data[index])
             {
-                SafeCopier(dst, sizeof (long), src, data.Length - index, sizeof (long));
+                SafeCopier(dst, sizeof(long), src, data.Length - index, sizeof(long));
             }
             return result;
         }
@@ -286,10 +286,10 @@ namespace Core.IO
         public ushort ToUInt16(byte[] data, int index)
         {
             ushort result;
-            var dst = (byte*) &result;
+            var dst = (byte*)&result;
             fixed (byte* src = &data[index])
             {
-                SafeCopier(dst, sizeof (ushort), src, data.Length - index, sizeof (ushort));
+                SafeCopier(dst, sizeof(ushort), src, data.Length - index, sizeof(ushort));
             }
             return result;
         }
@@ -301,10 +301,10 @@ namespace Core.IO
         public uint ToUInt32(byte[] data, int index)
         {
             uint result;
-            var dst = (byte*) &result;
+            var dst = (byte*)&result;
             fixed (byte* src = &data[index])
             {
-                SafeCopier(dst, sizeof (uint), src, data.Length - index, sizeof (uint));
+                SafeCopier(dst, sizeof(uint), src, data.Length - index, sizeof(uint));
             }
             return result;
         }
@@ -316,10 +316,10 @@ namespace Core.IO
         public ulong ToUInt64(byte[] data, int index)
         {
             ulong result;
-            var dst = (byte*) &result;
+            var dst = (byte*)&result;
             fixed (byte* src = &data[index])
             {
-                SafeCopier(dst, sizeof (ulong), src, data.Length - index, sizeof (ulong));
+                SafeCopier(dst, sizeof(ulong), src, data.Length - index, sizeof(ulong));
             }
             return result;
         }
@@ -329,10 +329,10 @@ namespace Core.IO
         /// </summary>
         public char Convert(char data)
         {
-            const int size = sizeof (char);
+            const int size = sizeof(char);
             char result;
-            var dst = (byte*) &result;
-            var src = (byte*) &data;
+            var dst = (byte*)&result;
+            var src = (byte*)&data;
             _rawCopier(dst, src, size);
             return result;
         }
@@ -342,10 +342,10 @@ namespace Core.IO
         /// </summary>
         public double Convert(double data)
         {
-            const int size = sizeof (double);
+            const int size = sizeof(double);
             double result;
-            var dst = (byte*) &result;
-            var src = (byte*) &data;
+            var dst = (byte*)&result;
+            var src = (byte*)&data;
             _rawCopier(dst, src, size);
             return result;
         }
@@ -355,10 +355,10 @@ namespace Core.IO
         /// </summary>
         public float Convert(float data)
         {
-            const int size = sizeof (float);
+            const int size = sizeof(float);
             float result;
-            var dst = (byte*) &result;
-            var src = (byte*) &data;
+            var dst = (byte*)&result;
+            var src = (byte*)&data;
             _rawCopier(dst, src, size);
             return result;
         }
@@ -368,10 +368,10 @@ namespace Core.IO
         /// </summary>
         public short Convert(short data)
         {
-            const int size = sizeof (short);
+            const int size = sizeof(short);
             short result;
-            var dst = (byte*) &result;
-            var src = (byte*) &data;
+            var dst = (byte*)&result;
+            var src = (byte*)&data;
             _rawCopier(dst, src, size);
             return result;
         }
@@ -381,10 +381,10 @@ namespace Core.IO
         /// </summary>
         public int Convert(int data)
         {
-            const int size = sizeof (int);
+            const int size = sizeof(int);
             int result;
-            var dst = (byte*) &result;
-            var src = (byte*) &data;
+            var dst = (byte*)&result;
+            var src = (byte*)&data;
             _rawCopier(dst, src, size);
             return result;
         }
@@ -394,10 +394,10 @@ namespace Core.IO
         /// </summary>
         public long Convert(long data)
         {
-            const int size = sizeof (long);
+            const int size = sizeof(long);
             long result;
-            var dst = (byte*) &result;
-            var src = (byte*) &data;
+            var dst = (byte*)&result;
+            var src = (byte*)&data;
             _rawCopier(dst, src, size);
             return result;
         }
@@ -407,10 +407,10 @@ namespace Core.IO
         /// </summary>
         public ushort Convert(ushort data)
         {
-            const int size = sizeof (ushort);
+            const int size = sizeof(ushort);
             ushort result;
-            var dst = (byte*) &result;
-            var src = (byte*) &data;
+            var dst = (byte*)&result;
+            var src = (byte*)&data;
             _rawCopier(dst, src, size);
             return result;
         }
@@ -420,10 +420,10 @@ namespace Core.IO
         /// </summary>
         public uint Convert(uint data)
         {
-            const int size = sizeof (uint);
+            const int size = sizeof(uint);
             uint result;
-            var dst = (byte*) &result;
-            var src = (byte*) &data;
+            var dst = (byte*)&result;
+            var src = (byte*)&data;
             _rawCopier(dst, src, size);
             return result;
         }
@@ -433,10 +433,10 @@ namespace Core.IO
         /// </summary>
         public ulong Convert(ulong data)
         {
-            const int size = sizeof (ulong);
+            const int size = sizeof(ulong);
             ulong result;
-            var dst = (byte*) &result;
-            var src = (byte*) &data;
+            var dst = (byte*)&result;
+            var src = (byte*)&data;
             _rawCopier(dst, src, size);
             return result;
         }

@@ -20,16 +20,20 @@
  */
 
 using Core.Compression;
-using System;
 using System.IO;
-using System.Collections.Generic;
 
 namespace Core.Model.Serialization
 {
+    /// <summary>
+    /// Utility methods for serialization
+    /// </summary>
     internal static class SerializationUtils
     {
-        private static readonly int DefaultBufferSize = 4096;
-
+        /// <summary>
+        /// Compress an array of bytes that represent the gray scale thumbnail
+        /// </summary>
+        /// <param name="inputGrayScaleThumb"></param>
+        /// <returns></returns>
         public static byte[] CompressedGrayScaleThumb(byte[] inputGrayScaleThumb)
         {
             using (var outputStream = new MemoryStream())
@@ -42,6 +46,11 @@ namespace Core.Model.Serialization
             }
         }
 
+        /// <summary>
+        /// Decompress an array of bytes that represent the gray scale thumbnail
+        /// </summary>
+        /// <param name="compressedGrayScaleThumb"></param>
+        /// <returns></returns>
         public static byte[] DecompressGrayScaleThumb(byte[] compressedGrayScaleThumb)
         {
             using (var inputStream = new MemoryStream(compressedGrayScaleThumb))

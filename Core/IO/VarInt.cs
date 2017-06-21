@@ -1,16 +1,16 @@
 /*	Copyright 2012 Brent Scriver
 
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
 
-		http://www.apache.org/licenses/LICENSE-2.0
+        http://www.apache.org/licenses/LICENSE-2.0
 
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 */
 
 using System;
@@ -35,8 +35,8 @@ namespace Core.IO
             do
             {
                 byte b = (iteration < 9)
-                             ? (byte) ((byte) (temp & 0x7f) | (byte) ((temp > 0x7f) ? 0x80 : 0))
-                             : (byte) (temp & 0xff);
+                             ? (byte)((byte)(temp & 0x7f) | (byte)((temp > 0x7f) ? 0x80 : 0))
+                             : (byte)(temp & 0xff);
                 writer.Write(b);
                 temp = temp >> ((iteration < 9) ? 7 : 8);
                 ++iteration;
@@ -49,7 +49,7 @@ namespace Core.IO
         /// </summary>
         public static void WriteVar(this BinaryWriter writer, uint value)
         {
-            writer.WriteVar((ulong) value);
+            writer.WriteVar((ulong)value);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Core.IO
         /// </summary>
         public static void WriteVar(this BinaryWriter writer, ushort value)
         {
-            writer.WriteVar((ulong) value);
+            writer.WriteVar((ulong)value);
         }
 
         /// <summary>
@@ -101,8 +101,8 @@ namespace Core.IO
             {
                 byte b = reader.ReadByte();
                 pendingData = (iteration < 8) && (b & 0x80) != 0;
-                var v = (ulong) (iteration < 8 ? (b & 0x7f) : b);
-                result = result + (v << (7*iteration));
+                var v = (ulong)(iteration < 8 ? (b & 0x7f) : b);
+                result = result + (v << (7 * iteration));
                 ++iteration;
             } while (pendingData);
             return result;
@@ -117,7 +117,7 @@ namespace Core.IO
             ulong result = reader.ReadVarUInt64();
             if (result <= uint.MaxValue)
             {
-                return (uint) result;
+                return (uint)result;
             }
             throw new OverflowException();
         }
@@ -131,7 +131,7 @@ namespace Core.IO
             ulong result = reader.ReadVarUInt64();
             if (result <= ushort.MaxValue)
             {
-                return (ushort) result;
+                return (ushort)result;
             }
             throw new OverflowException();
         }
@@ -154,7 +154,7 @@ namespace Core.IO
             long result = reader.ReadVarUInt64().ZigZag();
             if (result >= int.MinValue && result <= int.MaxValue)
             {
-                return (int) result;
+                return (int)result;
             }
             throw new OverflowException();
         }
@@ -168,7 +168,7 @@ namespace Core.IO
             long result = reader.ReadVarUInt64().ZigZag();
             if (result >= short.MinValue && result <= short.MaxValue)
             {
-                return (short) result;
+                return (short)result;
             }
             throw new OverflowException();
         }
