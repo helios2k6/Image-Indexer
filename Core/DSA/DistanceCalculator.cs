@@ -19,10 +19,12 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+using System;
+
 namespace Core.DSA
 {
     /// <summary>
-    /// Calculates the 
+    /// Utility class for calculating the hamming distance
     /// </summary>
     public static class DistanceCalculator
     {
@@ -40,6 +42,58 @@ namespace Core.DSA
                 ulong aBit = pHashcodeA & ((ulong)1) << i;
                 ulong bBit = pHashCodeB & ((ulong)1) << i;
 
+                if (aBit != bBit)
+                {
+                    numBits++;
+                }
+            }
+
+            return numBits;
+        }
+
+        /// <summary>
+        /// Calcualtes the hamming distance between two raw byte arrays
+        /// </summary>
+        /// <param name="a">The first array of bytes</param>
+        /// <param name="b">The second array of bytes</param>
+        /// <returns>The hamming distance</returns>
+        public static int CalculateHammingDistance(byte[] a, byte[] b)
+        {
+            int numBits = 0;
+            int minLength = Math.Min(a.Length, b.Length);
+            for (int i = 0; i < minLength; i++)
+            {
+                numBits += CalculateHammingDistance(a[i], b[i]);
+            }
+
+            if (a.Length != b.Length)
+            {
+                // Take the longest of the two arrays and just assume that
+                // the value in the shorter array is 0 for a specific index
+                byte[] longerArray = a.Length > b.Length ? a : b;
+                for (int i = minLength; i < longerArray.Length; i++)
+                {
+                    numBits += CalculateHammingDistance(longerArray[i], 0);
+                }
+            }
+
+            return numBits;
+        }
+
+        /// <summary>
+        /// Calculate the hamming distance between two bytes
+        /// </summary>
+        /// <param name="a">The first byte</param>
+        /// <param name="b">The second byte</param>
+        /// <returns>The hamming distance</returns>
+        public static int CalculateHammingDistance(byte a, byte b)
+        {
+            int numBits = 0;
+            for (byte i = 0; i < 8; i++)
+            {
+                byte shiftDistance = (byte)(1 << i);
+                byte aBit = (byte)(a & shiftDistance);
+                byte bBit = (byte)(b & shiftDistance);
                 if (aBit != bBit)
                 {
                     numBits++;

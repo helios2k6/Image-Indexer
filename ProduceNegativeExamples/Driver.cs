@@ -134,31 +134,38 @@ namespace ProduceNegativeExamples
                 return treeResults.First().Value.First().Video;
             }
 
-            double currentBestSSIM = 0.0;
-            VideoFingerPrintWrapper currentBestVideo = null;
             using (WritableLockBitImage photoAsLockBitImage = new WritableLockBitImage(Image.FromFile(photo.FilePath)))
             {
-                foreach (KeyValuePair<string, ISet<FrameMetricWrapper>> videoFrameResults in treeResults)
+                // Filter on grayscale results first
+                List<FrameMetricWrapper> filteredOnGrayScaleResults = (from videoFrameResults in treeResults
+                                                                       from frameMetricWrapper in videoFrameResults.Value
+                                                                       where DistanceCalculator.CalculateHammingDistance(photo.EdgeGrayScaleThumb, frameMetricWrapper.Frame.EdgeGrayScaleThumb) < 2
+                                                                       select frameMetricWrapper).ToList();
+
+                if (filteredOnGrayScaleResults.Count == 1)
                 {
-                    foreach (FrameMetricWrapper FrameMetricWrapper in videoFrameResults.Value)
+                    return filteredOnGrayScaleResults.First().Video;
+                }
+
+                double currentBestSSIM = 0.0;
+                VideoFingerPrintWrapper currentBestVideo = null;
+                foreach (FrameMetricWrapper FrameMetricWrapper in filteredOnGrayScaleResults)
+                {
+                    // Calculate SSIM
+                    using (WritableLockBitImage videoFrame = GetFrameFromVideo(FrameMetricWrapper.Video, FrameMetricWrapper.Frame.FrameNumber))
                     {
-                        // Calculate SSIM
-                        using (WritableLockBitImage videoFrame = GetFrameFromVideo(FrameMetricWrapper.Video, FrameMetricWrapper.Frame.FrameNumber))
+                        double possibleBestSSIM = SSIMCalculator.Compute(photoAsLockBitImage, videoFrame);
+                        // SSIM must be at least good enough for us to consider
+                        if (possibleBestSSIM > currentBestSSIM)
                         {
-                            double possibleBestSSIM = SSIMCalculator.Compute(photoAsLockBitImage, videoFrame);
-                            // SSIM must be at least good enough for us to consider
-                            if (possibleBestSSIM > currentBestSSIM)
-                            {
-                                currentBestSSIM = possibleBestSSIM;
-                                currentBestVideo = FrameMetricWrapper.Video;
-                            }
+                            currentBestSSIM = possibleBestSSIM;
+                            currentBestVideo = FrameMetricWrapper.Video;
                         }
                     }
                 }
+
+                return currentBestVideo;
             }
-
-
-            return currentBestVideo;
         }
 
         private static WritableLockBitImage GetFrameFromVideo(VideoFingerPrintWrapper video, int frameNumber)
