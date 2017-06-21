@@ -103,8 +103,10 @@ namespace Core.Model.Serialization
         private static FrameFingerPrintWrapper Convert(FrameFingerPrint? frameFingerPrint)
         {
             FrameFingerPrint frameFingerPrintNotNull = TypeUtils.NullThrows(frameFingerPrint);
-            byte[] edgeGrayScaleThumb = (from i in Enumerable.Range(0, frameFingerPrintNotNull.EdgeGrayScaleThumbLength)
-                                         select frameFingerPrintNotNull.EdgeGrayScaleThumb(i)).ToArray();
+            byte[] edgeGrayScaleThumb = SerializationUtils.DecompressGrayScaleThumb((
+                from i in Enumerable.Range(0, frameFingerPrintNotNull.EdgeGrayScaleThumbLength)
+                select frameFingerPrintNotNull.EdgeGrayScaleThumb(i)
+            ).ToArray());
             return new FrameFingerPrintWrapper
             {
                 FrameNumber = frameFingerPrintNotNull.FrameNumber,

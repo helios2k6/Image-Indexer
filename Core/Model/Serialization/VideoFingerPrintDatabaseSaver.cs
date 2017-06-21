@@ -110,7 +110,7 @@ namespace Core.Model.Serialization
             var frameFingerPrintArray = new Offset<FrameFingerPrint>[videoFingerPrint.FingerPrints.Length];
             foreach (FrameFingerPrintWrapper frameFingerPrint in videoFingerPrint.FingerPrints)
             {
-                VectorOffset grayScaleImageOffset = FrameFingerPrint.CreateEdgeGrayScaleThumbVector(builder, frameFingerPrint.EdgeGrayScaleThumb);
+                VectorOffset grayScaleImageOffset = FrameFingerPrint.CreateEdgeGrayScaleThumbVector(builder, SerializationUtils.CompressedGrayScaleThumb(frameFingerPrint.EdgeGrayScaleThumb));
 
                 FrameFingerPrint.StartFrameFingerPrint(builder);
                 FrameFingerPrint.AddFrameNumber(builder, frameFingerPrint.FrameNumber);

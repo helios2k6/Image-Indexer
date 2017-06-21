@@ -99,10 +99,10 @@ namespace PhotoCollectionIndexer
             using (Image frame = Image.FromFile(photoFile))
             {
                 PhotoFingerPrintDatabaseWrapper database = PhotoFingerPrintDatabaseLoader.Load(databaseFile);
-                Tuple<ulong, byte[]> imageHash = FrameIndexer.IndexFrame(frame);
+                ulong imageHash = FrameIndexer.CalculateFramePerceptionHashOnly(frame);
 
                 var results = from fingerPrint in database.PhotoFingerPrints.AsParallel()
-                              let distance = DistanceCalculator.CalculateHammingDistance(imageHash.Item1, fingerPrint.PHash)
+                              let distance = DistanceCalculator.CalculateHammingDistance(imageHash, fingerPrint.PHash)
                               where distance < 5
                               orderby distance
                               select new

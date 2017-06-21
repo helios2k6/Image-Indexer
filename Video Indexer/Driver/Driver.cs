@@ -249,7 +249,7 @@ namespace VideoIndexer.Driver
 
             using (Image frame = Image.FromFile(photoFilePath))
             {
-                Tuple<ulong, byte[]> providedPhotoHash = FrameIndexer.IndexFrame(frame);
+                ulong providedPhotoHash = FrameIndexer.CalculateFramePerceptionHashOnly(frame);
                 VideoFingerPrintDatabaseMetaTableWrapper metaTable = VideoFingerPrintDatabaseMetaTableLoader.Load(databaseMetaTablePath);
                 BKTree<FrameMetricWrapper> bktree = ModelMetricUtils.CreateBKTree(metaTable);
                 IDictionary<FrameMetricWrapper, int> treeResults = bktree.Query(
@@ -258,7 +258,7 @@ namespace VideoIndexer.Driver
                         Photo = new PhotoFingerPrintWrapper
                         {
                             FilePath = photoFilePath,
-                            PHash = providedPhotoHash.Item1,
+                            PHash = providedPhotoHash,
                         },
                     },
                     2

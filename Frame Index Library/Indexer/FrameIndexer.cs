@@ -44,12 +44,21 @@ namespace FrameIndexLibrary
         /// <returns>An indexed frame</returns>
         public static Tuple<ulong, byte[]> IndexFrame(Image frame)
         {
-            return CalcluateFramePerceptionHash(frame);
+            return CalcluateFramePerceptionHash(frame, true);
+        }
+
+        /// <summary>
+        /// Calculates just the frame preception hashcode and skips all of the
+        /// expensive sobel filter code
+        /// </summary>
+        public static ulong CalculateFramePerceptionHashOnly(Image frame)
+        {
+            return CalcluateFramePerceptionHash(frame, false).Item1;
         }
         #endregion
 
         #region private methods
-        private static Tuple<ulong, byte[]> CalcluateFramePerceptionHash(Image frame)
+        private static Tuple<ulong, byte[]> CalcluateFramePerceptionHash(Image frame, bool shouldDoEdgeDetection)
         {
             using (WritableLockBitImage resizedImage = new WritableLockBitImage(ResizeTransformation.Transform(frame, FingerPrintWidth, FingerPrintWidth)))
             using (WritableLockBitImage grayscaleImage = GreyScaleTransformation.TransformInPlace(resizedImage))
@@ -58,12 +67,17 @@ namespace FrameIndexLibrary
                 double[,] dctMatrix = FastDCTCalculator.Transform(blurredImage);
                 double medianOfDCTValue = CalculateMedianDCTValue(dctMatrix);
                 ulong hashCode = ConstructHashCode(dctMatrix, medianOfDCTValue);
-                using (WritableLockBitImage sobelImage = SobelFilter.TransformWithGrayScaleImage(grayscaleImage))
-                using (WritableLockBitImage quantisizedImage = QuantisizingFilter.TransformInPlace(sobelImage, 1))
-                using (WritableLockBitImage resizedQuantisizedImage = ResizeTransformation.Transform(quantisizedImage, 16, 16))
+                if (shouldDoEdgeDetection)
                 {
-                    return Tuple.Create(hashCode, CalculateGrayScaleThumbnail(resizedQuantisizedImage));
+                    using (WritableLockBitImage sobelImage = SobelFilter.TransformWithGrayScaleImage(grayscaleImage))
+                    using (WritableLockBitImage quantisizedImage = QuantisizingFilter.TransformInPlace(sobelImage, 1))
+                    using (WritableLockBitImage resizedQuantisizedImage = ResizeTransformation.Transform(quantisizedImage, 16, 16))
+                    {
+                        return Tuple.Create(hashCode, CalculateGrayScaleThumbnail(resizedQuantisizedImage));
+                    }
                 }
+
+                return Tuple.Create<ulong, byte[]>(hashCode, null);
             }
         }
 

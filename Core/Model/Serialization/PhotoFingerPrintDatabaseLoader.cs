@@ -20,6 +20,7 @@
  */
 
 using Core;
+using Core.Compression;
 using Core.Model.Wrappers;
 using Core.Utils;
 using FlatBuffers;
@@ -92,8 +93,11 @@ namespace Core.Model.Serialization
         private static PhotoFingerPrintWrapper Convert(PhotoFingerPrint? fingerPrint)
         {
             PhotoFingerPrint fingerPrintNotNull = TypeUtils.NullThrows(fingerPrint);
-            byte[] edgeGrayScaleThumb = (from i in Enumerable.Range(0, fingerPrintNotNull.EdgeGrayScaleThumbLength)
-                                         select fingerPrintNotNull.EdgeGrayScaleThumb(i)).ToArray();
+            byte[] edgeGrayScaleThumb = SerializationUtils.DecompressGrayScaleThumb((
+                from i in Enumerable.Range(0, fingerPrintNotNull.EdgeGrayScaleThumbLength)
+                select fingerPrintNotNull.EdgeGrayScaleThumb(i)
+            ).ToArray());
+
             return new PhotoFingerPrintWrapper
             {
                 FilePath = fingerPrintNotNull.FilePath,
@@ -102,6 +106,5 @@ namespace Core.Model.Serialization
             };
         }
         #endregion
-
     }
 }

@@ -21,6 +21,7 @@
 
 
 using Core;
+using Core.Compression;
 using Core.Model.Wrappers;
 using FlatBuffers;
 using System.IO;
@@ -86,7 +87,7 @@ namespace Core.Model.Serialization
             foreach (PhotoFingerPrintWrapper fingerPrint in database.PhotoFingerPrints)
             {
                 StringOffset filePathOffset = builder.CreateString(fingerPrint.FilePath);
-                VectorOffset grayScaleImageOffset = PhotoFingerPrint.CreateEdgeGrayScaleThumbVector(builder, fingerPrint.EdgeGrayScaleThumb);
+                VectorOffset grayScaleImageOffset = PhotoFingerPrint.CreateEdgeGrayScaleThumbVector(builder, SerializationUtils.CompressedGrayScaleThumb(fingerPrint.EdgeGrayScaleThumb));
 
                 PhotoFingerPrint.StartPhotoFingerPrint(builder);
                 PhotoFingerPrint.AddFilePath(builder, filePathOffset);

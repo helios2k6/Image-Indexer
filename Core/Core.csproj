@@ -107,6 +107,7 @@
     <Compile Include="Model\Core\VideoFingerPrintDatabaseMetaTableEntry.cs" />
     <Compile Include="Model\Serialization\PhotoFingerPrintDatabaseLoader.cs" />
     <Compile Include="Model\Serialization\PhotoFingerPrintDatabaseSaver.cs" />
+    <Compile Include="Model\Serialization\SerializationUtils.cs" />
     <Compile Include="Model\Serialization\VideoFingerPrintDatabaseLoader.cs" />
     <Compile Include="Model\Serialization\VideoFingerPrintDatabaseMetaTableLoader.cs" />
     <Compile Include="Model\Serialization\VideoFingerPrintDatabaseMetaTableSaver.cs" />
