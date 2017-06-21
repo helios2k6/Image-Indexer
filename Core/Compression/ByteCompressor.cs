@@ -58,31 +58,5 @@ namespace Core.Compression
 
             return buffer.ToArray();
         }
-
-        /// <summary>
-        /// Decompresses a packed byte array into a full byte array
-        /// </summary>
-        public static byte[] Decompress(byte[] compressedInput)
-        {
-            var byteBuffer = new List<byte>();
-            foreach (byte compressedByte in compressedInput)
-            {
-                for (int index = 0; index < 8; index++)
-                {
-                    byte mask = (byte)(1 << index);
-                    byte targetBit = (byte)(compressedByte ^ mask);
-                    if (targetBit > 0)
-                    {
-                        byteBuffer.Add(1);
-                    }
-                    else
-                    {
-                        byteBuffer.Add(0);
-                    }
-                }
-            }
-
-            return byteBuffer.ToArray();
-        }
     }
 }
