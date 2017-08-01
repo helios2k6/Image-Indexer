@@ -19,8 +19,6 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-using Core;
-using Core.Compression;
 using Core.Model.Wrappers;
 using Core.Utils;
 using FlatBuffers;
@@ -93,10 +91,10 @@ namespace Core.Model.Serialization
         private static PhotoFingerPrintWrapper Convert(PhotoFingerPrint? fingerPrint)
         {
             PhotoFingerPrint fingerPrintNotNull = TypeUtils.NullThrows(fingerPrint);
-            byte[] edgeGrayScaleThumb = SerializationUtils.DecompressGrayScaleThumb((
+            byte[] edgeGrayScaleThumb = (
                 from i in Enumerable.Range(0, fingerPrintNotNull.EdgeGrayScaleThumbLength)
                 select fingerPrintNotNull.EdgeGrayScaleThumb(i)
-            ).ToArray());
+            ).ToArray();
 
             return new PhotoFingerPrintWrapper
             {

@@ -2,7 +2,7 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>
-    <StartArguments>--index --video D:\videos --database-metatable metatable.bin --threads 1</StartArguments>
+    <StartArguments>--index --video "\\HOME-SERVER-NAS\Public\Videos\Anime" --metatable anime_metatable.bin --threads 1</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartWorkingDirectory>D:\</StartWorkingDirectory>
